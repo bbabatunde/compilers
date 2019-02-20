@@ -57,4 +57,3 @@ int main(int argc, char** argv) {
   print(result);
   return 0;
 }
-

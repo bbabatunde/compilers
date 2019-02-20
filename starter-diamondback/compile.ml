@@ -226,8 +226,8 @@ let rec compile_fun (fun_name : string) args env : instruction list =
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
-  let prelude = (compile_cexpr bind (si+1) env num_args false) in
-  let body = (compile_aexpr body (si+1) env num_args is_tail) in
+  let prelude = (compile_cexpr bind (si + 1) env num_args false) in
+  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-si, EBP))::env) num_args is_tail) in
   prelude @ [IMov(RegOffset(~-si, EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
@@ -463,15 +463,14 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     let arglist = (List.fold_left (fun lst arg -> lst @ [IMov(Reg(EAX),(compile_imm arg env));IPush(Reg(EAX))]
      )  [] args) in
     arglist @ [ICall(funname);IAdd(Reg(ESP),Const(word_size * List.length args))]
-  | CImmExpr(exp) -> [IMov(Reg(EAX),(compile_imm exp  env))]
+  | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e  env))]
 and compile_imm e env = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
 
-let compile_decl (d : tag adecl) : instruction list = 
-  match d with
+let compile_decl (d : tag adecl) : instruction list = match d with
   | ADFun(fname,args,body,_) -> 
     let postlude = [IMov(Reg(ESP),Reg(EBP));IPop(Reg(EBP));IRet] in
    (compile_fun fname args []) @(compile_aexpr body 1 [] 0 true) @ postlude
@@ -479,18 +478,17 @@ let compile_decl (d : tag adecl) : instruction list =
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
-    "section .text
-    extern error
-    extern print
-    global our_code_starts_here
-  our_code_starts_here:" in
+        "section .text
+extern error
+extern print
+global our_code_starts_here
+our_code_starts_here:" in
   let count = word_size *  count_vars body in
   let stack_setup =[
       IPush(Reg(EBP));
       IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count));] in
+      ISub(Reg(ESP),Const(count))] in
   let postlude = [
-
     IMov(Reg(ESP),Reg(EBP));
     IPop(Reg(EBP));
     IRet;

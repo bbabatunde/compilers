@@ -48,9 +48,10 @@ let tests = [
 
   	((Lexing.lexeme_start_p (Lexing.from_string "1")), (Lexing.lexeme_end_p (Lexing.from_string "1"))))));  *)
 
-  t "integration1" "sub1(add1(add1(1)))" "2";
+  t "integration1" "print(print(1))" "2";
   
 ]
+
 
 let suite =	
 "suite">:::
