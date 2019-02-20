@@ -17,6 +17,7 @@ main: *.ml parser.mly lexer.mll
 test: *.ml parser.mly lexer.mll
 	$(BUILD) -package $(PKGS) test.native
 	mv test.native test
+	./test
 
 output/%.run: output/%.o main.c
 	clang -mstackrealign -g -m32 -o $@ main.c $<
