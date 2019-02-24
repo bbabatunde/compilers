@@ -162,6 +162,29 @@ let anf (p : tag program) : unit aprogram =
 ;;
 
 
+ let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
+  let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
+  match ds with
+    | [] -> None
+    | (DFun(fname, _, _, _))::ds_rest ->
+      if name = fname then Some(ds_rest) else find_decl2 ds_rest name
+  in 
+  match (find_decl2  ls n) with
+  |None -> ls
+  |Some(e) -> e
+
+
+
+  let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
+  let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
+  match l with
+    | [] -> None
+    | (x,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
+  in 
+  match (find_one2  ls elt) with
+  |None -> ls
+  |Some(e) -> e
+
 
 let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list =
@@ -202,11 +225,11 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
   and wf_D (ds : 'a decl list): exn list = 
     let result = 
     (List.fold_left (fun errorlst (DFun(funname, args, body, upos)) ->
-      let dupfunlist = match find_decl ds funname  with
-       |None -> []
-       |Some(DFun(name, args, body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)] 
-      and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match find2 args arg with
-            |None -> []
+      let dupfunlist = match (find_decl (remove_one_decl ds funname) funname)  with
+       |None -> errorlst@(wf_E body ds args)
+       |Some(DFun(name, args, body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
+      and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match (find2 (remove_one_arg args arg) arg) with
+            |None -> errorlst
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
           ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
   in
@@ -216,6 +239,13 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
      if output = [] then Ok(p) else Error(output)
    ;;
 
+let realign_stack numtornd multiple = 
+  let result = if (numtornd mod multiple) == 0 then numtornd else  
+      if multiple > (numtornd mod multiple) then (multiple - (numtornd mod multiple))
+    else (numtornd + multiple - (numtornd mod multiple))
+  in result ;;
+
+
 let rec compile_fun (fun_name : string) args env : instruction list =
   let count = (word_size *  List.length args) in
   let stack_setup = [
@@ -223,12 +253,11 @@ let rec compile_fun (fun_name : string) args env : instruction list =
       IMov(Reg(EBP),Reg(ESP));
       ISub(Reg(ESP),Const(count))] in
     [ILabel(fun_name)] @ stack_setup
-
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
   let prelude = (compile_cexpr bind (si + 1) env num_args false) in
-  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-si, EBP))::env) num_args is_tail) in
-  prelude @ [IMov(RegOffset(~-si, EBP), Reg(EAX))] @ body
+  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-(si), EBP))::env) num_args is_tail) in
+  prelude @ [IMov(RegOffset(~-(si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
@@ -304,9 +333,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | CPrim2(op, left, right, tag) -> 
     let instr =
         [IMov(Reg(EAX),(compile_imm left  env))] @
-        [IMov(RegOffset(~-si, EBP), Reg(EAX))] @
-        [IMov(Reg(EAX),(compile_imm right env))] @
-        [IMov(RegOffset(~-(si + 1), EBP), Reg(EAX))] in
+        [IMov(RegOffset(~-(si), EBP), Reg(EAX))] @
+        [IMov(Reg(EDX),(compile_imm right env))] @
+        [IMov(RegOffset(~-(si + 1), EBP), Reg(EDX))] in
    begin match op with
    | Plus -> instr @
       [ 
@@ -446,11 +475,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      instr @
     [
             IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            (* ITest(Reg(EAX), const_bool_tag); *)
-            (* IJnz("comparison_expected_a_number"); *)
             IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            (* ITest(Reg(EDX), const_bool_tag); *)
-            (* IJnz("comparison_expected_a_number_EDX"); *)
             ICmp(Reg(EAX), Reg(EDX));
             IMov(Reg(EAX), const_true);
             IJe(eq_label);
@@ -461,29 +486,31 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    end
   | CApp(funname, args, _) -> 
     let arglist = (List.fold_left (fun lst arg -> lst @ [IMov(Reg(EAX),(compile_imm arg env));IPush(Reg(EAX))]
-     )  [] args) in
-    arglist @ [ICall(funname);IAdd(Reg(ESP),Const(word_size * List.length args))]
+     )  [] (List.rev args)) in
+    let align_val = realign_stack (word_size * List.length args) 16 in
+        arglist @  [ISub(Reg(ESP), Const(align_val))] @ [ICall(funname);IAdd(Reg(ESP),Const(align_val))]
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e  env))]
 and compile_imm e env = match e with
-  | ImmNum(n, _) -> Const((n lsl 1))
+  | ImmNum(n, _) ->  Const((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
 
 let compile_decl (d : tag adecl) : instruction list = match d with
   | ADFun(fname,args,body,_) -> 
+  let (argenv, stackindex) = (List.fold_left (fun (lst, n) a -> (lst@[(a,RegOffset(~-(n),EBP))], (n+1)))  ([],1) args) in
     let postlude = [IMov(Reg(ESP),Reg(EBP));IPop(Reg(EBP));IRet] in
-   (compile_fun fname args []) @(compile_aexpr body 1 [] 0 true) @ postlude
+   (compile_fun fname args []) @(compile_aexpr body 1 argenv stackindex true) @ postlude
   
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
-        "section .text
+    "section .text
 extern error
 extern print
-global our_code_starts_here
-our_code_starts_here:" in
-  let count = word_size *  count_vars body in
+global our_code_starts_here"
+ in
+  let count = realign_stack (word_size *  count_vars body) 16 in
   let stack_setup =[
       IPush(Reg(EBP));
       IMov(Reg(EBP),Reg(ESP));
@@ -534,7 +561,7 @@ our_code_starts_here:" in
     ] in
   let fun_def = List.flatten (List.map compile_decl decls) in
   let body = (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ stack_setup @ body @ postlude)) in
+  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
 
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =

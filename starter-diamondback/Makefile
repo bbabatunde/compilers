@@ -20,7 +20,7 @@ test: *.ml parser.mly lexer.mll
 	./test
 
 output/%.run: output/%.o main.c
-	clang -g -m32 -mstackrealign  -o $@ main.c $<
+	clang -g -m32 -mstackrealign -o $@ main.c $<
 
 output/%.o: output/%.s
 	nasm -f $(FORMAT) -o $@ $<

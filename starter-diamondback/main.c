@@ -52,7 +52,7 @@ void error(int errCode, int val) {
   exit(errCode);
 }
 
-int main(int argc, char** argv) {
+int main() {
   int result = our_code_starts_here();
   print(result);
   return 0;
