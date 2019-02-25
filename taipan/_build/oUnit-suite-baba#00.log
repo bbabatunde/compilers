@@ -1,0 +1,164 @@
+2019-02-25T01:31:46+00:00 baba#00 I: Runner: processes
+2019-02-25T01:31:46+00:00 baba#00 I: Chooser: simple
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration suite_name = "suite"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration cache_filename = "/home/baba/Desktop/compilers/taipan/_build/oUnit-$(suite_name).cache"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration osx = "false"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration display = "true"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration results_style_1_X = "false"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration verbose = "false"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration health_check_interval = "1."
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration testdata_dir = "none"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration chooser = "simple"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration output_html_dir = "none"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration processes_kill_period = "5."
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration runner = "processes"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration shards = "2"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration processes_grace_period = "5."
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration log_encoding = "utf-8"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration output_junit_file = "none"
+2019-02-25T01:31:46+00:00 baba#00 I: Configuration output_file = "/home/baba/Desktop/compilers/taipan/_build/oUnit-$(suite_name)-$(shard_id).log"
+2019-02-25T01:31:46+00:00 baba#00 I: Using 2 workers maximum.
+2019-02-25T01:31:46+00:00 baba#00 I: Starting worker number baba#01.
+2019-02-25T01:31:46+00:00 baba#00 I: Worker baba#01 started.
+2019-02-25T01:31:46+00:00 baba#00 I: Starting worker number baba#02.
+2019-02-25T01:31:46+00:00 baba#00 I: Worker baba#02 started.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:1:scope_err1, suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:1:scope_err1, suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:1:scope_err1, suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:0:forty_one_anf is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:1:scope_err1, suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:1:scope_err1, suite:0:forty_one_anf.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:2:forty_one_run_anf, suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:2:forty_one_run_anf, suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:1:scope_err1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:2:forty_one_run_anf, suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:2:forty_one_run_anf, suite:1:scope_err1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:3:forty_one, suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:3:forty_one.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:3:forty_one, suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:2:forty_one_run_anf is successful.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:3:forty_one is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:3:forty_one, suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:3:forty_one.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:3:forty_one, suite:2:forty_one_run_anf.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:5:if1, suite:4:test.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:4:test.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:5:if1, suite:4:test.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:5:if1, suite:4:test.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:4:test is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:5:if1, suite:4:test.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:4:test.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:5:if1, suite:4:test.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:6:if2, suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:6:if2, suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:5:if1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:6:if2, suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:6:if2, suite:5:if1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:7:integration3, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:7:integration3.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:7:integration3, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:7:integration3 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:7:integration3, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:7:integration3.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:7:integration3, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:8:overflow, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:8:overflow.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:8:overflow, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:8:overflow is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:8:overflow, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:8:overflow.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:8:overflow, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:9:integration1, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:9:integration1, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:6:if2 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:9:integration1, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:9:integration1, suite:6:if2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:10:integration2, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:10:integration2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:10:integration2, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:10:integration2 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:10:integration2, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:10:integration2.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:10:integration2, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:11:integration3, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:11:integration3.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:11:integration3, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:11:integration3 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:11:integration3, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:11:integration3.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:11:integration3, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:12:integration4, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#02 I: Start test suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:12:integration4, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:9:integration1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:12:integration4, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:12:integration4, suite:9:integration1.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:13:integration6, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:13:integration6.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:13:integration6, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:13:integration6 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:13:integration6, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:13:integration6.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:13:integration6, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 2 tests running : suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: Start test suite:14:integration7.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 2 tests running : suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: Test suite:14:integration7 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 2 tests running : suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#01 I: End test suite:14:integration7.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 2 tests running : suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 2 tests running: suite:14:integration7, suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 1 tests running : suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 1 tests running: suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#02 I: Test suite:12:integration4 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 1 tests running : suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 1 tests running: suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#02 I: End test suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: Still 1 tests running : suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 1 tests running: suite:12:integration4.
+2019-02-25T01:31:46+00:00 baba#00 I: 0 tests running: .
+2019-02-25T01:31:46+00:00 baba#00 I: Worker baba#01 has ended.
+2019-02-25T01:31:46+00:00 baba#00 I: Worker baba#02 has ended.
+2019-02-25T01:31:46+00:00 baba#00 I: Used 2 worker during test execution.
+2019-02-25T01:31:46+00:00 baba#00 I: Run 8 tests with shard baba#01.
+2019-02-25T01:31:46+00:00 baba#00 I: Run 7 tests with shard baba#02.
+2019-02-25T01:31:46+00:00 baba#00 I: ==============
+2019-02-25T01:31:46+00:00 baba#00 I: Summary:
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:12:integration4 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:14:integration7 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:13:integration6 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:9:integration1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:11:integration3 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:10:integration2 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:6:if2 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:8:overflow is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:7:integration3 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:5:if1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:4:test is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:3:forty_one is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:2:forty_one_run_anf is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:1:scope_err1 is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Test suite:0:forty_one_anf is successful.
+2019-02-25T01:31:46+00:00 baba#00 I: Ran: 15 tests in: 0.36 seconds.
+2019-02-25T01:31:46+00:00 baba#00 I: Cases: 15.
+2019-02-25T01:31:46+00:00 baba#00 I: Tried: 15.
+2019-02-25T01:31:46+00:00 baba#00 I: Errors: 0.
+2019-02-25T01:31:46+00:00 baba#00 I: Failures: 0.
+2019-02-25T01:31:46+00:00 baba#00 I: Skip: 0.
+2019-02-25T01:31:46+00:00 baba#00 I: Todo: 0.
+2019-02-25T01:31:46+00:00 baba#00 I: Timeout: 0.

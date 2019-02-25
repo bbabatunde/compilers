@@ -40,6 +40,7 @@ let err_IF_NOT_BOOL    = 3
 let err_OVERFLOW       = 4
 
 
+
 (* You may find some of these helpers useful *)
 let rec find ls x =
   match ls with
@@ -52,8 +53,6 @@ let rec find2 ls x =
   | [] -> None
   | (y,v)::rest ->
      if y = x then Some(v) else find2 rest x
-
-
 
 let count_vars e =
   let rec helpA e =
@@ -74,7 +73,7 @@ let rec replicate x i =
 let rec find_decl (ds : 'a decl list) (name : string) : 'a decl option =
   match ds with
     | [] -> None
-    | (DFun(fname, _, _, _,_) as d)::ds_rest ->
+    | (DFun(fname, _, _, _, _) as d)::ds_rest ->
       if name = fname then Some(d) else find_decl ds_rest name
 
 let rec find_one (l : 'a list) (elt : 'a) : bool =
@@ -90,6 +89,30 @@ let rec find_dup (l : 'a list) : 'a option =
       if find_one xs x then Some(x) else find_dup xs
 ;;
 
+ let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
+  let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
+  match ds with
+    | [] -> None
+    | (DFun(fname, _, _, _,_))::ds_rest ->
+      if name = fname then Some(ds_rest) else find_decl2 ds_rest name
+  in 
+  match (find_decl2  ls n) with
+  |None -> ls
+  |Some(e) -> e
+
+
+
+  let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
+  let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
+  match l with
+    | [] -> None
+    | (x,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
+  in 
+  match (find_one2  ls elt) with
+  |None -> ls
+  |Some(e) -> e
+
+;;
 
 (* IMPLEMENT EVERYTHING BELOW *)
 
@@ -194,82 +217,59 @@ let anf (p : tag program) : unit aprogram =
   helpP p
 ;;
 
-let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
-  let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
-  match ds with
-    | [] -> None
-    | (DFun(fname, _, _, _,_))::ds_rest ->
-      if name = fname then Some(ds_rest) else find_decl2 ds_rest name
-  in 
-  match (find_decl2  ls n) with
-  |None -> ls
-  |Some(e) -> e
-
-
-
-  let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
-  let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
-  match l with
-    | [] -> None
-    | (x,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
-  in 
-  match (find_one2  ls elt) with
-  |None -> ls
-  |Some(e) -> e
 
 
 let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
-  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list =
-    match e with
-    | ENumber(n, pos) ->  if n > 1073741823 || n < -1073741824 then
-       [Overflow(n,pos)]
-     else []
+  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list = match e with
+    | ENumber(n, pos) -> if n > 1073741823 || n < -1073741824 then
+       [Overflow(n,pos)] else []
     | EBool(_, _) -> []
-    | EId(name, pos) -> let found = find2 env name in
-     begin match found with
+    | EId(name, pos) -> 
+      begin match find2 env name with
       |None -> [UnboundId(name,pos)]
-      |Some(d) -> []
-    end
-    | EPrim1(_, arg, _) ->   wf_E arg ds env
-    | EPrim2(_, l, r, _) ->  wf_E l ds env @ wf_E r ds env
-    | EIf(cond, _then, _else, pos) ->   wf_E cond ds env @ wf_E _then ds env @ wf_E _else ds env
-    | EApp(funname, appargs, pos) ->
-        let result = find_decl ds funname in
-       begin match result with
+      |Some(d) -> [] end
+    | EAnnot(exp, _, _) -> wf_E exp ds env
+    | EPrim1(op, arg, _) ->  wf_E arg ds env
+    | EPrim2(op, left, right, _) ->  wf_E left ds env @ wf_E right ds env
+    | EIf(cond, _then, _else, _) -> wf_E cond ds env @ wf_E _then ds env @ wf_E _else ds env
+    | EApp(funname, appargs, pos) -> 
+       begin match find_decl ds funname with
        |None -> [UnboundFun(funname, pos)]
-       |Some(DFun(name, defargs, body,_, dpos)) -> 
+       |Some(DFun(name, defargs,_, body, dpos)) -> 
          let no_appargs = List.length appargs in
          let no_defargs = List.length defargs  in
          if no_defargs = no_appargs then [] else
          [Arity (no_appargs,no_defargs,pos)]
       end
-    |ELet([],body,_) -> wf_E e ds env
-    |ELet((bind, exp, bindloc)::rest as binds, body, pos) ->    
-     let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a bind) -> match b with 
-      |(n,e,y) -> match find2 env n with 
+    | ELet([], body, _) -> wf_E body ds env
+    | ELet(((bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
+      let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a bind) -> match b with 
+      |((n,_,_),e,y) -> match find2 env n with 
       |None -> (exnlist, [(n,y)]@env)
       |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env)) @ [DuplicateId(n,y,exploc)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
     and shadowlist = match find2 env bind with
-      |None -> []
+      |None -> wf_E exp ds env
       |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
     in (shadowlist @ exnbinds_list @ (wf_E body ds newenv))
-
-  and wf_D (ds : 'a decl list): exn list = 
+  and wf_D  (ds : 'a decl list): exn list = 
     let result = 
-    (List.fold_left (fun errorlst (DFun(funname, args, body, upos)) ->
+    (List.fold_left (fun errorlst (DFun(funname, args,_, body, upos)) ->
       let dupfunlist = match (find_decl (remove_one_decl ds funname) funname)  with
        |None -> errorlst@(wf_E body ds args)
-       |Some(DFun(name, args, body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
+       |Some(DFun(name, args,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
       and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match (find2 (remove_one_arg args arg) arg) with
             |None -> errorlst
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
           ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
+  and wf_G (gds : 'a decl list list ): exn list  =
+   let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen))))  ([],[]) gds) in exnlist
   in
   match p with
-  | Program(decls, body, _) ->
-     let output = wf_D decls @ wf_E body decls [] in
+  | Program(decls, body, _, _) ->
+      let output = wf_G decls @ wf_E body (List.flatten decls) [] in
      if output = [] then Ok(p) else Error(output)
-   ;;
+;;
+
 
 let realign_stack numtornd multiple = 
   let result = if (numtornd mod multiple) == 0 then numtornd else  
@@ -595,8 +595,6 @@ global our_code_starts_here"
   let body = (compile_aexpr body 1 [] 0 true) in
   let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
-
-
 (* Add a typechecking phase somewhere in here! *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
