@@ -41,17 +41,24 @@ let rec find_pos (ls : 'a envt) x pos : 'a =
   with
   | Not_found -> failwith (sprintf "Name %s not found at %s" x (string_of_sourcespan pos))
 ;;
-let rec subst_var_typ ((tyvar, to_typ) as sub) in_typ =
-  failwith "Implement substituting a type for a type variable, within a type, here"
+let rec subst_var_typ (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_typ : 'a typ) : 'a typ =
+  match in_typ with
+  | TyBlank(pos) -> TyBlank(pos)
+  | TyCon(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
+  | TyVar(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
+  | TyArr(typlist,typ,pos)-> TyArr( (List.map (fun e -> (subst_var_typ sub e)) typlist),(subst_var_typ sub typ),pos)
+  | TyApp(typ,typlist,pos)-> TyApp( (subst_var_typ sub typ) , (List.map (fun e -> subst_var_typ sub) e) typlist),pos)
+ 
 ;;
-let subst_var_scheme ((tyvar, to_typ) as sub) scheme =
-  failwith "Implement substituting a type for a type variable, within a scheme, here"
+let  subst_var_scheme (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_scheme : 'a scheme) : 'a scheme =
+  match in_scheme with 
+  |Forall(strlst, typ,pos)-> if List.mem tyvar strlst then in_scheme else Forall(strlst, (subst_var_typ sub typ), pos)
 ;;
 let apply_subst_typ (subst : 'a typ subst) (t : 'a typ) : 'a typ =
   List.fold_left (fun t sub -> subst_var_typ sub t) t subst
 ;;
-let apply_subst_scheme (subst : 'a typ subst) (scheme : 'a scheme) : 'a scheme =
-  failwith "Implement applying a substitution to a scheme here"
+ apply_subst_scheme (subst : 'a typ subst) (scheme : 'a scheme) : 'a scheme =
+    List.fold_left (fun sch sub -> subst_var_scheme sub sch) scheme subst
 ;;
 let apply_subst_env (subst : 'a typ subst) (env : 'a typ envt) : 'a typ envt =
   failwith "Implement applying a substitution to a type environment here"
@@ -123,8 +130,9 @@ let rec unblank (t : 'a typ) : 'a typ =
      let t = unblank t in
      let args = List.map unblank args in TyApp(t, args, tag)
 ;;
-let instantiate (s : 'a scheme) : 'a typ =
-  failwith "Implement instantiating a type scheme here"
+let instantiate (s : 'a scheme) : 'a typ = match s with 
+ |SForall(strlst, typ,()) -> failwith "Implement inferrence for entire programs"
+
 ;;
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
   failwith "Implement generalizing a type here"
