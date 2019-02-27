@@ -114,6 +114,15 @@ let rec find_dup (l : 'a list) : 'a option =
 
 ;;
 
+(* Helper function, flatten a list of lists *)
+let flatten (l: 'a list list) : 'a list =
+  let rec flatten_helper (l: 'a list list) (output: 'a list) : 'a list =
+    match l with
+    | head::tail -> flatten_helper tail (head@output)
+    | [] -> output
+  in
+  flatten_helper l []
+
 (* IMPLEMENT EVERYTHING BELOW *)
 
 
@@ -271,330 +280,357 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
 ;;
 
 
-let realign_stack numtornd multiple = 
-  let result = if (numtornd mod multiple) == 0 then numtornd else  
-      if multiple > (numtornd mod multiple) then (multiple - (numtornd mod multiple))
-    else (numtornd + multiple - (numtornd mod multiple))
-  in result ;;
+(* After a mathematical operation, if we overflowed, jump to overflow handler *)
+let overflowcheck: instruction list =
+    [IJo "err_overflow"]
+
+(* Test to ensure value in EAX contains a number, otherwise jump to our 'interror' error handler *)
+(* Then check for overflow *)
+let intcheck : instruction list =
+ (List.map (fun x -> IInstrComment(x, "\tTypecheck: int")) [ITest(Reg(EAX), HexConst(0x1)); IJnz "err_arith_numb"] @ overflowcheck)
+
+(* Runtime: Check two values are ints, else jump to label. Note these values don't need to be in EAX at the start  *)
+let twointcheck (e1) (e2) (label: string) : instruction list =
+    (List.map (fun x-> IInstrComment(x, "\tTypecheck: 2 ints")) [IMov(Reg(EAX), e1); ITest(Reg(EAX), HexConst(0x1)); IJnz ("err_"^label^"_numb");
+     IMov(Reg(EAX), e2); ITest(Reg(EAX), HexConst(0x1)); IJnz ("err_"^label^"_numb");])
+
+(* Test to ensure value in EAX is a bool, otherwise jump to our 'err_logic_bool' error handler *)
+let boolcheck (label: string): instruction list =
+  (List.map (fun x -> IInstrComment(x, "\tTypecheck: bool")) [ITest(Reg(EAX), HexConst(0x1)); IJz ("err_" ^ label ^"_bool")])
+
+(* Runtime: Check two values are bools, else jump to label. Note these values don't need to be in EAX at the start *)
+let twoboolcheck (e1) (e2) (label: string) : instruction list =
+    (List.map (fun x-> IInstrComment(x, "\tTypecheck: 2 bools")) [IMov(Reg(EAX), e1); ITest(Reg(EAX), HexConst(0x1)); IJz ("err_" ^ label^"_bool");
+     IMov(Reg(EAX), e2); ITest(Reg(EAX), HexConst(0x1)); IJz ("err_" ^ label^"_bool");])
+
+(* For a prim2, generate the approperiate asm checks *)
+let typechecks (op1) (op2) (op: prim2) : instruction list * instruction list =
+    match op with
+    | And | Or -> ((twoboolcheck op1 op2 "logic"), [])
+    | Greater | GreaterEq | Less | LessEq ->  ((twointcheck op1 op2 "comp"), overflowcheck)
+    | Plus | Minus | Times  ->  ((twointcheck op1 op2 "arith"), overflowcheck)
+    | Eq -> ([], [])
+
+(* Stringify a prim and tag pair into a label name*)
+let cmp_label (e: prim2) (tag: int) : string =
+    let op =
+      match e with
+      | Plus       -> "plus"
+      | Minus      -> "minus"
+      | Times      -> "times"
+      | And        -> "and"
+      | Or         -> "or"
+      | Greater    -> "greater"
+      | GreaterEq  -> "greatereq"
+      | Less       -> "less"
+      | LessEq     -> "lesseq"
+      | Eq         -> "eq"
+    in
+      sprintf "$%s_%d_end" op tag
 
 
-let rec compile_fun (fun_name : string) args env : instruction list =
-  let count = (word_size *  List.length args) in
-  let stack_setup = [
+(* Generate instruction list for comparisons. Input type check and result check switched on optype *)
+let compare_vals (l) (r) (cmp: instruction) (end_label: string) : instruction list =
+    [ IMov(Reg(EAX), l);                   (* Put left into eax *)
+      ICmp(Reg(EAX), r);                  (* compare left to right *)
+      IMov(Reg(EAX), const_true);  (* Store true into EAX (doesn't change flags) *)
+      cmp;
+      IMov(Reg(EAX), const_false);  (* else: store false in EAX *)
+      ILabel(end_label);                  (* End label *)
+    ]
+
+(* Wrapper to set up a labeled function including prologue, epilogue and compile_aexpr'd body *)
+let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
+  (* fun_name is just the name
+   * body is the aexpr of the function's body
+   * args is the string list of variable names
+   * env maps args to stack offsets
+   *)
+
+  let stack_offset = 4*((count_vars body)+1) in
+
+  (* Start with label. We generally prepend function names with 'fun_' unless it's for our_code_starts_here *)
+  let lbl =
+      if (is_entry_point=true) then
+        ILabel(fun_name)
+      else
+        ILabel("fun_" ^ fun_name)
+  in
+  let stack_setup_asm = [
+      (* Main prologue: label, push the old base pointer, copy ESP into EBP, modify ESP to make room for our vars *)
+      lbl;
+      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
-      IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count))] in
-    [ILabel(fun_name)] @ stack_setup
-and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
-  | ALet(name, bind, body, _)  -> 
-  let prelude = (compile_cexpr bind (si + 1) env num_args false) in
-  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-(si), EBP))::env) num_args is_tail) in
-  prelude @ [IMov(RegOffset(~-(si), EBP), Reg(EAX))] @ body
-  | ACExpr(body) -> compile_cexpr body si env num_args is_tail
-and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
-  | CIf(cond, _then, _else, tag) ->
-      let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
-      let false_label = sprintf "if_false_%s" (string_of_int tag) in
-      let done_label  =  sprintf "if_done_%s" (string_of_int tag) in
-      [IMov(Reg(EAX),(compile_imm cond env))] @
-      [ICmp(Reg(EAX), const_true)] @
-      [IJne(false_label)] @
-      [ILabel(true_label)] @
-      (compile_aexpr _then (si + 1) env num_args is_tail) @
-      [IJmp(done_label)] @
-      [ILabel(false_label)] @
-      [ICmp(Reg(EAX), const_false)] @
-      [IJne("error_not_boolean_if")] @
-      (compile_aexpr _else (si + 2) env num_args is_tail) @
-      [ILabel(done_label)]
+      IMov(Reg(EBP), Reg(ESP));
+      ISub(Reg(ESP), HexConst(stack_offset))
+    ]
+  (* After function body, clean up the stack and return *)
+  and postlude_asm = [
+      (* Main epilogue: clean up stack, restore stack pointer and return to parent caller *)
+      ILineComment(Printf.sprintf "Clean up for %s" fun_name);
+      IAdd(Reg(ESP), HexConst(stack_offset)); (* This isn't right? Pushes for fn args changed things? *)
+      IMov(Reg(ESP), Reg(EBP));
+      IPop(Reg(EBP));
+      IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
+  ]
+  (* TODO: is si=1 correct here? *)
+  and body_asm = compile_aexpr body 1 env (List.length args) true in (* Rule 2: the body of a function is always in tail pos *)
+    stack_setup_asm
+    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
+    @ body_asm
+    @ postlude_asm;
 
-  | CPrim1(op, e, tag) -> 
-     begin match op with
-      |Add1 -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
-        [
-        ITest(Reg(EAX),tag_as_bool);
-        IJnz("arithmetic_expected_a_number");
-        IAdd(Reg(EAX),Const(2));
-        IJo("overflow")
-       ] 
-      |Sub1 -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
-        [ITest(Reg(EAX),tag_as_bool);
-        IJnz("arithmetic_expected_a_number");
-        ISub(Reg(EAX),Const(2));
-        IJo("overflow")
-        ]
+and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list =
+  (*(Printf.printf "Compile aexpr (tail=%b): %s\n" is_tail (string_of_aexpr e));*)
+  match e with
+  | ALet(id, let_e, body, _) ->
+     let let_init = compile_cexpr let_e (si + 1) env num_args false in (* Rule 3b: not in tail *)
 
-      |Print -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
-        [IPush(Reg(EAX));
-        ICall("print");
-        IAdd(Reg(ESP),Const(4))]
-      |IsBool -> 
-        let not_bool_label = sprintf "isBOOL_false_%s" (string_of_int tag) in
-        let done_label = sprintf "isBool_done_%s" (string_of_int tag) in
-       [IMov(Reg(EAX),(compile_imm e env))] @  [
-        ITest(Reg(EAX), tag_as_bool);
-        IJz(not_bool_label);
-        IMov(Reg(EAX),const_true);
-        IJmp(done_label);
-        ILabel(not_bool_label);
-        IMov(Reg(EAX),const_false);
-        ILabel(done_label)]
-      |IsNum -> 
-         let  isNum_label = sprintf "isNumtrue_%s" (string_of_int tag) in
-         let done_label = sprintf "isNumdone_%s" (string_of_int tag) in
-         [IMov(Reg(EAX),(compile_imm e env))] @ [
-         ITest(Reg(EAX), tag_as_bool);
-         IJz(isNum_label);
-         IMov(Reg(EAX),const_false);
-         IJmp(done_label);
-         ILabel(isNum_label);
-         IMov(Reg(EAX),const_true);
-         ILabel(done_label)]
-      |Not -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ [
-        ITest(Reg(EAX), tag_as_bool);
-        IJz("logic_expected_a_boolean");
-        IXor(Reg(EAX),bool_mask)
-       ]
-      |PrintStack -> failwith "print stack"
-    end
+     (* TODO: Not sure if -4*(si+1) is the right way to calculate this offset, I just made it up but it works *)
+     let res_offset = RegOffset(~-4*(si+1), EBP) in
 
-  | CPrim2(op, left, right, tag) -> 
-    let instr =
-        [IMov(Reg(EAX),(compile_imm left  env))] @
-        [IMov(RegOffset(~-(si), EBP), Reg(EAX))] @
-        [IMov(Reg(EDX),(compile_imm right env))] @
-        [IMov(RegOffset(~-(si + 1), EBP), Reg(EDX))] in
-   begin match op with
-   | Plus -> instr @
-      [ 
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
-            IAdd(Reg(EAX), Reg(EDX));
-            IJo("overflow")
+     let body = compile_aexpr body (si + 1) ((id, res_offset)::env) num_args is_tail in  (* Rule 3a: may be in tail *)
+
+     [ILineComment(Printf.sprintf "Let id: %s to store in %s" id (arg_to_asm(res_offset)))]
+     @ let_init
+     @ [IInstrComment(IMov(res_offset,  Reg(EAX)), (Printf.sprintf "Save variable '%s'" id))] (* TODO: is offset wrong? I don't think so *)
+     @ [ILineComment(Printf.sprintf "Let body: %s" (string_of_aexpr e))]
+     @ body
+     @ [ILineComment("End of let body")]
+
+  | ACExpr(ace_e) ->
+      compile_cexpr ace_e si env num_args is_tail (* Just pass is_tail along *)
 
 
-        ]
-   | Minus -> instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
-            ISub(Reg(EAX), Reg(EDX));
-            IJo("overflow")
+and compile_cexpr (e : tag cexpr) si env num_args is_tail =
+  match e with
+  | CPrim1(op, e, _) ->
+    let e_reg = compile_imm e env in
+      [IMov(Reg(EAX), e_reg)] @
+          (match op with
+           | Add1  -> intcheck @ [IAdd(Reg(EAX), HexConst(2))] @ overflowcheck
+           | Sub1  -> intcheck @ [ISub(Reg(EAX), HexConst(2))] @ overflowcheck
+           | Print -> [IPush(Reg(EAX)); ICall("print"); IAdd(Reg(ESP), HexConst(4))]
 
-     ]
-   | Times -> 
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
-            IMul(Reg(EAX), Reg(EDX));
-            IJo("overflow");
-            ISar(Reg(EAX),Const(1));
-            IJo("overflow")
-     ]
-   | And -> 
-      instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJz("logic_expected_a_boolean");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJz("logic_expected_a_boolean_edx");
-            IAnd(Reg(EAX), Reg(EDX))
-     ]
-   | Or -> 
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJz("logic_expected_a_boolean");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJz("logic_expected_a_boolean_edx");
-            IOr(Reg(EAX), Reg(EDX))
-     ]
-   | Greater -> 
+           | IsBool ->
+               (* IsBool: mask low bit, shift to high order bit, flip all bits but highest. Produces true (all bits set) if lowest input bit
+                * was set, otherwise, produces false (all bits but highest set)  *)
+               [IAnd(Reg(EAX), HexConst(0x1)); IShl(Reg(EAX), HexConst(31)); IXor(Reg(EAX), const_false)]
 
-    let greater_label = sprintf "greater_%s" (string_of_int tag) in
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJg(greater_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(greater_label)
+           | IsNum  ->
+               (* IsNum: mask low bit, shift to high order bit, flip all bits. Produces true (all bits set) if lowest input bit was unset,
+                *  otherwise, produces false (all bits but highest set)  *)
+               [IAnd(Reg(EAX), HexConst(0x1)); IShl(Reg(EAX), HexConst(31)); IXor(Reg(EAX), const_true)]
 
-     ]
-   | GreaterEq -> 
+           | Not  ->
+               (* Flip booleans by swapping high order bit *)
+               boolcheck "logic" @ [IXor(Reg(EAX), HexConst(0x80000000))]
 
-    let greatereq_label = sprintf "greaterequal_%s" (string_of_int tag) in
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJge(greatereq_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(greatereq_label)
+           | PrintStack -> failwith "Not yet implemented" (* TODO: extra credit? *)
+      )
+  | CPrim2(op, left, right, tag) ->
+    (* Copy left into EAX, do operation with right on stack. Store output in eax *)
+    let left_val = compile_imm left env in
+      let right_val = compile_imm right env in
+        let end_label = cmp_label op tag in (* build a label if necessary for conditional branches *)
 
-     ]
-   | Less -> 
-    let less_label = sprintf "less_%s" (string_of_int tag) in
+        let prefix, suffix = (typechecks left_val right_val op) in
+        let body =
+            (match op with
+             | And  ->  [ IMov(Reg(EAX), left_val);    (* Put left into eax *)
+                          IAnd(Reg(EAX), right_val)]   (* Compare right on stack with eax *)
 
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJl(less_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(less_label)
+             | Or  ->  [ IMov(Reg(EAX), left_val);   (* Put left into eax *)
+                          IOr(Reg(EAX), right_val)]   (* Compare right on stack with eax *)
 
-     ]
-   | LessEq -> 
 
-    let lesseq_label = sprintf "lessequal_%s" (string_of_int tag) in
-    instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJle(lesseq_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(lesseq_label)
+            (* Logical operations *)
+             | Greater  -> compare_vals left_val right_val (IJg(end_label))  end_label
+             | GreaterEq-> compare_vals left_val right_val (IJge(end_label)) end_label
+             | Less     -> compare_vals left_val right_val (IJl(end_label))  end_label
+             | LessEq   -> compare_vals left_val right_val (IJle(end_label)) end_label
+             | Eq       -> compare_vals left_val right_val (IJe(end_label))  end_label
 
-     ]
-   | Eq -> 
-     let eq_label = sprintf "equal_%s" (string_of_int tag) in
-     instr @
-    [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJe(eq_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(eq_label)
+             (* Math operations *)
+             | Plus  -> [IMov(Reg(EAX), left_val); IAdd(Reg(EAX), right_val)]
+             | Minus -> [IMov(Reg(EAX), left_val); ISub(Reg(EAX), right_val)]
+             | Times -> (* Shift one argument right (temporarily not a Number in our runtime)
+                              so after the multiply, it will be the right runtime value*)
+                        [IMov(Reg(EAX), left_val); ISar(Reg(EAX), HexConst(1)); IMul(Reg(EAX), right_val)]
 
-     ]
-   end
-  | CApp(funname, args, _) -> 
-    let arglist = (List.fold_left (fun lst arg -> lst @ [IMov(Reg(EAX),(compile_imm arg env));IPush(Reg(EAX))]
-     )  [] (List.rev args)) in
-    let align_val = realign_stack (word_size * List.length args) 16 in
-        arglist @  [ISub(Reg(ESP), Const(align_val))] @ [ICall(funname);IAdd(Reg(ESP),Const(align_val))]
-  | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e  env))]
-and compile_imm e env = match e with
-  | ImmNum(n, _) ->  Const((n lsl 1))
+            )
+        in [ILineComment(Printf.sprintf "Start of prim2: '%s' " (name_of_op2 op))]
+           @ prefix @ body @ suffix
+           @ [ILineComment(Printf.sprintf "End of prim2 '%s'" (name_of_op2 op))];
+
+   | CIf(cond, thn, els, tag) ->
+     let else_label = sprintf "$if_%d_else" tag in
+       let end_label = (sprintf "$if_%d_end" tag) in
+       [IMov(Reg(EAX), (compile_imm cond env))] @      (* Evaluate cond, store result in EAX *)
+        boolcheck "if" @                        (* Runtime check to ensure cond is a bool *)
+        [ ICmp(Reg(EAX), const_false);          (* Test if cond is not true *)
+          IJe(else_label) ] @                   (* If it isn't true, jmp to else *)
+        (compile_aexpr thn si env num_args is_tail) @  (* Then: body branch *) (* Rule 4b: may be in tail pos *)
+        [ IJmp(end_label);                      (* Then: jump to end *)
+          ILabel(else_label) ] @                (* Else: label *)
+        (compile_aexpr els si env num_args is_tail) @  (* Else: body *) (* Rule 4b: may be in tail pos *)
+        [ILabel(end_label)]                     (* End label *)
+
+   | CApp(name, exprs, _) ->
+       (* Available vars:  si env num_args is_tail *)
+       (* For each expr, push onto stack, then call *)
+       if is_tail=true && num_args=(List.length exprs) then
+         (
+         (* (Printf.printf "TAIL CALL to %s\n" name); *)
+         (* Expressions to replace each argument on stack with new arguments, then call again *)
+         (* Inc esp 4*num_args, then push args *)
+
+         [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
+
+         (* Push update the stack (below ebp) with our new arguments *)
+         @ (replace_args exprs env)
+         (* TODO: should this instead just replace ESP with EBP+4 ? *)
+         (*@ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] (* Shift SP to 'remove' old local vars from stack *) *)
+         (*@ [ IMov(Reg(ESP), Reg(EBP)); IAdd(Reg(ESP), Const(4))]*)
+
+         (* JMP to fun_x (not a call) *)
+         @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
+
+
+        )
+       else (
+         (* (Printf.printf "Non-tail call to %s (tail=%b, num_args incoming=%d, about to pass %d args)\n" name is_tail num_args (List.length exprs)); *)
+         [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
+         (* Push arguments onto stack  *)
+         flatten (List.map(fun x ->
+           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
+           ) exprs) (* Push args onto the stack *)
+
+         (* The stack is setup, now call the function, then cleanup stack pointer*)
+         @ [ ICall(Printf.sprintf "fun_%s" name)]
+         @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] (* Reset stack pointer after call *)
+         )
+
+   | CImmExpr(imm) ->
+       [ IMov(Reg(EAX), compile_imm imm env)]
+
+and compile_imm e env : arg = (* Note we don't take a tail_pos argument here because it doesn't matter *)
+  match e with
+  | ImmNum(n, _) -> HexConst((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
 
-let compile_decl (d : tag adecl) : instruction list = match d with
-  | ADFun(fname,args,body,_) -> 
-  let (argenv, stackindex) = (List.fold_left (fun (lst, n) a -> (lst@[(a,RegOffset(~-(n),EBP))], (n+1)))  ([],1) args) in
-    let postlude = [IMov(Reg(ESP),Reg(EBP));IPop(Reg(EBP));IRet] in
-   (compile_fun fname args []) @(compile_aexpr body 1 argenv stackindex true) @ postlude
-  
-let compile_prog (anfed : tag aprogram) : string = match anfed with
-  | AProgram(decls,body,_)  -> 
-  let prelude =
-    "section .text
+(* Given a list of arguments and an env, replace them on the stack for tail calls *)
+and replace_args exprs env =
+  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
+   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
+  (*let rec _replace_args exprlist idx =
+    match exprlist with
+    | head::tail ->
+       [ IMov(Reg(EAX), compile_imm head env );
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_args tail (idx+1)
+
+    | _ -> []
+  and
+  *)
+  let rec _push_args exprlist =
+    match exprlist with
+    | head::tail ->
+       [ IMov(Reg(EAX), compile_imm head env);
+         IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
+       @ _push_args tail
+
+    | _ -> []
+  and
+  _replace_with_saved_args exprlist idx =
+    match exprlist with
+    | head::tail ->
+      [ IPop(Reg(EAX)); (* Pop old value off stack into Eax *)
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_with_saved_args tail (idx+1)
+
+    | _ -> []
+  in
+
+  (* First: push all old args onto our function's stack *)
+  _push_args (List.rev exprs)
+  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
+  (*@ _replace_args exprs 1 *)
+  @ _replace_with_saved_args exprs 1
+
+let build_env (vars: string list) : (string * arg) list =
+  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
+  (* First var is at ebp-8, second is ebp-12, ... *)
+  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) =
+    match vars with
+    | vname::tail ->
+        let offset = 8+4*(List.length parsed) in
+        let this_res = [(vname, RegOffset(offset, EBP))] in (* Params are EBP relative *)
+        (* (Printf.printf "Building env: %s -> EBP+%d\n" vname offset); *)
+        (_build_env tail (parsed @ this_res)
+        )
+    | _ -> ([], parsed)
+  in let (_, result) = _build_env vars [] in
+    result
+
+let rec compile_decl (prog_decls: tag adecl list) : instruction list =
+  match prog_decls with
+  | ADFun(fun_name, vars, body, loc)::tail ->
+      (* Vars is a list of varnames, use as our env and map them to stack offsets, then compile_fun *)
+      let local_env = build_env vars in
+      (compile_fun fun_name body vars local_env false) (* compile_fun will call compile_aexpr with is_tail=True *)
+      @ compile_decl tail (* Recurse for next fn *)
+  | _ -> []
+
+let compile_prog (anfed : tag aprogram) : string =
+  let (prog_decls, prog_expr, prog_loc) =
+    (match anfed with
+     | AProgram(decls, exprs, loc) -> (decls, exprs, loc)
+    )
+  and prelude =
+  "section .text
 extern error
 extern print
-global our_code_starts_here"
- in
-  let count = realign_stack (word_size *  count_vars body) 16 in
-  let stack_setup =[
-      IPush(Reg(EBP));
-      IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count))] in
-  let postlude = [
-    IMov(Reg(ESP),Reg(EBP));
-    IPop(Reg(EBP));
-    IRet;
+;; Error labels are explicitly globals to aid with debugging in gdb
+global fun_f
+global fun_f_body
+global err_arith_numb
+global err_comp_numb
+global err_overflow
+global err_if_bool
+global err_logic_bool
+global our_code_starts_here\n" in (* TODO: remove f *)
 
-    ILabel("logic_expected_a_boolean");
-    IPush(Reg(EAX));
-    IPush(Const(1));
-    ICall("error");
-    ILabel("logic_expected_a_boolean_edx");
-    IPush(Reg(EDX));
-    IPush(Const(1));
-    ICall("error");
 
-    ILabel("error_not_boolean_if");
-    IPush(Reg(EAX));
-    IPush(Const(2));
-    ICall("error");
+  (* Create functions from list *)
+  let functions_asm = [ILineComment("Function defs")] @ (compile_decl prog_decls)
+  (* Main expr: use compile_fun with a label of 'our_code_starts_here' on prog_expr *)
+  and main_asm = (compile_fun "our_code_starts_here"  prog_expr [] [] true)
 
-    ILabel("arithmetic_expected_a_number");
-    IPush(Reg(EAX));
-    IPush(Const(3));
-    ICall("error");
+  (* Labels for errors *)
+  and postlude_asm = [
+      ILabel("err_arith_numb"); (* arithmetic expected a number *)
+        ISub(Reg(ESP), HexConst(4)); IPush(HexConst(0x0)); ICall("error");
 
-    ILabel("arithmetic_expected_a_number_EDX");
-    IPush(Reg(EDX));
-    IPush(Const(3));
-    ICall("error");
+      ILabel("err_comp_numb"); (* comparison expected a number *)
+        ISub(Reg(ESP), HexConst(4)); IPush(HexConst(0x1)); ICall("error");
 
-    ILabel("comparison_expected_a_number");
-    IPush(Reg(EAX));
-    IPush(Const(4));
-    ICall("error");
+      ILabel("err_overflow"); (* overflow *)
+        ISub(Reg(ESP), HexConst(4)); IPush(HexConst(0x2)); ICall("error");
 
-    ILabel("comparison_expected_a_number_EDX");
-    IPush(Reg(EDX));
-    IPush(Const(4));
-    ICall("error");
+      ILabel("err_if_bool"); (* if expected a bool *)
+        ISub(Reg(ESP), HexConst(4)); IPush(HexConst(0x3)); ICall("error");
 
-    ILabel("overflow");
-    IPush(Reg(EAX));
-    IPush(Const(5));
-    ICall("error") 
+      ILabel("err_logic_bool"); (* logic expected a bool *)
+        ISub(Reg(ESP), HexConst(4)); IPush(HexConst(0x4)); ICall("error");
     ] in
-  let fun_def = List.flatten (List.map compile_decl decls) in
-  let body = (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ stack_setup @ body @ postlude)) in
-  sprintf "%s%s\n" prelude as_assembly_string
+
+  let all_asm = functions_asm @ main_asm @ postlude_asm in
+    prelude ^
+    (List.fold_left (fun acc ins -> (acc ^ (i_to_asm ins) ^ "\n")) "" all_asm)
+
 (* Add a typechecking phase somewhere in here! *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
