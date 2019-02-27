@@ -89,9 +89,12 @@ let rec ftv_type (t : 'a typ) : StringSet.t =
 let ftv_scheme (s : 'a scheme) : StringSet.t =
   match s with
   | SForall(args, typ, _) -> StringSet.diff (ftv_type typ) (StringSet.of_list args)
-(*  redo *)
-let ftv_env (e : 'a typ envt) : StringSet.t = 
-  failwith "implement ftv_env"
+;;
+
+let ftv_env (e : 'a typ envt) : StringSet.t =
+    List.fold_right (fun ele acc -> StringSet.union ele acc)
+        (List.map (fun (k, t) -> (ftv_type t)) (StringMap.bindings e))
+        StringSet.empty
 ;;
 let occurs (name : string) (t : 'a typ) =
   StringSet.mem name (ftv_type t)
@@ -117,9 +120,6 @@ let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason l
   | TyApp(typ,typlist,pos), TyApp(typ2, typlist2,pos2)->  failwith "implement unify for TyApp" 
   |_ -> raise (ty_err t1 t2 loc reasons) 
 
-;;     
- 
-    
 let gensym =
   let count = ref 0 in
   let next () =
@@ -154,8 +154,11 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
   match e with
   | EIf(c, t, f, loc) ->
      let (c_subst, c_typ, c) = infer_exp funenv env c reasons in
+     let env = apply_subst_env c_subst env in (****************************** NEW *)
      let (t_subst, t_typ, t) = infer_exp funenv env t reasons in
+     let env = apply_subst_env t_subst env in (****************************** NEW *)
      let (f_subst, f_typ, f) = infer_exp funenv env f reasons in
+     let env = apply_subst_env f_subst env in (****************************** NEW *)
      (* Compose the substitutions together *)
      let subst_so_far = compose_subst (compose_subst c_subst t_subst) f_subst in
      (* rewrite the types *)
