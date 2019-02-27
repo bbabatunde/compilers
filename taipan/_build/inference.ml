@@ -91,7 +91,7 @@ let ftv_scheme (s : 'a scheme) : StringSet.t =
   | SForall(args, typ, _) -> StringSet.diff (ftv_type typ) (StringSet.of_list args)
 (*  redo *)
 let ftv_env (e : 'a typ envt) : StringSet.t = 
-  (StringMap.fold (fun (str,typ)  -> (ftv_type typ) ) e StringSet.empty)
+  (StringMap.fold (fun (str,typ) s -> StringSet.union  (ftv_type typ) s) e StringSet.empty)
 ;;
 let occurs (name : string) (t : 'a typ) =
   StringSet.mem name (ftv_type t)
