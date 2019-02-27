@@ -1,0 +1,36 @@
+### Starting build.
+# Target: main.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:main.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules main.ml > main.ml.depends # cached
+# Target: compile.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:compile.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules compile.ml > compile.ml.depends # cached
+# Target: assembly.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:assembly.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules assembly.ml > assembly.ml.depends # cached
+# Target: assembly.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:assembly.cmo, file:assembly.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o assembly.cmo assembly.ml # cached
+# Target: errors.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:errors.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules errors.ml > errors.ml.depends # cached
+# Target: exprs.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:exprs.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules exprs.ml > exprs.ml.depends # cached
+# Target: exprs.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:exprs.cmo, file:exprs.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o exprs.cmo exprs.ml # cached
+# Target: pretty.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:pretty.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules pretty.ml > pretty.ml.depends # cached
+# Target: pretty.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:pretty.cmo, file:pretty.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o pretty.cmo pretty.ml # cached
+# Target: errors.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:errors.cmo, file:errors.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o errors.cmo errors.ml # cached
+# Target: inference.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:inference.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules inference.ml > inference.ml.depends # cached
+# Target: phases.ml.depends, tags: { package(oUnit,extlib,unix), extension:ml, file:phases.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package oUnit,extlib,unix -modules phases.ml > phases.ml.depends # cached
+# Target: phases.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:phases.cmo, file:phases.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o phases.cmo phases.ml # cached
+# Target: inference.cmo, tags: { package(oUnit,extlib,unix), byte, compile, extension:cmo, extension:ml, file:inference.cmo, file:inference.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package oUnit,extlib,unix -o inference.cmo inference.ml
++ ocamlfind ocamlc -c -package oUnit,extlib,unix -o inference.cmo inference.ml
+File "inference.ml", line 94, characters 23-32:
+Error: This pattern matches values of type 'a * 'b
+       but a pattern was expected which matches values of type
+         StringMap.key = string
+Command exited with code 2.
+# Compilation unsuccessful.
