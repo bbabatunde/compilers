@@ -140,8 +140,9 @@ let rec unblank (t : 'a typ) : 'a typ =
      let t = unblank t in
      let args = List.map unblank args in TyApp(t, args, tag)
 ;;
+(*maybe wrong *)
 let instantiate (s : 'a scheme) : 'a typ = match s with 
- |SForall(strlst, typ,pos) -> unblank typ
+ |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(t,dummy_span))] ) [] strlst), unblank typ, pos)
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
@@ -173,9 +174,15 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let final_subst = compose_subst (compose_subst subst_so_far unif_subst1) unif_subst2 in
      let final_typ = apply_subst_typ final_subst t_typ in
      (final_subst, final_typ, e)
-  | _ -> failwith "Finish implementing inferring types for expressions"
+  | ELet(binds,exp,loc) -> failwith "Finish implementing inferring types for let"
+  | EPrim1(op,exp,loc) -> failwith "Finish implementing inferring types for prim1"
+  | EPrim2(op,l,r,loc) -> failwith "Finish implementing inferring types for prim2"
+  | ENumber(val,loc) -> failwith "Finish implementing inferring types for enumber"
+  | EBool(val,n) -> failwith "Finish implementing inferring types for ebool"
+  | EId(str,loc) -> failwith "Finish implementing inferring types for eid"
+  | EApp(funame, arglist,loc) -> failwith "Finish implementing inferring types for Eapp"
+  | EAnnot(exp, typ,loc) ->  ofailwith "Finish implementing inferring types for Eannot"
 ;;
-
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
   match decl with
   | DFun(name, args, scheme, body, loc) ->
