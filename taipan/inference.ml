@@ -26,13 +26,21 @@ let tInt = TyCon("Int", dummy_span)
 let tBool = TyCon("Bool", dummy_span)
 let intint2int = SForall([], TyArr([tInt; tInt], tInt, dummy_span), dummy_span)
 let int2bool = SForall([], TyArr([tInt], tBool, dummy_span), dummy_span)
+let boolbool2bool = SForall([], TyArr([tBool; tBool], tBool, dummy_span), dummy_span)
+
+let bool2bool = SForall([], TyArr([tBool], tBool, dummy_span), dummy_span)
+
+let int2int = SForall([], TyArr([tInt], tInt, dummy_span), dummy_span)
 let tyVarX = TyVar("X", dummy_span)
 let any2bool = SForall(["X"], TyArr([tyVarX], tBool, dummy_span), dummy_span)
 let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
-      failwith "Create an initial function environment here"
+
+      ("add1",int2int);("sub1",int2int);("print",any2any);("isbool",any2bool);("isnum",any2bool);("not",bool2bool);
+      ("plus",intint2int);("minus",intint2int);("and",boolbool2bool);("or",boolbool2bool);("greater",boolbool2bool);
+      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",boolbool2bool);
   ]
 
 let rec find_pos (ls : 'a envt) x pos : 'a =
@@ -140,9 +148,9 @@ let rec unblank (t : 'a typ) : 'a typ =
      let t = unblank t in
      let args = List.map unblank args in TyApp(t, args, tag)
 ;;
-(*maybe wrong *)
+
 let instantiate (s : 'a scheme) : 'a typ = match s with 
- |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(t,dummy_span))] ) [] strlst), unblank typ, pos)
+ |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym t,dummy_span))] ) [] strlst), unblank typ, pos)
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
@@ -175,11 +183,116 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let final_typ = apply_subst_typ final_subst t_typ in
      (final_subst, final_typ, e)
   | ELet(binds, exp,loc) -> failwith "Finish implementing inferring types for let"
-  | EPrim1(op, exp,loc) -> failwith "Finish implementing inferring types for prim1"
-  | EPrim2(op, l,r,loc) -> failwith "Finish implementing inferring types for prim2"
-  | ENumber(n, loc) -> ([], tInt, e)
+  | EPrim1(op, exp,loc) ->  begin match op with
+            | Add1 ->  
+              let typ_scheme = find_pos funenv "add1" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let add1typ = apply_subst_typ exp_sub exp_sub in 
+
+              let new_typevar = TyCon(gensym "add1result", loc) in
+
+              let add1_arrowtype = TyArr([add1typ], new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+
+            | Sub1 -> 
+              let typ_scheme = find_pos funenv "sub1" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let new_typevar = TyCon(gensym "sub1result", loc) in
+
+              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+
+            | Print -> 
+              let typ_scheme = find_pos funenv "print" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let new_typevar = TyCon(gensym "printresult", loc) in
+
+              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+
+            | PrintB -> failwith  "Finish implementing inferring types for PrintB"
+            | IsBool -> 
+              let typ_scheme = find_pos funenv "isbool" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let new_typevar = TyCon(gensym "isboolresult", loc) in
+
+              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+
+            | IsNum ->
+              let typ_scheme = find_pos funenv "isnum" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let new_typevar = TyCon(gensym "isnumresult", loc) in
+
+              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+
+            | Not ->  
+              let typ_scheme = find_pos funenv "not" loc in
+              let instantiate_scheme = instantiate typ_scheme in
+              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
+
+              let new_typevar = TyCon(gensym "notresult", loc) in
+
+              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
+              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
+              (unif_sub1, add1_arrowtype, e)
+            | PrintStack ->  failwith "Finish implementing inferring types for PrintStack"
+          end
+  | EPrim2(op, l,r,loc) -> begin match op with
+      | Plus -> 
+             let typ_scheme = find_pos funenv "plus"  loc in
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+             let env = apply_subst_env r_subst env in 
+             let subst_so_far = compose_subst l_subst r_subst in
+              
+             let l_typ = apply_subst_typ subst_so_far l_typ in
+             let r_typ = apply_subst_typ subst_so_far r_typ in
+              
+             let unify_ltyp= unify tInt l_typ loc reasons in 
+             let unify_rtyp = unify tInt r_typ loc reasons in 
+        
+             let final_subst = compose_subst unify_rtyp unify_ltyp in
+
+             let new_typevar = TyCon(gensym "plusresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ, r_typ], new_typevar, loc) in 
+             (final_subst, plus1_arrowtype, loc)
+
+
+
+
+
+      | Minus ->
+      | Times ->
+      | And ->
+      | Or ->
+      | Greater ->
+      | GreaterEq ->
+      | Less ->
+      | LessEq ->
+      | Eq -> 
+      | EqB ->  failwith "Finish implementing inferring types for EqB" end
   | EBool(b, a) -> ([], tBool, e)
-  | EId(str,loc) -> failwith "Finish implementing inferring types for eid"
+  | EId(str,loc) -> ([],find_pos env str loc, e)
   | EApp(funame, arglist,loc) -> failwith "Finish implementing inferring types for Eapp"
   | EAnnot(exp, typ,loc) ->  failwith "Finish implementing inferring types for Eannot"
 ;;
