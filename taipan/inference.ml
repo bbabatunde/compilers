@@ -174,14 +174,14 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let final_subst = compose_subst (compose_subst subst_so_far unif_subst1) unif_subst2 in
      let final_typ = apply_subst_typ final_subst t_typ in
      (final_subst, final_typ, e)
-  | ELet(binds,exp,loc) -> failwith "Finish implementing inferring types for let"
-  | EPrim1(op,exp,loc) -> failwith "Finish implementing inferring types for prim1"
-  | EPrim2(op,l,r,loc) -> failwith "Finish implementing inferring types for prim2"
-  | ENumber(val,loc) -> failwith "Finish implementing inferring types for enumber"
-  | EBool(val,n) -> failwith "Finish implementing inferring types for ebool"
+  | ELet(binds, exp,loc) -> failwith "Finish implementing inferring types for let"
+  | EPrim1(op, exp,loc) -> failwith "Finish implementing inferring types for prim1"
+  | EPrim2(op, l,r,loc) -> failwith "Finish implementing inferring types for prim2"
+  | ENumber(n, loc) -> ([], tInt, e)
+  | EBool(b, a) -> ([], tBool, e)
   | EId(str,loc) -> failwith "Finish implementing inferring types for eid"
   | EApp(funame, arglist,loc) -> failwith "Finish implementing inferring types for Eapp"
-  | EAnnot(exp, typ,loc) ->  ofailwith "Finish implementing inferring types for Eannot"
+  | EAnnot(exp, typ,loc) ->  failwith "Finish implementing inferring types for Eannot"
 ;;
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
   match decl with
