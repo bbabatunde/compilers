@@ -89,9 +89,12 @@ let rec ftv_type (t : 'a typ) : StringSet.t =
 let ftv_scheme (s : 'a scheme) : StringSet.t =
   match s with
   | SForall(args, typ, _) -> StringSet.diff (ftv_type typ) (StringSet.of_list args)
+;;
 (*  redo *)
-let ftv_env (e : 'a typ envt) : StringSet.t = 
-  (StringMap.fold (fun (str,typ)  -> (ftv_type typ) ) e StringSet.empty)
+let ftv_env (e : 'a typ envt) : StringSet.t =
+    List.fold_right (fun ele acc -> StringSet.union ele acc)
+        (List.map (fun (k, t) -> (ftv_type t)) (StringMap.bindings e))
+        StringSet.empty
 ;;
 let occurs (name : string) (t : 'a typ) =
   StringSet.mem name (ftv_type t)
@@ -106,19 +109,7 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
      else [(tyvarname, t)]
 ;;
 let ty_err t1 t2 loc reasons = TypeMismatch(loc, t2, t1, reasons)
-let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst = match (t1 , t2) with 
-  | TyBlank(pos),TyBlank(pos) -> []
-  | TyCon(str,pos),TyCon(str2,pos) ->   if str = str2 then [(str, ())] else ty_err t1 t2 loc reasons 
-  | TyVar(str,pos),TyArr(str2,pos2) ->   if str !=  str2 then [(str,t2)] else ty_err t1 t2 loc reasons
-  | TyArr(typlist, typ,pos),TyArr(typlist2,typ2, pos2) -> if List.length typlist = List.length typlist2
-                                                          then (List.fold_left (fun sublst (e1, e2) -> unify e1 e2 loc reasons) [] (typlist,typlist2)) @ 
-                                                          (unify typ typ2 loc reasons) 
-                                                          else ty_err y_err t1 t2 loc reasons 
-  | TyApp(typ,typlist,pos), TyApp(typ2, typlist2,pos2)->  failwith "implement unify for TyApp" 
 
-;;     
- 
-    
 let gensym =
   let count = ref 0 in
   let next () =
@@ -141,7 +132,6 @@ let rec unblank (t : 'a typ) : 'a typ =
 ;;
 let instantiate (s : 'a scheme) : 'a typ = match s with 
  |SForall(strlst, typ,()) -> failwith "Implement inferrence for entire programs"
-
 ;;
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
   failwith "Implement generalizing a type here"
@@ -153,8 +143,11 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
   match e with
   | EIf(c, t, f, loc) ->
      let (c_subst, c_typ, c) = infer_exp funenv env c reasons in
+     let env = apply_subst_env c_subst env in (****************************** NEW *)
      let (t_subst, t_typ, t) = infer_exp funenv env t reasons in
+     let env = apply_subst_env t_subst env in (****************************** NEW *)
      let (f_subst, f_typ, f) = infer_exp funenv env f reasons in
+     let env = apply_subst_env f_subst env in (****************************** NEW *)
      (* Compose the substitutions together *)
      let subst_so_far = compose_subst (compose_subst c_subst t_subst) f_subst in
      (* rewrite the types *)
