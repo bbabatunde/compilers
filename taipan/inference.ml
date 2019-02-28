@@ -34,12 +34,13 @@ let int2int = SForall([], TyArr([tInt], tInt, dummy_span), dummy_span)
 let tyVarX = TyVar("X", dummy_span)
 let any2bool = SForall(["X"], TyArr([tyVarX], tBool, dummy_span), dummy_span)
 let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
+let anyany2bool = SForall(["X"], TyArr([tyVarX; tyVarX], tBool, dummy_span), dummy_span)
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
       ("add1",int2int);("sub1",int2int);("print",any2any);("isbool",any2bool);("isnum",any2bool);("not",bool2bool);
       ("plus",intint2int);("minus",intint2int);("and",boolbool2bool);("or",boolbool2bool);("greater",boolbool2bool);
-      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",boolbool2bool);("eqb",boolbool2bool);
+      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",anyany2bool);("eqb",boolbool2bool);
       ("times",intint2int);("printb",any2any);
   ]
 
@@ -167,7 +168,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let (t_subst, t_typ, t) = infer_exp funenv env t reasons in
      let env = apply_subst_env t_subst env in (****************************** NEW *)
      let (f_subst, f_typ, f) = infer_exp funenv env f reasons in
-     let env = apply_subst_env f_subst env in (****************************** NEW *)
+     let _ = apply_subst_env f_subst env in (****************************** NEW *)
      (* Compose the substitutions together *)
      let subst_so_far = compose_subst (compose_subst c_subst t_subst) f_subst in
      (* rewrite the types *)
@@ -502,6 +503,7 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
   match p with
   | Program(declgroups, body, typ, tag) ->
+    failwith "Problem"
     (* *)
 ;;
 let type_synth (p : sourcespan program) : sourcespan program fallible =
