@@ -306,7 +306,7 @@ let twoboolcheck (e1) (e2) (label: string) : instruction list =
 (* For a prim2, generate the approperiate asm checks *)
 let typechecks (op1) (op2) (op: prim2) : instruction list * instruction list =
     match op with
-    | And | Or -> ((twoboolcheck op1 op2 "logic"), [])
+    | And | Or | EqB -> ((twoboolcheck op1 op2 "logic"), [])
     | Greater | GreaterEq | Less | LessEq ->  ((twointcheck op1 op2 "comp"), overflowcheck)
     | Plus | Minus | Times  ->  ((twointcheck op1 op2 "arith"), overflowcheck)
     | Eq -> ([], [])
@@ -325,6 +325,7 @@ let cmp_label (e: prim2) (tag: int) : string =
       | Less       -> "less"
       | LessEq     -> "lesseq"
       | Eq         -> "eq"
+      | EqB        -> "eqb"
     in
       sprintf "$%s_%d_end" op tag
 
@@ -408,9 +409,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail =
     let e_reg = compile_imm e env in
       [IMov(Reg(EAX), e_reg)] @
           (match op with
-           | Add1  -> intcheck @ [IAdd(Reg(EAX), HexConst(2))] @ overflowcheck
-           | Sub1  -> intcheck @ [ISub(Reg(EAX), HexConst(2))] @ overflowcheck
-           | Print -> [IPush(Reg(EAX)); ICall("print"); IAdd(Reg(ESP), HexConst(4))]
+           | Add1   -> intcheck @ [IAdd(Reg(EAX), HexConst(2))] @ overflowcheck
+           | Sub1   -> intcheck @ [ISub(Reg(EAX), HexConst(2))] @ overflowcheck
+           | Print  -> [IPush(Reg(EAX)); ICall("print"); IAdd(Reg(ESP), HexConst(4))]
+           | PrintB -> [IPush(Reg(EAX)); IXor(Reg(EAX), bool_mask); ICall("print"); IAdd(Reg(ESP), HexConst(4))]
 
            | IsBool ->
                (* IsBool: mask low bit, shift to high order bit, flip all bits but highest. Produces true (all bits set) if lowest input bit
@@ -449,7 +451,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail =
              | GreaterEq-> compare_vals left_val right_val (IJge(end_label)) end_label
              | Less     -> compare_vals left_val right_val (IJl(end_label))  end_label
              | LessEq   -> compare_vals left_val right_val (IJle(end_label)) end_label
-             | Eq       -> compare_vals left_val right_val (IJe(end_label))  end_label
+             | Eq | EqB -> compare_vals left_val right_val (IJe(end_label))  end_label
 
              (* Math operations *)
              | Plus  -> [IMov(Reg(EAX), left_val); IAdd(Reg(EAX), right_val)]

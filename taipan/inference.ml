@@ -34,13 +34,14 @@ let int2int = SForall([], TyArr([tInt], tInt, dummy_span), dummy_span)
 let tyVarX = TyVar("X", dummy_span)
 let any2bool = SForall(["X"], TyArr([tyVarX], tBool, dummy_span), dummy_span)
 let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
+let anyany2bool = SForall(["X"], TyArr([tyVarX; tyVarX], tBool, dummy_span), dummy_span)
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
-
       ("add1",int2int);("sub1",int2int);("print",any2any);("isbool",any2bool);("isnum",any2bool);("not",bool2bool);
       ("plus",intint2int);("minus",intint2int);("and",boolbool2bool);("or",boolbool2bool);("greater",boolbool2bool);
-      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",boolbool2bool);
+      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",anyany2bool);("eqb",boolbool2bool);
+      ("times",intint2int);("printb",any2any);
   ]
 
 let rec find_pos (ls : 'a envt) x pos : 'a =
@@ -166,7 +167,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let (t_subst, t_typ, t) = infer_exp funenv env t reasons in
      let env = apply_subst_env t_subst env in (****************************** NEW *)
      let (f_subst, f_typ, f) = infer_exp funenv env f reasons in
-     let env = apply_subst_env f_subst env in (****************************** NEW *)
+     let _ = apply_subst_env f_subst env in (****************************** NEW *)
      (* Compose the substitutions together *)
      let subst_so_far = compose_subst (compose_subst c_subst t_subst) f_subst in
      (* rewrite the types *)
@@ -181,7 +182,30 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let final_subst = compose_subst (compose_subst subst_so_far unif_subst1) unif_subst2 in
      let final_typ = apply_subst_typ final_subst t_typ in
      (final_subst, final_typ, e)
-  | ELet(binds, exp,loc) -> failwith "Finish implementing inferring types for let"
+  | ELet(binds, exp,loc) -> 
+          (* infer type for bindings while building up typ env *)
+          let (new_env, new_subst) = 
+              (* process each binding and add to env while tracking subs *)
+              List.fold_left (fun acc ele ->
+                  let (env, subs) = acc in
+                  let (t, e, l) = ele in
+                  let (n, t, _) = t in
+                  (* Process expr and get subs *)
+                  let (e_sub, e_type, _) = infer_exp funenv env e reasons in
+                  let e_unified_subs = unify e_type t l reasons in
+                  let e_composed_subs = compose_subst (compose_subst subs e_sub) e_unified_subs in
+                  let final_typ = apply_subst_typ e_composed_subs e_type in
+                  (* Add new computed binding to env *)
+                  let new_env = StringMap.add n final_typ env in
+                  (new_env, e_composed_subs))
+              (env, []) binds in
+          (* infer type on body to get result type *)
+          let (exp_subst, exp_type, _) = infer_exp funenv new_env exp reasons in
+          (* resulting substitution is final substitution *)
+          let final_subst = compose_subst new_subst exp_subst in
+          (* see if constraints have a solution *)
+          let exp_type = apply_subst_typ final_subst exp_type in
+          (final_subst, exp_type, e)
   | EPrim1(op, exp,loc) ->  begin match op with
             | Add1 ->  
               let typ_scheme = find_pos funenv "add1" loc in
@@ -485,8 +509,9 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
              (final_subst, plus1_arrowtype, e) 
         end
   | EBool(b, a) -> ([], tBool, e)
+  | ENumber _ -> ([], tInt, e)
   | EId(str,loc) -> ([],find_pos env str loc, e)
-  | EApp(funame, arglist,loc) -> failwith "Implement inferring type schemes for app"
+  | EApp(funame, arglist,loc) -> failwith "EApp decl."
   | EAnnot(exp, typ,loc) ->  
     let(exp_subt, exp_typ, exp)  = infer_exp funenv env exp reasons in
     let exp_type = apply_subst_typ exp_subt typ in
@@ -495,15 +520,25 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
   match decl with
   | DFun(name, args, scheme, body, loc) ->
-     failwith "Implement inferring type schemes for declarations"
+     let (_, bodtyp, _) = infer_exp funenv env body reasons in
+     (StringMap.empty, bodtyp, decl)
 ;;
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
-  failwith "Implement inferring type schemes for declaration groups"
+    (* Infer type on decls to an env*)
+    failwith "teehee"
 ;;
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
-  match p with
+    match p with
   | Program(declgroups, body, typ, tag) ->
-     failwith "Implement inferrence for entire programs"
+          (* Infer type on groups to build env *)
+          let built_env = List.fold_left
+            (fun acc ele -> let (grp_env, _) = infer_group acc env ele in grp_env)
+            funenv (* Accumulate new funenv elements into old one. *)
+            declgroups in
+          (* Infer type on body in built env *)
+          let _ = infer_exp built_env env body []
+          (* If we get this far, looks like the types are fine. *)
+          in p
 ;;
 let type_synth (p : sourcespan program) : sourcespan program fallible =
   try
