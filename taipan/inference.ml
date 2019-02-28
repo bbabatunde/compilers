@@ -248,7 +248,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
-              let exp_typ = apply_subst_typ exp_sub tBool
+              let exp_typ = apply_subst_typ exp_sub tBool in
               let new_typevar = TyCon(gensym "notresult", loc) in
 
               let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
@@ -483,19 +483,9 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
              (final_subst, plus1_arrowtype, e) 
         end
   | EBool(b, a) -> ([], tBool, e)
+  | ENumber _ -> ([], tInt, e)
   | EId(str,loc) -> ([],find_pos env str loc, e)
-  | EApp(funame, arglist,loc) -> 
-
-      let typ_scheme = find_pos funenv funame loc in
-      let instantiate_scheme = instantiate typ_scheme in
-
-      let (final_subst, eapp_arrowtype, e) =  (List.fold_left (fun _ -> 
-          let(arg_subst, arg_typ, arg) = infer_exp funenv env a reasons in
-          let 
-      
-       ) ([],[],[]) arglist) in  (final_subst, eapp_arrowtype, e) 
-
-
+  | EApp(funame, arglist,loc) -> failwith "EApp decl."
   | EAnnot(exp, typ,loc) ->  
     let(exp_subt, exp_typ, exp)  = infer_exp funenv env exp reasons in
     let exp_type = apply_subst_typ exp_subt typ in
