@@ -495,16 +495,25 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
   match decl with
   | DFun(name, args, scheme, body, loc) ->
-     failwith "Implement inferring type schemes for declarations"
+     let (_, bodtyp, _) = infer_exp funenv env body reasons in
+     (StringMap.empty, bodtyp, decl)
 ;;
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
-  failwith "Implement inferring type schemes for declaration groups"
+    (* Infer type on decls to an env*)
+    failwith "teehee"
 ;;
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
-  match p with
+    match p with
   | Program(declgroups, body, typ, tag) ->
-    failwith "Problem"
-    (* *)
+          (* Infer type on groups to build env *)
+          let built_env = List.fold_left
+            (fun acc ele -> let (grp_env, _) = infer_group acc env ele in grp_env)
+            funenv (* Accumulate new funenv elements into old one. *)
+            declgroups in
+          (* Infer type on body in built env *)
+          let _ = infer_exp built_env env body []
+          (* If we get this far, looks like the types are fine. *)
+          in p
 ;;
 let type_synth (p : sourcespan program) : sourcespan program fallible =
   try
