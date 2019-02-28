@@ -37,10 +37,10 @@ let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
-
       ("add1",int2int);("sub1",int2int);("print",any2any);("isbool",any2bool);("isnum",any2bool);("not",bool2bool);
       ("plus",intint2int);("minus",intint2int);("and",boolbool2bool);("or",boolbool2bool);("greater",boolbool2bool);
-      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",boolbool2bool);
+      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",boolbool2bool);("eqb",boolbool2bool);
+      ("times",intint2int);("printb",any2any);
   ]
 
 let rec find_pos (ls : 'a envt) x pos : 'a =
@@ -502,7 +502,7 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
   match p with
   | Program(declgroups, body, typ, tag) ->
-     failwith "Implement inferrence for entire programs"
+    (* *)
 ;;
 let type_synth (p : sourcespan program) : sourcespan program fallible =
   try
