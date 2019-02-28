@@ -150,7 +150,7 @@ let rec unblank (t : 'a typ) : 'a typ =
 ;;
 
 let instantiate (s : 'a scheme) : 'a typ = match s with 
- |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym t,dummy_span))] ) [] strlst), unblank typ, pos)
+ |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym "T",dummy_span))] ) [] strlst), unblank typ, pos)
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
@@ -189,7 +189,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
-              let add1typ = apply_subst_typ exp_sub exp_sub in 
+              let add1typ = apply_subst_typ exp_sub tInt in 
 
               let new_typevar = TyCon(gensym "add1result", loc) in
 
@@ -209,6 +209,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               (unif_sub1, add1_arrowtype, e)
 
             | Print -> 
+              
               let typ_scheme = find_pos funenv "print" loc in
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
@@ -247,6 +248,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
+              let exp_typ = apply_subst_typ exp_sub tBool
               let new_typevar = TyCon(gensym "notresult", loc) in
 
               let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
@@ -256,45 +258,248 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           end
   | EPrim2(op, l,r,loc) -> begin match op with
       | Plus -> 
-             let typ_scheme = find_pos funenv "plus"  loc in
+
+             let typ_scheme =  find_pos funenv "plus" loc in 
              let instantiate_scheme = instantiate typ_scheme in
              let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
              let env = apply_subst_env l_subst env in 
              let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
-             let env = apply_subst_env r_subst env in 
-             let subst_so_far = compose_subst l_subst r_subst in
               
-             let l_typ = apply_subst_typ subst_so_far l_typ in
-             let r_typ = apply_subst_typ subst_so_far r_typ in
-              
-             let unify_ltyp= unify tInt l_typ loc reasons in 
-             let unify_rtyp = unify tInt r_typ loc reasons in 
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tInt in
+             let l_typ = apply_subst_typ subst_so_far tInt in
         
-             let final_subst = compose_subst unify_rtyp unify_ltyp in
 
              let new_typevar = TyCon(gensym "plusresult", loc) in 
 
-             let plus1_arrowtype = TyArr([l_typ, r_typ], new_typevar, loc) in 
-             (final_subst, plus1_arrowtype, loc)
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
 
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
 
+      | Minus -> 
+             let typ_scheme =  find_pos funenv "minus" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
 
+             let r_typ = apply_subst_typ subst_so_far tInt in
+             let l_typ = apply_subst_typ subst_so_far tInt in
+        
 
+             let new_typevar = TyCon(gensym "minusresult", loc) in 
 
-      | Minus ->
-      | Times ->
-      | And ->
-      | Or ->
-      | Greater ->
-      | GreaterEq ->
-      | Less ->
-      | LessEq ->
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+
+      | Times -> 
+             let typ_scheme =  find_pos funenv "times" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tInt in
+             let l_typ = apply_subst_typ subst_so_far tInt in
+        
+
+             let new_typevar = TyCon(gensym "timesresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+
+      | And -> 
+             let typ_scheme =  find_pos funenv "and" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "andresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | Or -> 
+             let typ_scheme =  find_pos funenv "or" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "orresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | Greater -> 
+             let typ_scheme =  find_pos funenv "greater" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "greaterresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | GreaterEq -> 
+             let typ_scheme =  find_pos funenv "greatereq" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "greatereqresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | Less -> 
+             let typ_scheme =  find_pos funenv "less" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "lessreqresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | LessEq -> 
+             let typ_scheme =  find_pos funenv "lesseq" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "lesseqreqresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
       | Eq -> 
-      | EqB ->  failwith "Finish implementing inferring types for EqB" end
+             let typ_scheme =  find_pos funenv "eq" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "eqresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e)
+      | EqB ->  
+             let typ_scheme =  find_pos funenv "eqb" loc in 
+             let instantiate_scheme = instantiate typ_scheme in
+             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
+             let env = apply_subst_env l_subst env in 
+             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
+              
+             let subst_so_far = compose_subst l_subst r_subst  in 
+
+             let r_typ = apply_subst_typ subst_so_far tBool in
+             let l_typ = apply_subst_typ subst_so_far tBool in
+        
+
+             let new_typevar = TyCon(gensym "eqbresult", loc) in 
+
+             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
+
+             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
+             let final_subst = compose_subst unifyresult subst_so_far in 
+             (final_subst, plus1_arrowtype, e) 
+        end
   | EBool(b, a) -> ([], tBool, e)
   | EId(str,loc) -> ([],find_pos env str loc, e)
-  | EApp(funame, arglist,loc) -> failwith "Finish implementing inferring types for Eapp"
-  | EAnnot(exp, typ,loc) ->  failwith "Finish implementing inferring types for Eannot"
+  | EApp(funame, arglist,loc) -> 
+
+      let typ_scheme = find_pos funenv funame loc in
+      let instantiate_scheme = instantiate typ_scheme in
+
+      let (final_subst, eapp_arrowtype, e) =  (List.fold_left (fun _ -> 
+          let(arg_subst, arg_typ, arg) = infer_exp funenv env a reasons in
+          let 
+      
+       ) ([],[],[]) arglist) in  (final_subst, eapp_arrowtype, e) 
+
+
+  | EAnnot(exp, typ,loc) ->  
+    let(exp_subt, exp_typ, exp)  = infer_exp funenv env exp reasons in
+    let exp_type = apply_subst_typ exp_subt typ in
+    (exp_subt, exp_type, e)
 ;;
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
   match decl with
