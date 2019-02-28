@@ -183,7 +183,30 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
      let final_subst = compose_subst (compose_subst subst_so_far unif_subst1) unif_subst2 in
      let final_typ = apply_subst_typ final_subst t_typ in
      (final_subst, final_typ, e)
-  | ELet(binds, exp,loc) -> failwith "Finish implementing inferring types for let"
+  | ELet(binds, exp,loc) -> 
+          (* infer type for bindings while building up typ env *)
+          let (new_env, new_subst) = 
+              (* process each binding and add to env while tracking subs *)
+              List.fold_left (fun acc ele ->
+                  let (env, subs) = acc in
+                  let (t, e, l) = ele in
+                  let (n, t, _) = t in
+                  (* Process expr and get subs *)
+                  let (e_sub, e_type, _) = infer_exp funenv env e reasons in
+                  let e_unified_subs = unify e_type t l reasons in
+                  let e_composed_subs = compose_subst (compose_subst subs e_sub) e_unified_subs in
+                  let final_typ = apply_subst_typ e_composed_subs e_type in
+                  (* Add new computed binding to env *)
+                  let new_env = StringMap.add n final_typ env in
+                  (new_env, e_composed_subs))
+              (env, []) binds in
+          (* infer type on body to get result type *)
+          let (exp_subst, exp_type, _) = infer_exp funenv new_env exp reasons in
+          (* resulting substitution is final substitution *)
+          let final_subst = compose_subst new_subst exp_subst in
+          (* see if constraints have a solution *)
+          let exp_type = apply_subst_typ final_subst exp_type in
+          (final_subst, exp_type, e)
   | EPrim1(op, exp,loc) ->  begin match op with
             | Add1 ->  
               let typ_scheme = find_pos funenv "add1" loc in
