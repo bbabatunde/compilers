@@ -57,7 +57,6 @@ let rec subst_var_typ (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_typ : '
   | TyVar(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
   | TyArr(typlist,typ,pos)-> TyArr((List.map (fun e -> (subst_var_typ sub e)) typlist),(subst_var_typ sub typ),pos)
   | TyApp(typ,typlist,pos)-> TyApp((subst_var_typ sub typ) , (List.map (fun e -> subst_var_typ sub e) typlist),pos)
- 
 ;;
 let  subst_var_scheme (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_scheme : 'a scheme) : 'a scheme =
   match in_scheme with 
@@ -67,7 +66,7 @@ let apply_subst_typ (subst : 'a typ subst) (t : 'a typ) : 'a typ =
   List.fold_left (fun t sub -> subst_var_typ sub t) t subst
 ;;
  let apply_subst_scheme (subst : 'a typ subst) (scheme : 'a scheme) : 'a scheme =
-    List.fold_left (fun sch sub -> subst_var_scheme sub sch) scheme subst
+  List.fold_left (fun sch sub -> subst_var_scheme sub sch) scheme subst
 ;;
 let apply_subst_env (subst : 'a typ subst) (env : 'a typ envt) : 'a typ envt =
   StringMap.map (fun typ -> apply_subst_typ subst typ) env 
@@ -151,7 +150,7 @@ let rec unblank (t : 'a typ) : 'a typ =
 ;;
 
 let instantiate (s : 'a scheme) : 'a typ = match s with 
- |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym "T",dummy_span))] ) [] strlst), unblank typ, pos)
+ |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym t,dummy_span))] ) [] strlst), unblank typ, pos)
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
@@ -226,6 +225,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
+              let exp_typ = apply_subst_typ exp_sub tInt in
               let new_typevar = TyCon(gensym "sub1result", loc) in
 
               let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
@@ -250,6 +250,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
+              let exp_typ = apply_subst_typ exp_sub tBool in
               let new_typevar = TyCon(gensym "isboolresult", loc) in
 
               let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
@@ -261,6 +262,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let instantiate_scheme = instantiate typ_scheme in
               let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
 
+              let exp_typ = apply_subst_typ exp_sub tBool in
               let new_typevar = TyCon(gensym "isnumresult", loc) in
 
               let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in

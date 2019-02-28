@@ -7,8 +7,25 @@ open Exprs
 open Phases
 open Assembly
 open Errors
-       
+open Inference
+
 let is_osx = Conf.make_bool "osx" false "Set this flag to run on osx";;
+
+let dummy_span = (Lexing.dummy_pos, Lexing.dummy_pos)
+             
+let tInt = TyCon("Int", dummy_span)
+let tBool = TyCon("Bool", dummy_span)
+let intint2int = SForall([], TyArr([tInt; tInt], tInt, dummy_span), dummy_span)
+let int2bool = SForall([], TyArr([tInt], tBool, dummy_span), dummy_span)
+let boolbool2bool = SForall([], TyArr([tBool; tBool], tBool, dummy_span), dummy_span)
+
+let bool2bool = SForall([], TyArr([tBool], tBool, dummy_span), dummy_span)
+
+let int2int = SForall([], TyArr([tInt], tInt, dummy_span), dummy_span)
+let tyVarX = TyVar("X", dummy_span)
+let any2bool = SForall(["X"], TyArr([tyVarX], tBool, dummy_span), dummy_span)
+let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
+
 
 let t name program expected = name>::test_run program name expected;;
 
@@ -24,6 +41,9 @@ let tanf name program expected = name>::fun _ ->
 let teq name actual expected = name>::fun _ ->
   assert_equal expected actual ~printer:(fun s -> s);;
 
+let t_apply_subst_typ name value expected = name>::fun _ ->  
+ (assert_equal expected value ~printer:string_of_typ) ;;
+
 let forty_one = "41";;
 
 let forty_one_a = (AProgram([], ACExpr(CImmExpr(ImmNum(41, ()))), ()))
@@ -35,7 +55,7 @@ let suite =
 "suite">:::
  [
 
-  tanf "forty_one_anf"
+ (*  tanf "forty_one_anf"
        (Program([], ENumber(41, ()), TyBlank(), ()))
        forty_one_a;
 
@@ -69,9 +89,12 @@ let suite =
   te "integration3" "let x = 1, y = 2, z = 3 in let x = 1 in x + y + z "  "The identifier x, defined at <integration3, 1:31-1:32>, shadows one defined at <integration3, 1:4-1:5>\nThe identifier x, redefined at <integration3, 1:31-1:32>, duplicates one at <integration3, 1:4-1:5>";
   te "integration4" "add1(1073741823)" "overflow value 0080000000";
   te "integration6" "add1(x)" "The identifier x, used at <integration6, 1:5-1:6>, is not in scope";
-  te "integration7"  "def f(x, x):\n y\n d(1)" "The identifier y, used at <integration7, 2:1-2:2>, is not in scope\nThe identifier x, redefined at <integration7, 1:9-1:10>, duplicates one at <integration7, 1:9-1:10>\nThe function name d, used at <integration7, 3:1-3:5>, is not in scope";
+  te "integration7"  "def f(x, x):\n y\n d(1)" "The identifier y, used at <integration7, 2:1-2:2>, is not in scope\nThe identifier x, redefined at <integration7, 1:9-1:10>, duplicates one at <integration7, 1:9-1:10>\nThe function name d, used at <integration7, 3:1-3:5>, is not in scope"; *)
   
-  
+  t_apply_subst_typ "apply_subst_typ1"  (apply_subst_typ [("T1", (TyCon("X", dummy_span)))] (TyCon("Int", dummy_span)))  (TyBlank(dummy_span));
+  t_apply_subst_typ "apply_subst_typ2"  (apply_subst_typ [("T2", (TyCon("X", dummy_span)))] (TyCon("T1", dummy_span)))  (TyBlank(dummy_span));
+
+   
   ]
 ;;
 
