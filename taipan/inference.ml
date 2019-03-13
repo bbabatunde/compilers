@@ -523,7 +523,6 @@ let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme e
     (* Hope caller inits the schemes. *)
     let DFun(name, args, scheme, body, loc) = decl in
     let (_, bodtyp, _) = infer_exp funenv env body reasons in
-    let freevars = ftv_type bodtyp in
     (* Subtract away any type variables that appear free in the type environment *)
     (* Whatever is leftover can be generalized into a type scheme *) 
     ((StringMap.add name (generalize env bodtyp) funenv), bodtyp, decl)
@@ -533,9 +532,11 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
     (* Instantiate the type schemes for the functions all at once. *)
     let schemes = List.fold_left (fun acc ele -> 
         let DFun(fnn, _, s, _, _) = ele in
-        StringMap.add fnn s acc)
+        let (new_scheme, _, _) = infer_decl funenv acc ele [] in
+        StringMap.union new_scheme acc)
     funenv g in
     (* Infer types for each function body, and accumulate the substitutions that result. *)
+
     (* Generalize all the remaining types all at once. *)
     (schemes, g)
 ;;
