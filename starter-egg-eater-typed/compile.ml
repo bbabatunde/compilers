@@ -187,7 +187,10 @@ let anf (p : tag program) : unit aprogram =
     | EGetItem(e, idx, len, a) ->
         let (e_imm, e_setup) = helpI e in
         (CGetItem(e_imm, idx, len, ()), e_setup)
-    | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
+    | ESetItem(e, idx, len, newval, a) ->
+        let (e_imm, e_setup) = helpI e in
+        let (new_imm, new_setup) = helpI newval in
+        (CSetItem(e_imm, idx, len, new_imm, ()), e_setup @ new_setup)
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * (string * unit cexpr) list) =
@@ -225,7 +228,11 @@ let anf (p : tag program) : unit aprogram =
         let tmp = sprintf "eget_%d" a in
         let (e_imm, e_setup) = helpI e in
         (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, len, ()))])
-    | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
+    | ESetItem(e, idx, len, newval, a) ->
+        let tmp = sprintf "eset_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        let (new_imm, new_setup) = helpI newval in
+        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, len, new_imm, ()))])
     | _ -> raise (NotYetImplemented "Finish the remaining cases")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
