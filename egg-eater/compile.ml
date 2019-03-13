@@ -48,6 +48,12 @@ let rec find ls x =
   | (y,v)::rest ->
      if y = x then v else find rest x
 
+let rec find2 ls x =
+  match ls with
+  | [] -> None
+  | (y,v)::rest ->
+     if y = x then Some(v) else find2 rest x
+
 let count_vars e =
   let rec helpA e =
     match e with
@@ -82,6 +88,40 @@ let rec find_dup (l : 'a list) : 'a option =
     | x::xs ->
       if find_one xs x then Some(x) else find_dup xs
 ;;
+
+ let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
+  let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
+  match ds with
+    | [] -> None
+    | (DFun(fname, _, _, _,_))::ds_rest ->
+      if name = fname then Some(ds_rest) else find_decl2 ds_rest name
+  in 
+  match (find_decl2  ls n) with
+  |None -> ls
+  |Some(e) -> e
+
+
+
+  let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
+  let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
+  match l with
+    | [] -> None
+    | (x,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
+  in 
+  match (find_one2  ls elt) with
+  |None -> ls
+  |Some(e) -> e
+
+;;
+
+(* Helper function, flatten a list of lists *)
+let flatten (l: 'a list list) : 'a list =
+  let rec flatten_helper (l: 'a list list) (output: 'a list) : 'a list =
+    match l with
+    | head::tail -> flatten_helper tail (head@output)
+    | [] -> output
+  in
+  flatten_helper l []
 
 let rename_and_tag (p : tag program) : tag program =
   let rec rename env p =
@@ -145,7 +185,6 @@ let rename_and_tag (p : tag program) : tag program =
 
 
 (* IMPLEMENT EVERYTHING BELOW *)
-
 
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
@@ -224,6 +263,12 @@ let anf (p : tag program) : unit aprogram =
   helpP p
 ;;
 
+let rec strip_binds arg =
+  let result = (List.fold_left (fun env b -> match b with 
+  |BBlank(_,_) -> env
+  |BName( str, typ , loc) ->  [(str , loc)]@env
+  |BTuple(binds,loc) ->  env @ (strip_binds binds) ) [] arg) in result
+
 
 let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list = match e with
@@ -248,7 +293,9 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
          [Arity (no_appargs,no_defargs,pos)]
       end
     | ELet([], body, _) -> wf_E body ds env
-    | ELet(((bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
+    | ELet(bindlist,body,_) ->     failwith "implement elet"
+      (*ELet(((bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
+
       let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a bind) -> match b with 
       |((n,_,_),e,y) -> match find2 env n with 
       |None -> (exnlist, [(n,y)]@env)
@@ -256,13 +303,14 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
     and shadowlist = match find2 env bind with
       |None -> wf_E exp ds env
       |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
-    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv))
+    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv)))*)
   and wf_D  (ds : 'a decl list): exn list = 
     let result = 
-    (List.fold_left (fun errorlst (DFun(funname, args,_, body, upos)) ->
+    (List.fold_left (fun errorlst (DFun(funname,  ars,_, body, upos)) ->
+      let args = strip_binds ars in 
       let dupfunlist = match (find_decl (remove_one_decl ds funname) funname)  with
        |None -> errorlst@(wf_E body ds args)
-       |Some(DFun(name, args,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
+       |Some(DFun(name, _,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
       and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match (find2 (remove_one_arg args arg) arg) with
             |None -> errorlst
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
@@ -358,7 +406,6 @@ let cmp_label (e: prim2) (tag: int) : string =
       sprintf "$%s_%d_end" op tag
 
 
-(* Generate instruction list for comparisons. Input type check and result check switched on optype *)
 let compare_vals (l) (r) (cmp: instruction) (end_label: string) : instruction list =
     [ IMov(Reg(EAX), l);                   (* Put left into eax *)
       ICmp(Reg(EAX), r);                  (* compare left to right *)
@@ -368,17 +415,8 @@ let compare_vals (l) (r) (cmp: instruction) (end_label: string) : instruction li
       ILabel(end_label);                  (* End label *)
     ]
 
-(* Wrapper to set up a labeled function including prologue, epilogue and compile_aexpr'd body *)
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
-  (* fun_name is just the name
-   * body is the aexpr of the function's body
-   * args is the string list of variable names
-   * env maps args to stack offsets
-   *)
-
   let stack_offset = 4*((count_vars body)+1) in
-
-  (* Start with label. We generally prepend function names with 'fun_' unless it's for our_code_starts_here *)
   let lbl =
       if (is_entry_point=true) then
         ILabel(fun_name)
@@ -443,17 +481,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail =
            | PrintB -> [IPush(Reg(EAX)); IXor(Reg(EAX), bool_mask); ICall("print"); IAdd(Reg(ESP), HexConst(4))]
 
            | IsBool ->
-               (* IsBool: mask low bit, shift to high order bit, flip all bits but highest. Produces true (all bits set) if lowest input bit
-                * was set, otherwise, produces false (all bits but highest set)  *)
                [IAnd(Reg(EAX), HexConst(0x1)); IShl(Reg(EAX), HexConst(31)); IXor(Reg(EAX), const_false)]
 
            | IsNum  ->
-               (* IsNum: mask low bit, shift to high order bit, flip all bits. Produces true (all bits set) if lowest input bit was unset,
-                *  otherwise, produces false (all bits but highest set)  *)
                [IAnd(Reg(EAX), HexConst(0x1)); IShl(Reg(EAX), HexConst(31)); IXor(Reg(EAX), const_true)]
 
            | Not  ->
-               (* Flip booleans by swapping high order bit *)
                boolcheck "logic" @ [IXor(Reg(EAX), HexConst(0x80000000))]
 
            | PrintStack -> failwith "Not yet implemented" (* TODO: extra credit? *)
@@ -511,19 +544,11 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail =
        (* For each expr, push onto stack, then call *)
        if is_tail=true && num_args=(List.length exprs) then
          (
-         (* (Printf.printf "TAIL CALL to %s\n" name); *)
-         (* Expressions to replace each argument on stack with new arguments, then call again *)
-         (* Inc esp 4*num_args, then push args *)
-
+        
          [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
 
          (* Push update the stack (below ebp) with our new arguments *)
          @ (replace_args exprs env)
-         (* TODO: should this instead just replace ESP with EBP+4 ? *)
-         (*@ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] (* Shift SP to 'remove' old local vars from stack *) *)
-         (*@ [ IMov(Reg(ESP), Reg(EBP)); IAdd(Reg(ESP), Const(4))]*)
-
-         (* JMP to fun_x (not a call) *)
          @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
 
 
@@ -544,27 +569,14 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail =
    | CImmExpr(imm) ->
        [ IMov(Reg(EAX), compile_imm imm env)]
 
-and compile_imm e env : arg = (* Note we don't take a tail_pos argument here because it doesn't matter *)
+and compile_imm e env : arg = 
   match e with
   | ImmNum(n, _) -> HexConst((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
 
-(* Given a list of arguments and an env, replace them on the stack for tail calls *)
 and replace_args exprs env =
-  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
-   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
-  (*let rec _replace_args exprlist idx =
-    match exprlist with
-    | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env );
-       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
-       @ _replace_args tail (idx+1)
-
-    | _ -> []
-  and
-  *)
   let rec _push_args exprlist =
     match exprlist with
     | head::tail ->
@@ -584,15 +596,11 @@ and replace_args exprs env =
     | _ -> []
   in
 
-  (* First: push all old args onto our function's stack *)
   _push_args (List.rev exprs)
-  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
-  (*@ _replace_args exprs 1 *)
+
   @ _replace_with_saved_args exprs 1
 
 let build_env (vars: string list) : (string * arg) list =
-  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
-  (* First var is at ebp-8, second is ebp-12, ... *)
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) =
     match vars with
     | vname::tail ->
@@ -663,9 +671,6 @@ global our_code_starts_here\n" in (* TODO: remove f *)
 
 
 
-(* Feel free to add additional phases to your pipeline.
-   The final pipeline phase needs to return a string,
-   but everything else is up to you. *)
 
 (* Add a desugaring phase somewhere in here, as well as your typechecker *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
