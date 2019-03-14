@@ -11,7 +11,7 @@ int* HEAP;
 const int BOOL_TAG   = 0x00000001;
 const int BOOL_TRUE  = 0xFFFFFFFF; // These must be the same values
 const int BOOL_FALSE = 0x7FFFFFFF; // as chosen in compile.ml
-
+const int TUPLE_TAG  = 0x00000001;
 
 const int ERR_LOGIC_NOT_BOOLEAN = 1;
 const int ERR_IF_PRED_BOOL = 2;
