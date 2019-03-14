@@ -232,11 +232,11 @@ let anf (p : tag program) : unit aprogram =
         (CTuple(tup_args, ()), List.concat tup_setup)
     | EGetItem(e, idx, len, a) ->
         let (e_imm, e_setup) = helpI e in
-        (CGetItem(e_imm, idx, len, ()), e_setup)
+        (CGetItem(e_imm, idx, ()), e_setup)
     | ESetItem(e, idx, len, newval, a) ->
         let (e_imm, e_setup) = helpI e in
         let (new_imm, new_setup) = helpI newval in
-        (CSetItem(e_imm, idx, len, new_imm, ()), e_setup @ new_setup)
+        (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * (string * unit cexpr) list) =
@@ -280,12 +280,12 @@ let anf (p : tag program) : unit aprogram =
     | EGetItem(e, idx, len, a) ->
         let tmp = sprintf "eget_%d" a in
         let (e_imm, e_setup) = helpI e in
-        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, len, ()))])
+        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, ()))])
     | ESetItem(e, idx, len, newval, a) ->
         let tmp = sprintf "eset_%d" a in
         let (e_imm, e_setup) = helpI e in
         let (new_imm, new_setup) = helpI newval in
-        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, len, new_imm, ()))])
+        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, new_imm, ()))])
     | _ -> raise (NotYetImplemented "Finish the remaining cases")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
@@ -369,7 +369,6 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
      if output = [] then Ok(p) else Error(output)
 ;;
 
-
 let desugar (p : sourcespan program) : sourcespan program =
   let gensym =
     let next = ref 0 in
@@ -377,23 +376,65 @@ let desugar (p : sourcespan program) : sourcespan program =
       next := !next + 1;
       sprintf "%s_%d" name (!next)) in
   let rec helpE (e : sourcespan expr) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for expressions"])
+    match e with
+    | ESeq(e1, e2, loc) ->
+        let e1_desugar = helpE e1 in
+        let seq_blank = (BBlank(TyBlank(loc), loc), e1_desugar, loc) in
+        ELet([seq_blank], e2, loc)
+    | ELet(bindings, e, loc) ->
+        let tmp_name = gensym "desugar_let" in
+        let new_bindings = expandBinding bindings tmp_name (List.length bindings) in
+        ELet(new_bindings, e, loc)
+    | _ -> e
+  and expandHelper binds tmp_var ctr len loc=
+    match binds with
+    | first::rest ->
+      let this_expanded_binding = (first, EGetItem(EId(tmp_var, loc), ctr, len, loc), loc) in
+      (this_expanded_binding :: expandHelper rest tmp_var (ctr + 1) len loc)
+    | [] -> []
+  and expandBinding binding_left tmp_name len =
+    let index = len - (List.length binding_left) in
+    let tmp_var = sprintf "%s_%d" tmp_name index in
+    match binding_left with
+    | first::rest ->
+      let (bind, e, loc) = first in
+      (match bind with
+      | BTuple(bind_list, loc1) ->
+        let first_binding = (BName(tmp_var, bind_to_typ bind, loc1), e, loc) in
+        let expanded_bindings = expandHelper bind_list tmp_var 0 (List.length bind_list) loc1 in
+        ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
+      | _ -> ([first] @ expandBinding rest tmp_name len))
+    | _ -> []
+  and tupToName bind =
+    match bind with
+    | BTuple(tup_binds, loc) -> BName(gensym "desugar_args", TyTup(List.map bind_to_typ tup_binds, loc), loc)
+    | _ -> bind
+  and helpNewBinds ele1 ele2 =
+    match ele1 with
+    | BTuple(tup_binds, _) ->
+      (match ele2 with
+      | BName(tmp, typ, t) ->
+        (BTuple(tup_binds, t), EId(tmp, t), t)
+      | _ -> raise (InternalCompilerError "Processing args broken o.O"))
+  and helpArgs args =
+    let new_args = List.map tupToName args in
+    let new_bindings = (List.map2 helpNewBinds args new_args) in
+    (new_args, new_bindings)
   and helpD (d : sourcespan decl) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for definitions"])
-  and helpG (g : sourcespan decl list) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for definition groups"])
+    match d with
+    | DFun(name, args, scheme, body, pos) ->
+        let (new_args, new_binds) = helpArgs args in
+        let new_body = ELet(new_binds, body, pos) in
+        DFun(name, new_args, scheme, new_body, pos)
   and helpT (t : sourcespan typ) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for types"])
+    Error([NotYetImplemented "Implement desrugaring for types"])
   and helpS (s : sourcespan scheme) (* other parameters may be needed here *) =
     Error([NotYetImplemented "Implement desugaring for typeschemes"])
-  and helpTD (t : sourcespan tydecl) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for type declarations"])
   in
   match p with
-  | Program(tydecls, decls, body, _) ->
-      raise (NotYetImplemented "Implement desugaring for programs")
+  | Program(tydecls, decls, body, t) ->
+          Program(tydecls, List.map (fun group -> List.map helpD group) decls, body, t)
 ;;
-
 
 let rec compile_fun (fun_name : string) args env : instruction list =
   let count = (word_size *  List.length args) in
