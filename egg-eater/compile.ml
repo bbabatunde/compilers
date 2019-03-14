@@ -215,7 +215,14 @@ let anf (p : tag program) : unit aprogram =
        let (cond_imm, cond_setup) = helpI cond in
        (CIf(cond_imm, helpA _then, helpA _else, ()), cond_setup)
     | ELet([], body, _) -> helpC body
-    | ELet(_::_, body, _) -> raise (NotYetImplemented "Finish this")
+    | ELet((b1, exp, _)::rest, body, pos) ->
+        let bind = (match b1 with
+            | BBlank(t, _) -> (sprintf "_%d" pos)
+            | BName(name, _, _) -> name
+            | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag)))in
+       let (exp_ans, exp_setup) = helpC exp in
+       let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
+       (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup)
     | EApp(funname, args, _) ->
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (CApp(funname, new_args, ()), List.concat new_setup)
@@ -257,7 +264,14 @@ let anf (p : tag program) : unit aprogram =
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (ImmId(tmp, ()), (List.concat new_setup) @ [(tmp, CApp(funname, new_args, ()))])
     | ELet([], body, _) -> helpI body
-    | ELet(_::_, body, _) -> raise (NotYetImplemented "Finish this")
+    | ELet((b1, exp, _)::rest, body, pos) ->
+        let bind = (match b1 with
+            | BBlank(t, _) -> (sprintf "_%d" pos)
+            | BName(name, _, _) -> name
+            | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag))) in
+        let (exp_ans, exp_setup) = helpC exp in
+        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
+        (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup)
     | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
     | ETuple(expr_list, tag) ->
         let tmp = sprintf "tup_%d" tag in
