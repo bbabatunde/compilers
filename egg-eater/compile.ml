@@ -198,7 +198,8 @@ let anf (p : tag program) : unit aprogram =
        let args = List.map (fun a ->
                       match a with
                       | BName(a, _, _) -> a
-                      | _ -> raise (NotYetImplemented("Finish this"))) args in
+                      | BBlank(_, _) -> raise (InternalCompilerError "Can't have blank in fn call o.O")
+                      | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag))) args in
        ADFun(name, args, helpA body, ())
   and helpC (e : tag expr) : (unit cexpr * (string * unit cexpr) list) = 
     match e with
@@ -215,14 +216,15 @@ let anf (p : tag program) : unit aprogram =
        (CIf(cond_imm, helpA _then, helpA _else, ()), cond_setup)
     | ELet([], body, _) -> helpC body
     | ELet(_::_, body, _) -> raise (NotYetImplemented "Finish this")
-    (* | ELet(((bind, _, _), exp, _)::rest, body, pos) ->
-     *    let (exp_ans, exp_setup) = helpC exp in
-     *    let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
-     *    (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup) *)
     | EApp(funname, args, _) ->
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (CApp(funname, new_args, ()), List.concat new_setup)
-    (* NOTE: You may need more cases here, for sequences and tuples *)
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
+    | ETuple(expr_list, _) ->
+        let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
+        (CTuple(tup_args, ()), List.concat tup_setup)
+    | EGetItem(e, idx, len, a) -> raise (NotYetImplemented "err")
+    | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * (string * unit cexpr) list) =
@@ -251,10 +253,13 @@ let anf (p : tag program) : unit aprogram =
        (ImmId(tmp, ()), (List.concat new_setup) @ [(tmp, CApp(funname, new_args, ()))])
     | ELet([], body, _) -> helpI body
     | ELet(_::_, body, _) -> raise (NotYetImplemented "Finish this")
-    (* | ELet(((bind, _, _), exp, _)::rest, body, pos) ->
-     *    let (exp_ans, exp_setup) = helpC exp in
-     *    let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
-     *    (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup) *)
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
+    | ETuple(expr_list, tag) ->
+        let tmp = sprintf "tup_%d" tag in
+        let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
+        (ImmId(tmp, ()), (List.concat tup_setup) @ [(tmp, CTuple(tup_args, ()))])
+    | EGetItem(e, idx, len, a) -> raise (NotYetImplemented "err")
+    | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
     | _ -> raise (NotYetImplemented "Finish the remaining cases")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
@@ -724,6 +729,7 @@ our_code_starts_here:" in
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
+  |> (add_phase desugared desugar)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))
