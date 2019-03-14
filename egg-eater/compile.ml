@@ -223,7 +223,9 @@ let anf (p : tag program) : unit aprogram =
     | ETuple(expr_list, _) ->
         let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
         (CTuple(tup_args, ()), List.concat tup_setup)
-    | EGetItem(e, idx, len, a) -> raise (NotYetImplemented "err")
+    | EGetItem(e, idx, len, a) ->
+        let (e_imm, e_setup) = helpI e in
+        (CGetItem(e_imm, idx, len, ()), e_setup)
     | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
@@ -258,7 +260,10 @@ let anf (p : tag program) : unit aprogram =
         let tmp = sprintf "tup_%d" tag in
         let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
         (ImmId(tmp, ()), (List.concat tup_setup) @ [(tmp, CTuple(tup_args, ()))])
-    | EGetItem(e, idx, len, a) -> raise (NotYetImplemented "err")
+    | EGetItem(e, idx, len, a) ->
+        let tmp = sprintf "eget_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, len, ()))])
     | ESetItem(e, idx, len, newval, a) -> raise (NotYetImplemented "err")
     | _ -> raise (NotYetImplemented "Finish the remaining cases")
   and helpA e : unit aexpr = 
