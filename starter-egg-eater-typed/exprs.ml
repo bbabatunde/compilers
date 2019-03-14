@@ -84,8 +84,8 @@ and 'a cexpr = (* compound expressions *)
   | CApp of string * 'a immexpr list * 'a
   | CImmExpr of 'a immexpr (* for when you just need an immediate value *)
   | CTuple of 'a immexpr list * 'a
-  | CGetItem of 'a immexpr * int * 'a
-  | CSetItem of 'a immexpr * int * 'a immexpr * 'a
+  | CGetItem of 'a immexpr * int * int * 'a
+  | CSetItem of 'a immexpr * int * int * 'a immexpr * 'a
 and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ACExpr of 'a cexpr
@@ -295,12 +295,12 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CTuple(es, _) ->
        let tup_tag = tag() in
        CTuple(List.map helpI es, tup_tag)
-    | CGetItem(e, idx, _) ->
+    | CGetItem(e, idx, len, _) ->
        let get_tag = tag() in
-       CGetItem(helpI e, idx, get_tag)
-    | CSetItem(e, idx, newval, _) ->
+       CGetItem(helpI e, idx, len, get_tag)
+    | CSetItem(e, idx, len, newval, _) ->
        let set_tag = tag() in
-       CSetItem(helpI e, idx, helpI newval, set_tag)
+       CSetItem(helpI e, idx, len, helpI newval, set_tag)
   and helpI (i : 'a immexpr) : tag immexpr =
     match i with
     | ImmNil(_) -> ImmNil(tag())

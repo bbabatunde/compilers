@@ -170,8 +170,8 @@ and string_of_cexpr_with (print_a : 'a -> string) (c : 'a cexpr) : string =
   let string_of_immexpr = string_of_immexpr_with print_a in
   match c with
   | CTuple(imms, a) -> sprintf "(%s)%s" (ExtString.String.join ", " (List.map string_of_immexpr imms)) (print_a a)
-  | CGetItem(e, idx, a) -> sprintf "%s[%d]%s" (string_of_immexpr e) idx (print_a a)
-  | CSetItem(e, idx, newval, a) -> sprintf "%s[%d := %s]%s" (string_of_immexpr e) idx (string_of_immexpr newval) (print_a a)
+  | CGetItem(e, idx, len, a) -> sprintf "%s[%d of %d]%s" (string_of_immexpr e) idx len (print_a a)
+  | CSetItem(e, idx, len, newval, a) -> sprintf "%s[%d of %d := %s]%s" (string_of_immexpr e) idx len (string_of_immexpr newval) (print_a a)
   | CPrim1(op, e, a) ->
      sprintf "%s(%s)%s" (string_of_op1 op) (string_of_immexpr e) (print_a a)
   | CPrim2(op, left, right, a) ->
