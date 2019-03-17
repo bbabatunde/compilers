@@ -518,27 +518,60 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
     (exp_subt, exp_type, e)
 ;;
 
-let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ * sourcespan decl =
+let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ subst =
     (* Collect all the free type variables in the type of the function body *)
-    (* Hope caller inits the schemes. *)
-    let DFun(name, args, scheme, body, loc) = decl in
-    let (_, bodtyp, _) = infer_exp funenv env body reasons in
-    (* Subtract away any type variables that appear free in the type environment *)
-    (* Whatever is leftover can be generalized into a type scheme *) 
-    ((StringMap.add name (generalize env bodtyp) funenv), bodtyp, decl)
+    let DFun(name, args, _, body, loc) = decl in
+    (* Scheme for this funciton must be in funenev *)
+    let SForall(_, typ_scheme, _) = find_pos funenv name loc in
+    let TyArr(tmp_args, tmp_type, _) = typ_scheme in
+    let (body_subst, body_type, _) = infer_exp funenv env body reasons in
+    let body_type = apply_subst_typ body_subst tmp_type in
+    let unif_subst = unify tmp_type body_type loc reasons in
+    let final_subst = compose_subst body_subst unif_subst in
+    let final_type = apply_subst_typ final_subst tmp_type in
+    let funenv = apply_subst_funenv final_subst funenv in
+    ((StringMap.add name (generalize env final_type) funenv), body_subst)
 ;;
+ 
+let init_fn fn =
+    let DFun(funname, arg_lst, scheme, body, pos) = fn in
+    let arg_lst = List.map (fun (arg_name, _) -> arg_name) arg_lst in
+    let ty_args = List.map (fun ele -> TyVar(gensym "fn_arg", pos)) arg_lst in
+    let new_env = (List.fold_left2
+        (fun ne arg_name arg_type -> (StringMap.add arg_name arg_type ne))
+        StringMap.empty arg_lst ty_args) in
+    let ty_bod = TyVar(gensym "fn_bod", pos) in
+    (funname, TyArr(ty_args, ty_bod, pos), new_env)
 
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
     (* Instantiate the type schemes for the functions all at once. *)
-    let schemes = List.fold_left (fun acc ele -> 
-        let DFun(fnn, _, s, _, _) = ele in
-        let (new_scheme, _, _) = infer_decl funenv acc ele [] in
-        StringMap.union new_scheme acc)
-    funenv g in
+    (* - Guess type variables for all functions in group. *)
+    let typ_env_lst = List.map init_fn g in
+    (* - Bind args to these type variables in env to process decls in. *)
+    let env = List.fold_left
+        (fun e (_, _, n_map) -> 
+            List.fold_left
+            (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
+        env typ_env_lst in
+    (* Add new function to type mappings to funenv *)
+    let funenv = List.fold_left
+        (fun e (fname, ftype, _) -> StringMap.add fname (generalize env ftype) e)
+        funenv typ_env_lst in
     (* Infer types for each function body, and accumulate the substitutions that result. *)
-
+    let new_types_and_subs = (List.map
+        (fun fn -> infer_decl funenv env fn []) g) in
     (* Generalize all the remaining types all at once. *)
-    (schemes, g)
+    let funenv = List.fold_left
+        (fun e (n_map, _) ->
+            List.fold_left
+            (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
+        funenv new_types_and_subs in
+    (* Combine the substs *)
+    let allsubst = List.fold_left
+        (fun acc (_, s) ->
+            (acc @ s)) [] new_types_and_subs in
+    (* Check for a solution *)
+    (funenv, g)
 ;;
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
     match p with
