@@ -300,6 +300,21 @@ let rec strip_binds arg =
   |BName( str, typ , loc) ->  [(str , loc)]@env
   |BTuple(binds,loc) ->  env @ (strip_binds binds) ) [] arg) in result
 
+let rec findlst ls str = 
+   match ls with
+  |[] -> None
+  |TyDecl(x,_,_)::rest  -> if x = str then  Some(x) else findlst rest str 
+
+let rec remove_one_str ls str =
+  match ls with
+  |[] -> ls
+  |TyDecl(x,_,_)::rest -> if x == str then  rest else remove_one_str rest str 
+
+ let rec findecls decls str =
+ match decls with 
+ |[] -> None
+ |TyDecl(name,args,loc)::rest -> if name = str then Some(TyDecl(name,args,loc)) else findecls rest str
+
 
 let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list = match e with
@@ -323,22 +338,26 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
          if no_defargs = no_appargs then [] else
          [Arity (no_appargs,no_defargs,pos)]
       end
-    | ELet([], body, _) -> wf_E body ds env
-    | ELet(bindlist,body,_) ->     failwith "implement elet"
-      (*ELet(((bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
-
-      let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a bind) -> match b with 
-      |((n,_,_),e,y) -> match find2 env n with 
+    |ELet((BName(bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
+      let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
+      |(BName(n,typ,loc),e,y) -> match find2 env n with 
       |None -> (exnlist, [(n,y)]@env)
       |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env)) @ [DuplicateId(n,y,exploc)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
     and shadowlist = match find2 env bind with
       |None -> wf_E exp ds env
       |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
-    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv)))*)
+    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv)) 
    | ESeq(left, right,_) -> wf_E left ds env @ wf_E right ds env
    | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env) [] exprlist
-   | EGetItem(tuple,index,size,_)-> []
-   | ESetItem (exp,val1,val2,exp2,_) -> []
+   | EGetItem(tuple,index,size,loc)-> 
+     if ( index+1 >=  size) 
+     then  wf_E tuple ds env @ [IndexTooLarge(index,loc)]
+     else if (index < 0) then wf_E tuple ds env @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env
+   | ESetItem (exp,index,size,exp2,loc) -> 
+     if (index +1 >=  size) 
+     then  wf_E exp ds env @ [IndexTooLarge(index,loc)] @  wf_E exp2 ds env
+     else if (index < 0) then wf_E exp ds env @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env 
+     else wf_E exp ds env @  wf_E exp2 ds env
    | ENil(typ,_) ->  []
 
   and wf_D  (ds : 'a decl list): exn list = 
@@ -354,18 +373,33 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
           ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
   and wf_G (gds : 'a decl list list ): exn list  =
    let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen))))  ([],[]) gds) in exnlist
-  
-  and wf_T (t : sourcespan typ) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement well-formedness checking for types"])
-  and wf_S (s : sourcespan scheme) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement well-formedness checking for typeschemes"])
-  and wf_TD (t : sourcespan tydecl) (* other parameters may be needed here *) =
-      Error([NotYetImplemented "Implement well-formedness checking for typeschemes"])
+  (*check for type intlist = (intlist * int)*)
+   and wf_T (t : sourcespan typ) (tydecls: 'a tydecl list)  : exn list = match t with 
+    | TyBlank(_) -> []
+    | TyCon("Int", _) -> []
+    | TyCon("Bool",_)-> []
+    | TyCon(str,loc) -> [Unsupported(str,loc)]
+    | TyVar(name,loc)->  begin match findecls tydecls name with
+                        |None -> [InvalidTyLen(name, loc)]
+                        |Some(x) -> [] end
+    | TyArr(typlist,typ,_)-> []
+    | TyApp(typ,typlist,_) -> []
+    | TyTup(typlst,_)-> List.fold_left (fun errlst t -> errlst@  wf_T t tydecls) [] typlst
+  and wf_S (s : sourcespan scheme)  : exn list = match s with 
+    | SForall(strlst,typ,loc) -> wf_T typ []
+  and wf_TD (tlst : sourcespan tydecl list) : exn list = 
+    let result = ( List.fold_left (fun error t ->   match t with 
+        |TyDecl(name,args,loc) ->   match (findlst (remove_one_str tlst name) name) with
+        |None -> (error @  (List.fold_left (fun error t -> error @ wf_T t tlst) [] args) @ 
+         (if List.length args > 2 then [InvalidTyLen(name,loc)] else [])  @
+         (if List.hd args = List.hd (List.rev args)  then [CyclicTy(name,loc)] else []))
+        |Some(x) -> error @ [DuplicateType(name,loc)] @  (List.fold_left (fun error t -> error @ wf_T t tlst) [] args))  [] tlst) 
+       in result
 
   in
   match p with
   | Program(tydecls, decls, body, _) ->
-     let output = wf_G decls @ wf_E body (List.flatten decls) [] in
+     let output = wf_TD tydecls @  wf_G decls @ wf_E body (List.flatten decls) [] in
      if output = [] then Ok(p) else Error(output)
 ;;
 
@@ -715,7 +749,7 @@ and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
-  | ImmNil(_) -> failwith "ImmNil"
+  | ImmNil(_) -> HexConst(0x1)
 
 
 let compile_decl (d : tag adecl) : instruction list = match d with
