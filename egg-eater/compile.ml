@@ -114,14 +114,6 @@ let rec find_dup (l : 'a list) : 'a option =
 
 ;;
 
-(* Helper function, flatten a list of lists *)
-let flatten (l: 'a list list) : 'a list =
-  let rec flatten_helper (l: 'a list list) (output: 'a list) : 'a list =
-    match l with
-    | head::tail -> flatten_helper tail (head@output)
-    | [] -> output
-  in
-  flatten_helper l []
 
 let rename_and_tag (p : tag program) : tag program =
   let rec rename env p =
@@ -501,8 +493,8 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
   let prelude = (compile_cexpr bind (si + 1) env num_args false) in
-  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-si, EBP))::env) num_args is_tail) in
-  prelude @ [IMov(RegOffset(~-si, EBP), Reg(EAX))] @ body
+  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-(word_size *si), EBP))::env) num_args is_tail) in
+  prelude @ [IMov(RegOffset(~-(word_size *si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
@@ -578,16 +570,16 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | CPrim2(op, left, right, tag) -> 
     let instr =
         [IMov(Reg(EAX),(compile_imm left  env))] @
-        [IMov(RegOffset(~-si, EBP), Reg(EAX))] @
+        [IMov(RegOffset(~-word_size * si, EBP), Reg(EAX))] @
         [IMov(Reg(EAX),(compile_imm right env))] @
-        [IMov(RegOffset(~-(si + 1), EBP), Reg(EAX))] in
+        [IMov(RegOffset(~-word_size * (si + 1), EBP), Reg(EAX))] in
    begin match op with
    | Plus -> instr @
       [ 
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("arithmetic_expected_a_number_EDX");
             IAdd(Reg(EAX), Reg(EDX));
@@ -597,10 +589,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         ]
    | Minus -> instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("arithmetic_expected_a_number_EDX");
             ISub(Reg(EAX), Reg(EDX));
@@ -610,10 +602,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    | Times -> 
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("arithmetic_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("arithmetic_expected_a_number_EDX");
             IMul(Reg(EAX), Reg(EDX));
@@ -635,10 +627,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    | Or -> 
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJz("logic_expected_a_boolean");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJz("logic_expected_a_boolean_edx");
             IOr(Reg(EAX), Reg(EDX))
@@ -648,10 +640,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     let greater_label = sprintf "greater_%s" (string_of_int tag) in
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("comparison_expected_a_number_EDX");
             ICmp(Reg(EAX), Reg(EDX));
@@ -666,10 +658,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     let greatereq_label = sprintf "greaterequal_%s" (string_of_int tag) in
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("comparison_expected_a_number_EDX");
             ICmp(Reg(EAX), Reg(EDX));
@@ -684,10 +676,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("comparison_expected_a_number_EDX");
             ICmp(Reg(EAX), Reg(EDX));
@@ -702,10 +694,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     let lesseq_label = sprintf "lessequal_%s" (string_of_int tag) in
     instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJnz("comparison_expected_a_number");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJnz("comparison_expected_a_number_EDX");
             ICmp(Reg(EAX), Reg(EDX));
@@ -719,10 +711,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      let eq_label = sprintf "equal_%s" (string_of_int tag) in
      instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size*(si), EBP));
             (* ITest(Reg(EAX), const_bool_tag); *)
             (* IJnz("comparison_expected_a_number"); *)
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size*(si + 1), EBP));
             (* ITest(Reg(EDX), const_bool_tag); *)
             (* IJnz("comparison_expected_a_number_EDX"); *)
             ICmp(Reg(EAX), Reg(EDX));
@@ -733,20 +725,22 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
      ]
    end
-  | CApp(name, args, _) -> 
+  | CApp(name, exprs, _) ->
+  
+       if is_tail=true && num_args=(List.length exprs) then
+         (
+         [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
+         @ (replace_args exprs env)
+         @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
 
-       if is_tail=true && num_args=(List.length args) then
-        (
-            (replace_args args env)@ [ IJmp(Printf.sprintf "fun_%s_body" name)]
         )
        else (
-           List.flatten (List.map(fun x ->
-           [ IMov(Reg(EAX), compile_imm x env ); 
-           IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] 
-           ) args) 
-           @ [ ICall(Printf.sprintf "fun_%s" name)]
-           @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length args))) ] 
-        )
+         [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
+         List.flatten (List.map(fun x ->
+           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
+           ) exprs)
+         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] 
+         )
 
   | CTuple(lst,_)-> 
     [
@@ -782,31 +776,54 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
   
- and replace_args exprs env =
-  let rec _push_args exprlist =
+(* Given a list of arguments and an env, replace them on the stack for tail calls *)
+and replace_args exprs env = 
+  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
+   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
+  (*let rec _replace_args exprlist idx = 
     match exprlist with
     | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env);IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ] @ _push_args tail
+       [ IMov(Reg(EAX), compile_imm head env );
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_args tail (idx+1)
+
     | _ -> []
   and
-  _replace_with_saved_args exprlist idx =
+  *)
+  let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX)); 
+       [ IMov(Reg(EAX), compile_imm head env);
+         IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
+       @ _push_args tail
+
+    | _ -> []
+  and
+  _replace_with_saved_args exprlist idx = 
+    match exprlist with
+    | head::tail ->
+      [ IPop(Reg(EAX)); (* Pop old value off stack into Eax *)
        IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
        @ _replace_with_saved_args tail (idx+1)
+
     | _ -> []
   in
-  _push_args (List.rev exprs) @ _replace_with_saved_args exprs 1
 
-
+  (* First: push all old args onto our function's stack *)
+  _push_args (List.rev exprs)
+  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
+  (*@ _replace_args exprs 1 *)
+  @ _replace_with_saved_args exprs 1
 
 let build_env (vars: string list) : (string * arg) list =
-  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) =
+  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
+  (* First var is at ebp-8, second is ebp-12, ... *)
+  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
-    | vname::tail ->
+    | vname::tail -> 
         let offset = 8+4*(List.length parsed) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in 
+        let this_res = [(vname, RegOffset(offset, EBP))] in (* Params are EBP relative *)
+        (* (Printf.printf "Building env: %s -> EBP+%d\n" vname offset); *)
         (_build_env tail (parsed @ this_res)
         )
     | _ -> ([], parsed)
@@ -823,8 +840,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
         "section .text
 extern error
 extern print
-global our_code_starts_here
-our_code_starts_here:" in
+global fun_f
+global fun_f_body
+global our_code_starts_here" in
   let count = word_size *  count_vars body in
   let stack_setup =[
       IPush(Reg(EBP));
@@ -882,7 +900,7 @@ our_code_starts_here:" in
     ] in
   let fun_def =  List.flatten (List.map compile_decl decls) in
   let body = (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ stack_setup @ body @ postlude)) in
+  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")]  @ stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
 
 

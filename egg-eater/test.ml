@@ -62,7 +62,7 @@ let suite =
   t "if2" "if 0 > 1: 4 else: 2" "2";
   t "prim" "(2+2) + (2+2)" "8";
   te "overflow" "add1(1073741823)" "overflow";
-  t "funcalls1" "def f(n: Int) -> Int: n\n\n f(1)" "1"; 
+  t "funcalls1" "def f(n): n\n\n f(1)" "1"; 
   t "funcalls"  "def fact(n : Int) -> Int: if n < 2: 1 else: n * fact(n - 1)\n\nfact(5)" "120"
   
   ]

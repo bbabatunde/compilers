@@ -29,25 +29,20 @@ type arg =
 
 type instruction =
   | IMov of arg * arg
-
   | IAdd of arg * arg
   | ISub of arg * arg
   | IMul of arg * arg
-
   | IShl of arg * arg
   | IShr of arg * arg
   | ISar of arg * arg
-
   | IAnd of arg * arg
   | IOr of arg * arg
   | IXor of arg * arg
-
   | ILabel of string
   | IPush of arg
   | IPop of arg
   | ICall of string
   | IRet
-
   | ICmp of arg * arg
   | ITest of arg * arg
   | IJo of string
@@ -61,7 +56,6 @@ type instruction =
   | IJmp of string
   | IJz of string
   | IJnz of string
-
   | ILineComment of string
   | IInstrComment of instruction * string
 
@@ -83,9 +77,9 @@ let rec arg_to_asm (a : arg) : string =
   | Reg(r) -> r_to_asm r
   | RegOffset(n, r) ->
      if n >= 0 then
-       sprintf "[%s+%d]" (r_to_asm r) (n * word_size)
+       sprintf "[%s+%d]" (r_to_asm r) n 
      else
-       sprintf "[%s-%d]" (r_to_asm r) (-1 * n * word_size)
+       sprintf "[%s-%d]" (r_to_asm r) (-1 * n )
   | RegOffsetReg(r1, r2, mul, off) ->
      sprintf "[%s + %s * %d + %d]"
              (r_to_asm r1) (r_to_asm r2) mul off
