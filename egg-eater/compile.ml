@@ -470,18 +470,8 @@ let desugar (p : sourcespan program) : sourcespan program =
           Program(tydecls, List.map (fun group -> List.map helpD group) decls, body, t)
 ;;
 
-(* Generate instruction list for comparisons. Input type check and result check switched on optype *)
-let compare_vals (l) (r) (cmp: instruction) (end_label: string) : instruction list =
-    [ IMov(Reg(EAX), l);                   (* Put left into eax *)
-      ICmp(Reg(EAX), r);                  (* compare left to right *)
-      IMov(Reg(EAX), const_true);  (* Store true into EAX (doesn't change flags) *)
-      cmp;
-      IMov(Reg(EAX), const_false);  (* else: store false in EAX *)
-      ILabel(end_label);                  (* End label *)
-    ]
-
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
-  let stack_offset = ((count_vars body)+1) in
+  let stack_offset =  ((count_vars body)+1) in
   let lbl =
       if (is_entry_point=true) then
         ILabel(fun_name)
@@ -900,7 +890,7 @@ our_code_starts_here:" in
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  |> (add_phase desugared desugar)
+  (*|> (add_phase desugared desugar)*)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))
