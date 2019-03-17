@@ -138,6 +138,15 @@ let suite =
                    and def h(v1, v2): v1 + v2
                    f()" "3";
 
+
+  (* Mixed function desugaring *)
+  t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
+                   f((1, 2), 3)" "(4, 5)";
+  t "desugar_fn5" "def f((a, b), c, (d, e)): a + b + c + d + e
+                   f((1, 1), 1, (1, 1))" "5";
+  t "desugar_fn6" "def f(a): let (b, c, d, e) = a in b + c + d; e
+                   let z = (1, 2, 3, 4) in f(z)" "4";
+
   (* Test scoped functions with and. *)
   t "fnt1" "def f(): g()
             and def g(): h()
