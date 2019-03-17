@@ -99,7 +99,59 @@ let suite =
   t "desugar3_2" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in c" "3";
   t "desugar3_3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in b" "2";
   t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "1";
-  t "desugar4" "let (a, b) = (1, (2, 3)) in b" "(2, 3)"
+  t "desugar4" "let (a, b) = (1, (2, 3)) in b" "(2, 3)";
+
+  (* Nested let bindings *)
+  t "nlet1" "let a = (1, 2, 3) in
+             let (b, c, d) = a in
+             d; c; b" "1";
+  t "nlet2" "let a = (1, 2, 3) in
+             let (b, c, d) = a in
+             let e = (b, c) in
+             let (f, g) = e in
+             g" "2";
+  t "nlet3" "let (a, b) = (1, (2, 3)) in
+             let (c, d) = b in
+             d" "3";
+  t "nlet4" "let a = (1, (2, 3)) in
+             a[1 of 2][1 of 2]" "3";
+
+  (* Test sequence of sets *)
+  t "set1" "let a = (1,2) in
+                a[0 of 2 := 0];
+                a[1 of 2 := 0];
+                a" "(0, 0)";
+  t "set2" "let a = ((1, 2), (3, 4)) in
+                a[0 of 2][0 of 2 := 0];
+                a[0 of 2][1 of 2 := 0];
+                a[1 of 2][0 of 2 := 0];
+                a[1 of 2][1 of 2 := 0];
+                a" "((0, 0), (0, 0))";
+
+  (* Nested function argument bindings. *)
+  t "desugar_fn1" "def f((x1, y1), (x2, y2)): (x1 + x2, y1 + y2)
+                   f((1,2), (1, 2))" "(2, 4)";
+  t "desugar_fn2" "def f((x, y, z)): x + y + z
+                   f((1,1,1))" "3";
+  t "desugar_fn3" "def f(): g((1, 2))
+                   and def g(a): h(a)
+                   and def h(v1, v2): v1 + v2
+                   f()" "3";
+
+  (* Test scoped functions with and. *)
+  t "fnt1" "def f(): g()
+            and def g(): h()
+            and def h(): 1
+            h();
+            g();
+            f()" "1";
+  te "fnt2" "def f(): g()
+             def g(): h()
+             and def h(): 1
+             h();
+             g();
+             f()"
+             "Scope error";
   ]
 ;;
 
