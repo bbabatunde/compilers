@@ -131,6 +131,9 @@ let string_of_decl_with (print_a : 'a -> string) (d : 'a decl) : string =
 let string_of_decl (d : 'a decl) : string =
   string_of_decl_with (fun _ -> "") d
 
+let string_of_decls (d : 'a decl list) : string =
+    ExtString.String.join ", " (List.map string_of_decl d)
+
 let string_of_tydecl_with (print_a : 'a -> string) (td : 'a tydecl) : string =
   match td with
   | TyDecl(name, args, a) ->

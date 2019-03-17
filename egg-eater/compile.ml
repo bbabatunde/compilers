@@ -425,11 +425,19 @@ let desugar (p : sourcespan program) : sourcespan program =
     | ESeq(e1, e2, loc) ->
         let e1_desugar = helpE e1 in
         let seq_blank = (BBlank(TyBlank(loc), loc), e1_desugar, loc) in
-        ELet([seq_blank], e2, loc)
+        ELet([seq_blank], helpE e2, loc)
     | ELet(bindings, e, loc) ->
         let tmp_name = gensym "desugar_let" in
         let new_bindings = expandBinding bindings tmp_name (List.length bindings) in
-        ELet(new_bindings, e, loc)
+        ELet(new_bindings, helpE e, loc)
+    | ETuple(expr_lst, loc) -> ETuple(List.map helpE expr_lst, loc)
+    | EGetItem(eg, i1, i2, loc) -> EGetItem(helpE eg, i1, i2, loc)
+    | ESetItem(eg, i1, i2, es, loc) -> ESetItem(helpE eg, i1, i2, helpE es, loc)
+    | EPrim1(p1, e, loc) -> EPrim1(p1, helpE e, loc)
+    | EPrim2(p2, e1, e2, loc) -> EPrim2(p2, helpE e1, helpE e2, loc)
+    | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
+    | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
+    | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
     | _ -> e
   and expandHelper binds tmp_var ctr len loc=
     match binds with
@@ -443,12 +451,13 @@ let desugar (p : sourcespan program) : sourcespan program =
     match binding_left with
     | first::rest ->
       let (bind, e, loc) = first in
+      let e = helpE e in
       (match bind with
       | BTuple(bind_list, loc1) ->
         let first_binding = (BName(tmp_var, bind_to_typ bind, loc1), e, loc) in
         let expanded_bindings = expandHelper bind_list tmp_var 0 (List.length bind_list) loc1 in
         ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
-      | _ -> ([first] @ expandBinding rest tmp_name len))
+      | _ -> ([(bind, e, loc)] @ expandBinding rest tmp_name len))
     | _ -> []
   and tupToName binds =
     match binds with
@@ -482,7 +491,10 @@ let desugar (p : sourcespan program) : sourcespan program =
   in
   match p with
   | Program(tydecls, decls, body, t) ->
-          Program(tydecls, List.map (fun group -> List.map helpD group) decls, (helpE body), t)
+          let new_decls = List.map (fun group -> List.map helpD group) decls in
+          let new_body = helpE body in
+          let new_p = Program(tydecls, new_decls, new_body, t) in
+          new_p
 ;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
@@ -916,7 +928,6 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
 (* Add a desugaring phase somewhere in here, as well as your typechecker *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
-  |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared desugar)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
