@@ -72,11 +72,11 @@ let suite =
   t "tuplepair2" "let three = ((4, (true, 3))) in
                   three" "(4, (true, 3))";
 
-  t "tuplepair2" "let three = ((4, (true, 3))) in
+  t "tuplepair4" "let three = ((4, (true, 3))) in
                   three" "(4, (true, 3))";
 
   t "tuplepair3" "let three = (0, 0, 0) in
-                  three[0 of 3 := 1][1 of 3 := 2][2 of 3 := 3]" "";
+                  three" "";
   ]
 ;;
 
