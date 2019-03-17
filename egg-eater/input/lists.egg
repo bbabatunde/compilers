@@ -1,0 +1,12 @@
+def link(first, rest):
+  (first, rest)
+
+def length(l):
+  if l == false: 0
+  else:
+    1 + length(l[1 of 2])
+
+
+def add_pairs(p1, p2):
+  let (x1, y1) = p1, (x2, y2) = p2 in
+  (x1 + x2, y1 + y2)

@@ -785,16 +785,18 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          )
 
   | CTuple(lst,_)-> 
-      let tuple_tag = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(1)))] in
+      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))
+                      ;IAdd(Reg(ESI), Const(4))] in
       let args = List.map (fun e ->  compile_imm e env) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
         IMov(Sized(DWORD_PTR, RegOffset(i * 4, ESI)), Reg(EAX))]) args) in
 
-      let result = [IMov(Reg(EAX), Reg(ESI)); IAdd(Reg(EAX), Const(1))] in
-      let offset = [IAdd(Reg(ESI), Const(8));] in
+      let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
+                       IAdd(Reg(EAX), Const(1))] in
+      let offset = [IAdd(Reg(ESI), Const(4 * List.length lst));] in
 
-       tuple_tag @  instr @ result @ offset
+       size @  instr @ to_tuple @ offset
      
 
   | CGetItem(pair,index,_)-> 
@@ -870,7 +872,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   let heap_start = [
       ILineComment("heap start");
       IMov(Reg(ESI),RegOffset(4,ESP));
-      IAdd(Reg(ESI),Const(8));
+      IAdd(Reg(ESI),Const(7));
       IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
 
   let stack_setup = [
