@@ -25,7 +25,7 @@ void tuple_printer(void* val){
 }
 
 int print(int val) {
-  if ((val & BOOL_TAG) == 0) { // val is even ==> number
+  if ((val & INT_TAG) == 0) { // val is even ==> number
     printf("%d\n", val >> 1); // shift bits right to remove tag
   } else if (val == BOOL_TRUE) {
     printf("true\n");

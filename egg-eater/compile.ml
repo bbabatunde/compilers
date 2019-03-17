@@ -823,9 +823,9 @@ let build_env (vars: string list) : (string * arg) list =
   in let (_, result) = _build_env vars [] in
     result
 
-let rec compile_decl (decls: tag adecl list) : instruction list = match decls with
-  | ADFun(fun_name, args, body, tag)::rest -> 
-      let local_env = build_env args in (compile_fun fun_name body args local_env false)  @ compile_decl rest 
+let rec compile_decl (d: tag adecl ) : instruction list = match d with
+  | ADFun(fun_name, args, body, tag) -> 
+      let local_env = build_env args in (compile_fun fun_name body args local_env false) 
   
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
@@ -890,7 +890,7 @@ our_code_starts_here:" in
     IPush(Const(5));
     ICall("error") 
     ] in
-  let fun_def =  (compile_decl decls) in
+  let fun_def =  List.flatten (List.map compile_decl decls) in
   let body = (compile_aexpr body 1 [] 0 true) in
   let as_assembly_string = (to_asm (fun_def @ stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
@@ -900,7 +900,7 @@ our_code_starts_here:" in
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  (*|> (add_phase desugared desugar)*)
+  |> (add_phase desugared desugar)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))

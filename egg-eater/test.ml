@@ -35,17 +35,17 @@ let suite =
 "suite">:::
  [
 
-  (* tanf "forty_one_anf"
+  tanf "forty_one_anf"
        (Program([], [], EAnnot(ENumber(41, ()), TyBlank(), ()), ()))
        forty_one_a;
 
-  tanf "prim1_anf"
+  (* tanf "prim1_anf"
    *      (Program([], (EPrim1(Sub1, ENumber(55, ()), ())), ()))
    *      (AProgram([],
    *                (ALet("unary_1", CPrim1(Sub1, ImmNum(55, ()), ()),
    *                      ACExpr(CImmExpr(ImmId("unary_1", ()))),
    *                      ())),
-   *               ()));
+   *               ())); *)
 
   te "scope_err1" "let x : Bool = true in (let y : Bool = (let x : Bool = false in x) in y)" "shadows one defined";
 
@@ -59,7 +59,7 @@ let suite =
     (* Some useful if tests to start you off *)
 
   t "if1" "if 7 < 8: 5 else: 3" "5";
-  t "if2" "if 0 > 1: 4 else: 2" "2"; *)
+  t "if2" "if 0 > 1: 4 else: 2" "2";
 
   te "overflow" "add1(1073741823)" "overflow";
 
