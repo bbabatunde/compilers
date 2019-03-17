@@ -77,6 +77,18 @@ let suite =
 
   t "tuplepair3" "let three = (0, 0, 0) in
                   three" "";
+
+  (* Sequence tests *)  
+  t "seq1" "let a = 1; 2; 3; 4; 5 in a" "5";
+  t "seq2" "1 + ( 2;3;4;5 )" "6";
+  t "seq3" "add1(2;3;4;5)" "6";
+  t "seq4" "if(false; true): 1;2;3 else: 2;2;3" "3";
+  t "seq5" "if(false; false): 1 else: 2;3;4" "4";
+  t "seq6" "def f(n): n
+            f(1;2;3)" "3";
+  t "seq7" "(1;2;3, 1;2;3)" "(3, 3)";
+  t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"
+
   ]
 ;;
 
