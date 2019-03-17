@@ -470,13 +470,43 @@ let desugar (p : sourcespan program) : sourcespan program =
           Program(tydecls, List.map (fun group -> List.map helpD group) decls, body, t)
 ;;
 
-let rec compile_fun (fun_name : string) args env : instruction list =
-  let count = (word_size *  List.length args) in
-  let stack_setup = [
+(* Generate instruction list for comparisons. Input type check and result check switched on optype *)
+let compare_vals (l) (r) (cmp: instruction) (end_label: string) : instruction list =
+    [ IMov(Reg(EAX), l);                   (* Put left into eax *)
+      ICmp(Reg(EAX), r);                  (* compare left to right *)
+      IMov(Reg(EAX), const_true);  (* Store true into EAX (doesn't change flags) *)
+      cmp;
+      IMov(Reg(EAX), const_false);  (* else: store false in EAX *)
+      ILabel(end_label);                  (* End label *)
+    ]
+
+let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
+  let stack_offset = ((count_vars body)+1) in
+  let lbl =
+      if (is_entry_point=true) then
+        ILabel(fun_name)
+      else
+        ILabel("fun_" ^ fun_name)
+  in
+  let stack_setup_asm = [
+      lbl;
+      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
-      IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count))] in
-    [ILabel(fun_name)] @ stack_setup
+      IMov(Reg(EBP), Reg(ESP));
+      ISub(Reg(ESP), HexConst(stack_offset))
+    ]
+  and postlude_asm = [
+      ILineComment(Printf.sprintf "Clean up for %s" fun_name);
+      IAdd(Reg(ESP), HexConst(stack_offset)); 
+      IMov(Reg(ESP), Reg(EBP));
+      IPop(Reg(EBP));
+      IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
+  ]
+  and body_asm = compile_aexpr body 1 env (List.length args) true in 
+    stack_setup_asm
+    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
+    @ body_asm
+    @ postlude_asm;
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
@@ -713,10 +743,21 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
      ]
    end
-  | CApp(funname, args, _) -> 
-    let arglist = (List.fold_left (fun lst arg -> lst @ [IMov(Reg(EAX),(compile_imm arg env));IPush(Reg(EAX))]
-     )  [] args) in
-    arglist @ [ICall(funname);IAdd(Reg(ESP),Const(word_size * List.length args))]
+  | CApp(name, args, _) -> 
+
+       if is_tail=true && num_args=(List.length args) then
+        (
+            (replace_args args env)@ [ IJmp(Printf.sprintf "fun_%s_body" name)]
+        )
+       else (
+           List.flatten (List.map(fun x ->
+           [ IMov(Reg(EAX), compile_imm x env ); 
+           IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] 
+           ) args) 
+           @ [ ICall(Printf.sprintf "fun_%s" name)]
+           @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length args))) ] 
+        )
+
   | CTuple(lst,_)-> 
     [
      IMov(Reg(ESI), (compile_imm  (List.nth lst 0) env));
@@ -744,18 +785,47 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      IAdd(Reg(EAX),HexConst(0x1));
     ]
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
-and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
+ and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
+  
+ and replace_args exprs env =
+  let rec _push_args exprlist =
+    match exprlist with
+    | head::tail ->
+       [ IMov(Reg(EAX), compile_imm head env);IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ] @ _push_args tail
+    | _ -> []
+  and
+  _replace_with_saved_args exprlist idx =
+    match exprlist with
+    | head::tail ->
+      [ IPop(Reg(EAX)); 
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_with_saved_args tail (idx+1)
+    | _ -> []
+  in
+  _push_args (List.rev exprs) @ _replace_with_saved_args exprs 1
 
 
-let compile_decl (d : tag adecl) : instruction list = match d with
-  | ADFun(fname,args,body,_) -> 
-    let postlude = [IMov(Reg(ESP),Reg(EBP));IPop(Reg(EBP));IRet] in
-   (compile_fun fname args []) @(compile_aexpr body 1 [] 0 true) @ postlude
+
+let build_env (vars: string list) : (string * arg) list =
+  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) =
+    match vars with
+    | vname::tail ->
+        let offset = 8+4*(List.length parsed) in
+        let this_res = [(vname, RegOffset(offset, EBP))] in 
+        (_build_env tail (parsed @ this_res)
+        )
+    | _ -> ([], parsed)
+  in let (_, result) = _build_env vars [] in
+    result
+
+let rec compile_decl (decls: tag adecl list) : instruction list = match decls with
+  | ADFun(fun_name, args, body, tag)::rest -> 
+      let local_env = build_env args in (compile_fun fun_name body args local_env false)  @ compile_decl rest 
   
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
@@ -820,7 +890,7 @@ our_code_starts_here:" in
     IPush(Const(5));
     ICall("error") 
     ] in
-  let fun_def = List.flatten (List.map compile_decl decls) in
+  let fun_def =  (compile_decl decls) in
   let body = (compile_aexpr body 1 [] 0 true) in
   let as_assembly_string = (to_asm (fun_def @ stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
@@ -830,7 +900,7 @@ our_code_starts_here:" in
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  |> (add_phase desugared desugar)
+  (*|> (add_phase desugared desugar)*)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))

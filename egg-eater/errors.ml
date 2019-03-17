@@ -16,6 +16,11 @@ exception NotYetImplemented of string (* TODO: Message to show *)
 exception Unsupported of string * sourcespan
 exception InternalCompilerError of string (* Major failure: message to show *)
 exception OccursCheck of string * sourcespan typ * sourcespan
+exception IndexTooSmall of int  * sourcespan
+exception IndexTooLarge of int  * sourcespan
+exception InvalidTyLen of string * sourcespan
+exception CyclicTy of string * sourcespan
+exception DuplicateType of string * sourcespan
 
 
 type reason =

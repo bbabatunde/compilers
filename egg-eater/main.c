@@ -8,7 +8,7 @@ extern void error(int errCode, int val) asm("error");
 
 int* HEAP;
 
-const int BOOL_TAG   = 0x00000001;
+const int INT_TAG   = 0x00000001;
 const int BOOL_TRUE  = 0xFFFFFFFF; // These must be the same values
 const int BOOL_FALSE = 0x7FFFFFFF; // as chosen in compile.ml
 const int TUPLE_TAG  = 0x00000001;
@@ -20,6 +20,9 @@ const int ERR_CMP_NUM = 4;
 const int ERR_OVERFLOW = 5;
 const int ERR_NOT_NUMBER = 10;
 
+void tuple_printer(void* val){
+
+}
 
 int print(int val) {
   if ((val & BOOL_TAG) == 0) { // val is even ==> number
@@ -28,7 +31,11 @@ int print(int val) {
     printf("true\n");
   } else if (val == BOOL_FALSE) {
     printf("false\n");
-  } else {
+  } else if ((val & TUPLE_TAG) == 0) {
+      tuple_printer(val >> 1);
+  }
+
+  else {
     printf("Unknown value: %#010x\n", val); // print unknown val in hex
   }
   return val;
