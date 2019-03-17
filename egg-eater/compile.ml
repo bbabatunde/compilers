@@ -330,6 +330,7 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
          if no_defargs = no_appargs then [] else
          [Arity (no_appargs,no_defargs,pos)]
       end
+    |ELet((BTuple(blst, _), exp, bindloc)::rest as binds, body, pos) -> []
     |ELet((BName(bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
       let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
       |(BName(n,typ,loc),e,y) -> match find2 env n with 
