@@ -8,7 +8,7 @@ extern void error(int errCode, int val) asm("error");
 
 int* HEAP;
 
-const int INT_TAG   = 0x00000001;
+const int BOOL_TAG   = 0x00000001;
 const int BOOL_TRUE  = 0xFFFFFFFF; // These must be the same values
 const int BOOL_FALSE = 0x7FFFFFFF; // as chosen in compile.ml
 const int TUPLE_TAG  = 0x00000001;
@@ -21,18 +21,19 @@ const int ERR_OVERFLOW = 5;
 const int ERR_NOT_NUMBER = 10;
 
 void tuple_printer(void* val){
-
+  exit(0);
 }
 
 int print(int val) {
-  if ((val & INT_TAG) == 0) { // val is even ==> number
+  if ((val & BOOL_TAG) == 0) { // val is even ==> number
     printf("%d\n", val >> 1); // shift bits right to remove tag
   } else if (val == BOOL_TRUE) {
     printf("true\n");
   } else if (val == BOOL_FALSE) {
     printf("false\n");
-  } else if ((val & TUPLE_TAG) == 0) {
-      tuple_printer(val >> 1);
+  } else if ((val & TUPLE_TAG) == 1) {
+         printf("false\n");
+
   }
 
   else {
@@ -67,12 +68,12 @@ void error(int errCode, int val) {
 // to specify the size of the available heap.  You may find this useful
 // for debugging...
 int main(int argc, char** argv) {
-  int size = 100000;
-  if (argc > 1) { size = atoi(argv[1]); }
-  if (size < 0 || size > 1000000) { size = 0; }
-  HEAP = calloc(size, sizeof (int));
-
-  int result = our_code_starts_here(HEAP, size);
+ // int size = 100000;
+  //if (argc > 1) { size = atoi(argv[1]); }
+  //if (size < 0 || size > 1000000) { size = 0; }
+  //HEAP = calloc(size, sizeof (int));
+   HEAP = calloc(1024, sizeof(int)); // Allocate 4KB of memory for now
+  int result = our_code_starts_here(HEAP);
   print(result);
   free(HEAP);
   return 0;

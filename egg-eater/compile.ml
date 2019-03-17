@@ -342,7 +342,7 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
    | ESeq(left, right,_) -> wf_E left ds env @ wf_E right ds env
    | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env) [] exprlist
    | EGetItem(tuple,index,size,loc)-> 
-     if ( index+1 >=  size) 
+     if ( index+1 >  size) 
      then  wf_E tuple ds env @ [IndexTooLarge(index,loc)]
      else if (index < 0) then wf_E tuple ds env @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env
    | ESetItem (exp,index,size,exp2,loc) -> 
@@ -744,18 +744,19 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
   | CTuple(lst,_)-> 
     [
-     IMov(Reg(ESI), (compile_imm  (List.nth lst 0) env));
-     IMov(RegOffset(1,ESI), (compile_imm (List.nth lst 1) env));
-     IMov(Reg(EAX),Reg(ESI));
-     IAdd(Reg(EAX), HexConst(0x1));
-     IAdd(Reg(ESI),Const(8))
+
+     IMov(Reg(EAX),    Sized(DWORD_PTR, (compile_imm  (List.nth lst 0) env)   )) ;
+     IMov(RegOffset(4,ESI),   (compile_imm (List.nth lst 0) env));
+     IMov(Reg(EAX), Reg(ESI));
+     IAdd(Reg(EAX), HexConst(0x00000001));
+     IAdd(Reg(ESI), Const(8))
     ]
   | CGetItem(pair,index,_)-> 
    [
-    IMov(Reg(EAX), compile_imm pair env);
+    IMov(Reg(EAX),  compile_imm pair env);
     (*TODO add tag check*)
-    ISub(Reg(EAX),HexConst(0x1));
-    IMov(Reg(EAX),RegOffset(index, EAX))
+    ISub(Reg(EAX),HexConst(0x00000001));
+    IMov(Reg(EAX),RegOffset(word_size * index, EAX))
    ]
   | CSetItem(pair,index,newpair,loc)-> 
     [
@@ -776,54 +777,33 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
   
-(* Given a list of arguments and an env, replace them on the stack for tail calls *)
 and replace_args exprs env = 
-  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
-   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
-  (*let rec _replace_args exprlist idx = 
-    match exprlist with
-    | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env );
-       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
-       @ _replace_args tail (idx+1)
-
-    | _ -> []
-  and
-  *)
   let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
        [ IMov(Reg(EAX), compile_imm head env);
          IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
        @ _push_args tail
-
     | _ -> []
   and
   _replace_with_saved_args exprlist idx = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX)); (* Pop old value off stack into Eax *)
+      [ IPop(Reg(EAX)); 
        IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
        @ _replace_with_saved_args tail (idx+1)
-
     | _ -> []
   in
-
-  (* First: push all old args onto our function's stack *)
   _push_args (List.rev exprs)
-  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
-  (*@ _replace_args exprs 1 *)
+
   @ _replace_with_saved_args exprs 1
 
 let build_env (vars: string list) : (string * arg) list =
-  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
-  (* First var is at ebp-8, second is ebp-12, ... *)
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
     | vname::tail -> 
         let offset = 8+4*(List.length parsed) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in (* Params are EBP relative *)
-        (* (Printf.printf "Building env: %s -> EBP+%d\n" vname offset); *)
+        let this_res = [(vname, RegOffset(offset, EBP))] in 
         (_build_env tail (parsed @ this_res)
         )
     | _ -> ([], parsed)
@@ -837,24 +817,24 @@ let rec compile_decl (d: tag adecl ) : instruction list = match d with
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
-        "section .text
-extern error
-extern print
-global fun_f
-global fun_f_body
-global our_code_starts_here" in
+ "extern error
+  extern print
+  global our_code_starts_here" in
   let count = word_size *  count_vars body in
-  let stack_setup =[
+  let heap_start = [
+      ILineComment("heap start");
+      IMov(Reg(ESI),RegOffset(4,ESP));
+      IAdd(Reg(ESI),Const(8));
+      IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
+
+  let stack_setup = [
+      ILineComment("stack start");
       IPush(Reg(EBP));
       IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count));
-
-      IMov(Reg(ESI),RegOffset(8,EBP));
-      IAdd(Reg(ESI),Const(7));
-      IAnd(Reg(ESI),HexConst(0xfffffff8));
-
-      ] in
+      ISub(Reg(ESP),Const(count))] 
+    in
   let postlude = [
+    ILineComment("postlude start");
     IMov(Reg(ESP),Reg(EBP));
     IPop(Reg(EBP));
     IRet;
@@ -899,8 +879,8 @@ global our_code_starts_here" in
     ICall("error") 
     ] in
   let fun_def =  List.flatten (List.map compile_decl decls) in
-  let body = (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")]  @ stack_setup @ body @ postlude)) in
+  let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
+  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
 
 
