@@ -365,7 +365,8 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
           ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
   and wf_G (gds : 'a decl list list ): exn list  =
-   let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen))))  ([],[]) gds) in exnlist
+   let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen))))  ([],[]) gds)
+     in exnlist
   (*check for type intlist = (intlist * int)*)
    and wf_T (t : sourcespan typ) (tydecls: 'a tydecl list)  : exn list = match t with 
     | TyBlank(_) -> []
@@ -535,8 +536,8 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
   let prelude = (compile_cexpr bind (si + 1) env num_args false) in
-  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-(word_size *si), EBP))::env) num_args is_tail) in
-  prelude @ [IMov(RegOffset(~-(word_size *si), EBP), Reg(EAX))] @ body
+  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
+  prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
@@ -606,13 +607,14 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         IJz("logic_expected_a_boolean");
         IXor(Reg(EAX),bool_mask)
        ]
+      | IsTuple -> failwith "IsTuple"
       |PrintStack -> failwith "print stack"
     end
 
   | CPrim2(op, left, right, tag) -> 
     let instr =
         [IMov(Reg(EAX),(compile_imm left  env))] @
-        [IMov(RegOffset(~-word_size * si, EBP), Reg(EAX))] @
+        [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @
         [IMov(Reg(EAX),(compile_imm right env))] @
         [IMov(RegOffset(~-word_size * (si + 1), EBP), Reg(EAX))] in
    begin match op with
@@ -658,10 +660,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    | And -> 
       instr @
     [
-            IMov(Reg(EAX), RegOffset(~-(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJz("logic_expected_a_boolean");
-            IMov(Reg(EDX), RegOffset(~-(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJz("logic_expected_a_boolean_edx");
             IAnd(Reg(EAX), Reg(EDX))
@@ -750,30 +752,23 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
      ]
    | Eq -> 
-     let eq_label = sprintf "equal_%s" (string_of_int tag) in
+
      instr @
     [
-            IMov(Reg(EAX), RegOffset(~-word_size*(si), EBP));
-            (* ITest(Reg(EAX), const_bool_tag); *)
-            (* IJnz("comparison_expected_a_number"); *)
-            IMov(Reg(EDX), RegOffset(~-word_size*(si + 1), EBP));
-            (* ITest(Reg(EDX), const_bool_tag); *)
-            (* IJnz("comparison_expected_a_number_EDX"); *)
-            ICmp(Reg(EAX), Reg(EDX));
-            IMov(Reg(EAX), const_true);
-            IJe(eq_label);
-            IMov(Reg(EAX), const_false);
-            ILabel(eq_label)
-
+            IMov(Reg(EAX),  RegOffset(~-word_size*(si), EBP));
+            IMov(Reg(EDX),  RegOffset(~-word_size*(si + 1), EBP));
+            IPush(Reg(EAX));
+            IPush(Reg(EDX));
+            ICall("equal");
+            IAdd(Reg(ESP), Const(8))
      ]
    end
   | CApp(name, exprs, _) ->
   
        if is_tail=true && num_args=(List.length exprs) then
          (
-         [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
-         @ (replace_args exprs env)
-         @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
+    
+          (replace_args exprs env) @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
 
         )
        else (
@@ -839,7 +834,7 @@ and replace_args exprs env =
     match exprlist with
     | head::tail ->
       [ IPop(Reg(EAX)); 
-       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       IInstrComment(IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
        @ _replace_with_saved_args tail (idx+1)
     | _ -> []
   in
@@ -866,7 +861,10 @@ let rec compile_decl (d: tag adecl ) : instruction list = match d with
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
- "extern error
+ " 
+  section .text
+  extern equal 
+  extern error
   extern print
   global our_code_starts_here" in
   let count = word_size *  count_vars body in
@@ -936,6 +934,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
 (* Add a desugaring phase somewhere in here, as well as your typechecker *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
+  |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared desugar)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)

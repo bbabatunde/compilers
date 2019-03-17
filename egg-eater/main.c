@@ -5,8 +5,10 @@
 #include <stdio.h>
 
 extern int our_code_starts_here() asm("our_code_starts_here");
+extern int equal(int a, int b) asm("equal");
 extern int print(int val) asm("print");
 extern void error(int errCode, int val) asm("error");
+
 void* printer(int val, int tuple_size );
 
 int* HEAP;
@@ -24,9 +26,12 @@ const int ERR_OVERFLOW = 5;
 const int ERR_NOT_NUMBER = 10;
 
 
-int equal(int a, int b) {
-  if(a == b) { return BOOL_TRUE; }
-  else { return BOOL_FALSE; }
+int equal(int left, int right) {
+   
+  if(left == right ) 
+  { return BOOL_TRUE; }
+  else
+   { return BOOL_FALSE; }
 }
 
 

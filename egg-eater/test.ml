@@ -54,7 +54,7 @@ let suite =
   t "forty_one" forty_one "41";
 
 
-  t "test" test_prog "3";
+  t "test1" test_prog "3";
       
     (* Some useful if tests to start you off *)
 
@@ -67,7 +67,7 @@ let suite =
   t "tuplepair" "let zero = (100,1,100) in zero[0 of 2]" "100";
   t "tuplepair1" "let t = (3, ((4, true), 5)) in 
                   let (x, (y, z)) = t in
-                  x + y[0 of 2] + z" "";
+                  x + y[0 of 2] + z" "12";
 
   t "tuplepair2" "let three = ((4, (true, 3))) in
                   three" "(4, (true, 3))";
@@ -82,6 +82,9 @@ let suite =
 
   t "printtuple" "print((1, 2, 3,4))" "(1, 2, 3, 4)\n(1, 2, 3, 4)";
 
+  t "equalif" "if 1 == 1:  1 else: 0" "1";
+
+  t "plaineq" "(true && true)" "true";
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "5";
@@ -92,7 +95,7 @@ let suite =
   t "seq6" "def f(n): n
             f(1;2;3)" "3";
   t "seq7" "(1;2;3, 1;2;3)" "(3, 3)";
-  t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"
+  (*t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"*)
  
   t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)";
 
