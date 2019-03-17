@@ -395,6 +395,24 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
      if output = [] then Ok(p) else Error(output)
 ;;
 
+let rec tupArgs arg_lst =
+    match arg_lst with
+    | first::rest ->
+        (match first with
+        | BTuple(_, _) -> first :: (tupArgs rest)
+        | _ -> tupArgs rest)
+    | [] -> []
+;;
+
+let rec nonTups arg_lst =
+    match arg_lst with
+    | first::rest ->
+        (match first with
+        | BTuple(_, _) -> tupArgs rest
+        | _ -> first :: (tupArgs rest))
+    | [] -> []
+;;
+
 let desugar (p : sourcespan program) : sourcespan program =
   let gensym =
     let next = ref 0 in
@@ -431,10 +449,13 @@ let desugar (p : sourcespan program) : sourcespan program =
         ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
       | _ -> ([first] @ expandBinding rest tmp_name len))
     | _ -> []
-  and tupToName bind =
-    match bind with
-    | BTuple(tup_binds, loc) -> BName(gensym "desugar_args", TyTup(List.map bind_to_typ tup_binds, loc), loc)
-    | _ -> bind
+  and tupToName binds =
+    match binds with
+    | first::rest ->
+        (match first with
+        | BTuple(tup_binds, loc) -> BName(gensym "desugar_args", TyTup(List.map bind_to_typ tup_binds, loc), loc) :: (tupToName rest)
+        | _ -> tupToName rest)
+    | [] -> []
   and helpNewBinds ele1 ele2 =
     match ele1 with
     | BTuple(tup_binds, _) ->
@@ -442,15 +463,16 @@ let desugar (p : sourcespan program) : sourcespan program =
       | BName(tmp, typ, t) ->
         (BTuple(tup_binds, t), EId(tmp, t), t)
       | _ -> raise (InternalCompilerError "Processing args broken o.O"))
+    | _ -> raise (InternalCompilerError "tupToName or tupArgs broken O.o")
   and helpArgs args =
-    let new_args = List.map tupToName args in
-    let new_bindings = (List.map2 helpNewBinds args new_args) in
+    let new_args = nonTups args in
+    let new_bindings = List.map2 helpNewBinds (tupArgs args) (tupToName args) in
     (new_args, new_bindings)
   and helpD (d : sourcespan decl) (* other parameters may be needed here *) =
     match d with
     | DFun(name, args, scheme, body, pos) ->
         let (new_args, new_binds) = helpArgs args in
-        let new_body = ELet(new_binds, body, pos) in
+        let new_body = ELet(new_binds, (helpE body), pos) in
         DFun(name, new_args, scheme, new_body, pos)
   and helpT (t : sourcespan typ) (* other parameters may be needed here *) =
     Error([NotYetImplemented "Implement desrugaring for types"])
@@ -459,7 +481,7 @@ let desugar (p : sourcespan program) : sourcespan program =
   in
   match p with
   | Program(tydecls, decls, body, t) ->
-          Program(tydecls, List.map (fun group -> List.map helpD group) decls, body, t)
+          Program(tydecls, List.map (fun group -> List.map helpD group) decls, (helpE body), t)
 ;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
@@ -888,7 +910,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  (*|> (add_phase desugared desugar)*)
+  |> (add_phase desugared desugar)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))
