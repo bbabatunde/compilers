@@ -442,8 +442,15 @@ let desugar (p : sourcespan program) : sourcespan program =
   and expandHelper binds tmp_var ctr len loc=
     match binds with
     | first::rest ->
-      let this_expanded_binding = (first, EGetItem(EId(tmp_var, loc), ctr, len, loc), loc) in
-      (this_expanded_binding :: expandHelper rest tmp_var (ctr + 1) len loc)
+      let this_expanded_binding =
+        (match first with
+        | BTuple(_, _) ->
+            let tmp_name = gensym "rec_expand" in
+            let tmp_binding = [(first, EGetItem(EId(tmp_var, loc), ctr, len, loc), loc)] in
+            let this_expanded_list = expandBinding tmp_binding tmp_name (List.length tmp_binding) in
+            this_expanded_list @ expandHelper rest tmp_var (ctr + 1) len loc
+        | _ -> [(first, EGetItem(EId(tmp_var, loc), ctr, len, loc), loc)]) in
+      (this_expanded_binding @ expandHelper rest tmp_var (ctr + 1) len loc)
     | [] -> []
   and expandBinding binding_left tmp_name len =
     let index = len - (List.length binding_left) in

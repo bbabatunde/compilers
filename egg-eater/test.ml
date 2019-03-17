@@ -94,6 +94,18 @@ let suite =
   t "seq7" "(1;2;3, 1;2;3)" "(3, 3)";
   t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"
  
+  t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)";
+
+  (* Desugar tuple tests *)
+  t "desugar1" "let (a, b, c) = (1, 2, 3) in c" "3";
+  t "desugar2" "let (a, (b, c)) = (1, (2, 3)) in c" "3";
+  t "desugar2_1" "let (a, (b, c)) = (1, (2, 3)) in b" "2";
+  t "desugar2_2" "let (a, (b, c)) = (1, (2, 3)) in a" "1";
+  t "desugar3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in d" "4";
+  t "desugar3_2" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in c" "3";
+  t "desugar3_3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in b" "2";
+  t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "1";
+  t "desugar4" "let (a, b) = (1, (2, 3)) in b" "(2, 3)"
   ]
 ;;
 
