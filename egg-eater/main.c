@@ -7,7 +7,7 @@
 extern int our_code_starts_here() asm("our_code_starts_here");
 extern int print(int val) asm("print");
 extern void error(int errCode, int val) asm("error");
-void* printer(int val );
+void* printer(int val, int tuple_size );
 
 int* HEAP;
 
@@ -50,13 +50,18 @@ int input(){
 }
 
 int print(int val) {
-  printer(val);
+  int tuple_size = 2;
+  if ((val & TUPLE_TAG) == 1){
+     int* tupptr = (int*)(val - 1);
+     tuple_size = *(tupptr);
+  }
+  printer(val, tuple_size);
   printf("\n");
 
   return val;
 }
 
-void* printer(int val ){
+void* printer(int val , int tuple_size){
 
    if ((val & BOOL_TAG) == 0) { // val is even ==> number
     printf("%d", val >> 1); // shift bits right to remove tag
@@ -68,15 +73,31 @@ void* printer(int val ){
          if( (val - 1) == 0){
 
           }else{
-
+         
           int* tupptr = (int*)(val - 1);
+          if(tuple_size == 2) {
           printf("(");
-          printer(*(tupptr));
+          printer(*(tupptr + 1),tuple_size);
           printf(", ");
-          printer(*(tupptr + 1));
+          printer(*(tupptr + 2), tuple_size);
           printf(")");
           //TODO 1 OR 2
           *(tupptr) -= 2;
+          }
+          else {
+            int i;
+            printf("(");
+            for(i = 1; i < tuple_size + 1; i++){
+               printer(*(tupptr + i),tuple_size);
+                if(i == tuple_size){
+
+                }
+                else
+                printf(", ");
+            }
+            printf(")");
+
+          }
 
         }
 

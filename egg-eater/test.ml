@@ -35,7 +35,7 @@ let suite =
 "suite">:::
  [
 
-  tanf "forty_one_anf"
+   tanf "forty_one_anf"
        (Program([], [], EAnnot(ENumber(41, ()), TyBlank(), ()), ()))
        forty_one_a;
 
@@ -47,7 +47,7 @@ let suite =
    *                      ())),
    *               ())); *)
 
-  te "scope_err1" "let x : Bool = true in (let y : Bool = (let x : Bool = false in x) in y)" "shadows one defined";
+  (*te "scope_err1" "let x : Bool = true in (let y : Bool = (let x : Bool = false in x) in y)" "shadows one defined";*)
 
   ta "forty_one_run_anf" (atag forty_one_a) "41";
  
@@ -74,10 +74,14 @@ let suite =
 
   t "tuplepair4" "let three = ((4, (true, 3))) in
                   three" "(4, (true, 3))";
-
+ 
   t "tuplepair3" "let three = (1, 2, 3,4) in
-                  three" "";
-  t "tuplepair5" "let two = (1,2,3,4) in two[1 of 5 := 10] "  "(10, 0)";
+                  three" "(1, 2, 3, 4)";
+  
+  t "tuplepair5" "let two = (1,2,3,4) in two[1 of 5 := 10] "  "(1, 10, 3, 4)";
+
+  t "printtuple" "print((1, 2, 3,4))" "(1, 2, 3, 4)\n(1, 2, 3, 4)";
+
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "5";
@@ -89,7 +93,7 @@ let suite =
             f(1;2;3)" "3";
   t "seq7" "(1;2;3, 1;2;3)" "(3, 3)";
   t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"
-
+ 
   ]
 ;;
 

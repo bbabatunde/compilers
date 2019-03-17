@@ -778,16 +778,17 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          )
 
   | CTuple(lst,_)-> 
-      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))
-                      ;IAdd(Reg(ESI), Const(4))] in
+      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))] in
       let args = List.map (fun e ->  compile_imm e env) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
-        IMov(Sized(DWORD_PTR, RegOffset(i * 4, ESI)), Reg(EAX))]) args) in
+        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * 4, ESI)), Reg(EAX))]) args) in
 
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
                        IAdd(Reg(EAX), Const(1))] in
-      let offset = [IAdd(Reg(ESI), Const(4 * List.length lst));] in
+      let offset = [IAdd(Reg(ESI), Const(4 * (List.length lst + 1)));
+                    IAdd(Reg(ESI), Const(4));
+                  ] in
 
        size @  instr @ to_tuple @ offset
      
@@ -797,7 +798,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     IMov(Reg(EAX),  compile_imm pair env);
     (*TODO add tag check*)
     ISub(Reg(EAX),HexConst(0x00000001));
-    IMov(Reg(EAX),RegOffset(word_size * index, EAX))
+    IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
    ]
   | CSetItem(pair,index,newpair,loc)-> 
     [
@@ -807,7 +808,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      IAnd(Reg(ECX), HexConst(0x7));
      (* TODO add tag checks*)
      ISub(Reg(EAX),HexConst(0x1));
-     IMov(RegOffset(index, EAX),Reg(EDX));
+     IMov(RegOffset( word_size * (index + 1), EAX),Reg(EDX));
      IAdd(Reg(EAX),HexConst(0x1));
     ]
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
