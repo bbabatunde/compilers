@@ -410,8 +410,8 @@ let rec replaceTups arg_lst ctr =
     match arg_lst with
     | first::rest ->
         (match first with
-        | BTuple(_, loc) -> BName(tmp_tup_name, bind_to_typ first, loc) :: (replaceTups rest (ctr - 1))
-        | BName(_, _, _) -> first :: (replaceTups rest (ctr - 1))
+        | BTuple(_, loc) -> BName(tmp_tup_name, bind_to_typ first, loc) :: (replaceTups rest (ctr + 1))
+        | BName(_, _, _) -> first :: (replaceTups rest ctr)
         | _ -> raise (InternalCompilerError "BBlank in function definition o.O"))
     | [] -> []
 ;;
@@ -468,12 +468,13 @@ let desugar (p : sourcespan program) : sourcespan program =
         ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
       | _ -> ([(bind, e, loc)] @ expandBinding rest tmp_name len))
     | _ -> []
-  and tupToName binds =
+  and tupToName binds ctr =
+    let tmp_name = (sprintf "desugar_args_%d" ctr) in
     match binds with
     | first::rest ->
         (match first with
-        | BTuple(tup_binds, loc) -> BName(gensym "desugar_args", TyTup(List.map bind_to_typ tup_binds, loc), loc) :: (tupToName rest)
-        | _ -> tupToName rest)
+        | BTuple(tup_binds, loc) -> BName(tmp_name, TyTup(List.map bind_to_typ tup_binds, loc), loc) :: (tupToName rest (ctr + 1))
+        | _ -> tupToName rest ctr)
     | [] -> []
   and helpNewBinds ele1 ele2 =
     match ele1 with
@@ -484,8 +485,8 @@ let desugar (p : sourcespan program) : sourcespan program =
       | _ -> raise (InternalCompilerError "Processing args broken o.O"))
     | _ -> raise (InternalCompilerError "tupToName or tupArgs broken O.o")
   and helpArgs args =
-    let new_args = (replaceTups args (List.length args)) in
-    let new_bindings = List.map2 helpNewBinds (tupArgs args) (tupToName args) in
+    let new_args = (replaceTups args 0) in
+    let new_bindings = List.map2 helpNewBinds (tupArgs args) (tupToName args 0) in
     (new_args, new_bindings)
   and helpD (d : sourcespan decl) (* other parameters may be needed here *) =
     match d with
@@ -495,8 +496,6 @@ let desugar (p : sourcespan program) : sourcespan program =
         DFun(name, new_args, scheme, helpE new_body, pos)
   and helpT (t : sourcespan typ) (* other parameters may be needed here *) =
     Error([NotYetImplemented "Implement desrugaring for types"])
-  and helpS (s : sourcespan scheme) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desugaring for typeschemes"])
   in
   match p with
   | Program(tydecls, decls, body, t) ->
