@@ -451,12 +451,13 @@ let desugar (p : sourcespan program) : sourcespan program =
     match binding_left with
     | first::rest ->
       let (bind, e, loc) = first in
+      let e = helpE e in
       (match bind with
       | BTuple(bind_list, loc1) ->
         let first_binding = (BName(tmp_var, bind_to_typ bind, loc1), e, loc) in
         let expanded_bindings = expandHelper bind_list tmp_var 0 (List.length bind_list) loc1 in
         ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
-      | _ -> ([first] @ expandBinding rest tmp_name len))
+      | _ -> ([(bind, e, loc)] @ expandBinding rest tmp_name len))
     | _ -> []
   and tupToName binds =
     match binds with
