@@ -75,8 +75,9 @@ let suite =
   t "tuplepair4" "let three = ((4, (true, 3))) in
                   three" "(4, (true, 3))";
 
-  t "tuplepair3" "let three = (0, 0, 0) in
+  t "tuplepair3" "let three = (1, 2, 3,4) in
                   three" "";
+  t "tuplepair5" "let two = (1,2,3,4) in two[1 of 5 := 10] "  "(10, 0)";
   ]
 ;;
 

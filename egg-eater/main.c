@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdio.h>
 
 extern int our_code_starts_here() asm("our_code_starts_here");
 extern int print(int val) asm("print");
@@ -22,6 +24,30 @@ const int ERR_OVERFLOW = 5;
 const int ERR_NOT_NUMBER = 10;
 
 
+int equal(int a, int b) {
+  if(a == b) { return BOOL_TRUE; }
+  else { return BOOL_FALSE; }
+}
+
+
+int input(){
+    char val[20];
+    scanf("%d", &input);
+
+    if(isdigit(val)){
+      int num = atoi(val);
+      return num << 1;
+    }
+    else if(isalpha(val)){
+      if(strcmp(val ,"true") == 0)
+        return BOOL_TRUE;
+      else if (strcmp(val ,"false") == 0)
+        return BOOL_FALSE;
+      else
+        exit(1);
+    }
+  exit(1);
+}
 
 int print(int val) {
   printer(val);
@@ -50,7 +76,7 @@ void* printer(int val ){
           printer(*(tupptr + 1));
           printf(")");
           //TODO 1 OR 2
-          *(tupptr) -= 1;
+          *(tupptr) -= 2;
 
         }
 
