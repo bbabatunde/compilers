@@ -64,7 +64,19 @@ let suite =
   te "overflow" "add1(1073741823)" "overflow";
   t "funcalls1" "def f(n): n\n\n f(1)" "1"; 
   t "funcalls"  "def fact(n : Int) -> Int: if n < 2: 1 else: n * fact(n - 1)\n\nfact(5)" "120";
-  tvg "tuplepair" "let zero = (1,1) in 0" "0";
+  t "tuplepair" "let zero = (100,1,100) in zero[0 of 2]" "100";
+  t "tuplepair1" "let t = (3, ((4, true), 5)) in 
+                  let (x, (y, z)) = t in
+                  x + y[0 of 2] + z" "";
+
+  t "tuplepair2" "let three = ((4, (true, 3))) in
+                  three" "(4, (true, 3))";
+
+  t "tuplepair2" "let three = ((4, (true, 3))) in
+                  three" "(4, (true, 3))";
+
+  t "tuplepair3" "let three = (0, 0, 0) in
+                  three[0 of 3 := 1][1 of 3 := 2][2 of 3 := 3]" "";
   ]
 ;;
 

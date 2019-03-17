@@ -346,7 +346,7 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
      then  wf_E tuple ds env @ [IndexTooLarge(index,loc)]
      else if (index < 0) then wf_E tuple ds env @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env
    | ESetItem (exp,index,size,exp2,loc) -> 
-     if (index +1 >=  size) 
+     if (index +1 >  size) 
      then  wf_E exp ds env @ [IndexTooLarge(index,loc)] @  wf_E exp2 ds env
      else if (index < 0) then wf_E exp ds env @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env 
      else wf_E exp ds env @  wf_E exp2 ds env
@@ -743,14 +743,18 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          )
 
   | CTuple(lst,_)-> 
-    [
+      let tuple_tag = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(1)))] in
+      let args = List.map (fun e ->  compile_imm e env) lst in
+      let instr = List.flatten (List.mapi (fun i a -> [
+        IMov(Reg(EAX), Sized(DWORD_PTR, a));
+        IMov(Sized(DWORD_PTR, RegOffset(i * 4, ESI)), Reg(EAX))]) args) in
 
-     IMov(Reg(EAX),    Sized(DWORD_PTR, (compile_imm  (List.nth lst 0) env)   )) ;
-     IMov(RegOffset(4,ESI),   (compile_imm (List.nth lst 0) env));
-     IMov(Reg(EAX), Reg(ESI));
-     IAdd(Reg(EAX), HexConst(0x00000001));
-     IAdd(Reg(ESI), Const(8))
-    ]
+      let result = [IMov(Reg(EAX), Reg(ESI)); IAdd(Reg(EAX), Const(1))] in
+      let offset = [IAdd(Reg(ESI), Const(8));] in
+
+       tuple_tag @  instr @ result @ offset
+     
+
   | CGetItem(pair,index,_)-> 
    [
     IMov(Reg(EAX),  compile_imm pair env);

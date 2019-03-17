@@ -5,6 +5,7 @@
 extern int our_code_starts_here() asm("our_code_starts_here");
 extern int print(int val) asm("print");
 extern void error(int errCode, int val) asm("error");
+void* printer(int val );
 
 int* HEAP;
 
@@ -20,28 +21,45 @@ const int ERR_CMP_NUM = 4;
 const int ERR_OVERFLOW = 5;
 const int ERR_NOT_NUMBER = 10;
 
-void tuple_printer(void* val){
-  exit(0);
-}
+
 
 int print(int val) {
-  if ((val & BOOL_TAG) == 0) { // val is even ==> number
-    printf("%d\n", val >> 1); // shift bits right to remove tag
+  printer(val);
+  printf("\n");
+
+  return val;
+}
+
+void* printer(int val ){
+
+   if ((val & BOOL_TAG) == 0) { // val is even ==> number
+    printf("%d", val >> 1); // shift bits right to remove tag
   } else if (val == BOOL_TRUE) {
-    printf("true\n");
+    printf("true");
   } else if (val == BOOL_FALSE) {
-    printf("false\n");
+    printf("false");
   } else if ((val & TUPLE_TAG) == 1) {
-         printf("false\n");
+         if( (val - 1) == 0){
+
+          }else{
+
+          int* tupptr = (int*)(val - 1);
+          printf("(");
+          printer(*(tupptr));
+          printf(", ");
+          printer(*(tupptr + 1));
+          printf(")");
+          //TODO 1 OR 2
+          *(tupptr) -= 1;
+
+        }
 
   }
 
   else {
     printf("Unknown value: %#010x\n", val); // print unknown val in hex
   }
-  return val;
 }
-
 
 void error(int errCode, int val) {
   if (errCode == ERR_NOT_NUMBER) {
@@ -68,11 +86,10 @@ void error(int errCode, int val) {
 // to specify the size of the available heap.  You may find this useful
 // for debugging...
 int main(int argc, char** argv) {
- // int size = 100000;
-  //if (argc > 1) { size = atoi(argv[1]); }
-  //if (size < 0 || size > 1000000) { size = 0; }
-  //HEAP = calloc(size, sizeof (int));
-   HEAP = calloc(1024, sizeof(int)); // Allocate 4KB of memory for now
+  int size = 100000;
+  if (argc > 1) { size = atoi(argv[1]); }
+  if (size < 0 || size > 1000000) { size = 0; }
+  HEAP = calloc(size, sizeof (int));
   int result = our_code_starts_here(HEAP);
   print(result);
   free(HEAP);
