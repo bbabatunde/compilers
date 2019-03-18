@@ -328,7 +328,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
          let no_appargs = List.length appargs in
          let no_defargs = List.length defargs  in
          if no_defargs = no_appargs then [] else
-         [Arity (no_appargs,no_defargs,pos)]
+         [Arity (no_defargs,no_appargs,pos)]
       end
     |ELet([], body, pos) -> wf_E body ds env tydecls
     |ELet((BBlank(typ, _), exp, bindloc)::rest as binds, body, pos) -> []
@@ -339,7 +339,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
       |(BBlank(_,_),e,y) -> ((wf_E e ds env tydecls), env)
       |(BName(n,typ,loc),e,y) -> match find2 env n with 
       |None -> (exnlist, [(n,y)]@env)
-      |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env) tydecls) @ [DuplicateId(n,y,exploc)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
+      |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env) tydecls) @ [DuplicateId(n,exploc,y)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
     and shadowlist = match find2 env bind with
       |None -> wf_E exp ds env tydecls
       |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
@@ -522,7 +522,6 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
   in
   let stack_setup_asm = [
       lbl;
-      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
       IMov(Reg(EBP), Reg(ESP));
       ISub(Reg(ESP), HexConst(stack_offset))
@@ -535,10 +534,7 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
       IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
   ]
   and body_asm = compile_aexpr body 1 env (List.length args) true in 
-    stack_setup_asm
-    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
-    @ body_asm
-    @ postlude_asm;
+    stack_setup_asm @ [ILabel(Printf.sprintf "fun_%s_body" fun_name)] @ body_asm @ postlude_asm;
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
@@ -796,9 +792,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
        else (
          [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
          List.flatten (List.map(fun x ->
-           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
+           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ]
            ) (List.rev exprs) )
-         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] 
+         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] 
          )
 
   | CTuple(lst,_)-> 
@@ -806,12 +802,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
       let args = List.map (fun e ->  compile_imm e env) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
-        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * 4, ESI)), Reg(EAX))]) args) in
+        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
 
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
                        IAdd(Reg(EAX), Const(1))] in
-      let offset = [IAdd(Reg(ESI), Const(4 * (List.length lst + 1)));
-                    IAdd(Reg(ESI), Const(4));
+      let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
+                    IAdd(Reg(ESI), Const(word_size));
                   ] in
 
        size @  instr @ to_tuple @ offset
@@ -854,17 +850,14 @@ and replace_args exprs env =
   let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env);
-         IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
-       @ _push_args tail
+       [ IMov(Reg(EAX), compile_imm head env); IPush(Reg(EAX))] @ _push_args tail
     | _ -> []
   and
   _replace_with_saved_args exprlist idx = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX)); 
-       IInstrComment(IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
-       @ _replace_with_saved_args tail (idx+1)
+      [ IPop(Reg(EAX));IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)) ] 
+      @ _replace_with_saved_args tail (idx+1)
     | _ -> []
   in
   _push_args (List.rev exprs)
@@ -875,7 +868,7 @@ let build_env (vars: string list) : (string * arg) list =
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
     | vname::tail -> 
-        let offset = 8+4*(List.length parsed) in
+        let offset = 8+ (word_size*(List.length parsed)) in
         let this_res = [(vname, RegOffset(offset, EBP))] in 
         (_build_env tail (parsed @ this_res)
         )
