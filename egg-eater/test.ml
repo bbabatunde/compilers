@@ -463,9 +463,13 @@ let integration_tests = [
   
   ]
 
+let infer_tests = [
+    t "infer_let_1" "let x=1 in x" "" "meh";
+    ]
+
 let suite =
 "suite">:::
- fun_tests @
+ infer_tests @
  []
 ;;
 

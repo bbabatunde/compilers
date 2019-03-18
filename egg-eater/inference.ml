@@ -192,21 +192,20 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
   | ELet(binds, exp,loc) -> 
           (* infer type for bindings while building up typ env *)
           let (new_env, new_subst) = 
+              (* Typecheck the let binding itself in the original content.*)
               (* process each binding and add to env while tracking subs *)
               List.fold_left (fun acc ele ->
                   let (env, subs) = acc in
                   let (btype, e, l) = ele in
                   let (n, t, _) =  (match btype with
                     | BName(n, t, l) -> (n, t, l)
-                    | _ -> raise (InternalCompilerError "Binding of non variable name found :/")) in
+                    | _ -> raise (InternalCompilerError "Binding of non variable name found :/ Desugar much?")) in
                   (* Process expr and get subs *)
                   let (e_sub, e_type, _) = infer_exp funenv env e reasons in
-                  let e_unified_subs = unify e_type t l reasons in
-                  let e_composed_subs = compose_subst (compose_subst subs e_sub) e_unified_subs in
-                  let final_typ = apply_subst_typ e_composed_subs e_type in
+                  (* Throw out the annotated type, should be blank. *)
                   (* Add new computed binding to env *)
-                  let new_env = StringMap.add n final_typ env in
-                  (new_env, e_composed_subs))
+                  let new_env = StringMap.add n e_type env in
+                  (new_env, e_sub))
               (env, []) binds in
           (* infer type on body to get result type *)
           let (exp_subst, exp_type, _) = infer_exp funenv new_env exp reasons in
@@ -253,7 +252,6 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
               (unif_sub1, add1_arrowtype, e)
 
-            | PrintB -> failwith  "Finish implementing inferring types for PrintB"
             | IsBool -> 
               let typ_scheme = find_pos funenv "isbool" loc in
               let instantiate_scheme = instantiate typ_scheme in
@@ -496,27 +494,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
              let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
              let final_subst = compose_subst unifyresult subst_so_far in 
              (final_subst, plus1_arrowtype, e)
-      | EqB ->  
-             let typ_scheme =  find_pos funenv "eqb" loc in 
-             let instantiate_scheme = instantiate typ_scheme in
-             let (l_subst, l_typ, l) = infer_exp funenv env l reasons in
-             let env = apply_subst_env l_subst env in 
-             let (r_subst, r_typ, r) = infer_exp funenv env r reasons in
-              
-             let subst_so_far = compose_subst l_subst r_subst  in 
-
-             let r_typ = apply_subst_typ subst_so_far tBool in
-             let l_typ = apply_subst_typ subst_so_far tBool in
-        
-
-             let new_typevar = TyCon(gensym "eqbresult", loc) in 
-
-             let plus1_arrowtype = TyArr([l_typ;r_typ], new_typevar, loc) in 
-
-             let unifyresult = unify  instantiate_scheme plus1_arrowtype loc reasons in 
-             let final_subst = compose_subst unifyresult subst_so_far in 
-             (final_subst, plus1_arrowtype, e) 
-        end
+              end
   | EBool(b, a) -> ([], tBool, e)
   | ENumber _ -> ([], tInt, e)
   | EId(str,loc) -> ([],find_pos env str loc, e)
