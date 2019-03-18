@@ -235,7 +235,7 @@ let anf (p : tag program) : unit aprogram =
     | EBool(b, _) -> (ImmBool(b, ()), [])
     | EId(name, _) -> (ImmId(name, ()), [])
     | EAnnot(e, _, _) -> helpI e
-
+    | ENil(_,_) -> (ImmNil(),[])
     | EPrim1(op, arg, tag) ->
        let tmp = sprintf "unary_%d" tag in
        let (arg_imm, arg_setup) = helpI arg in
@@ -276,7 +276,6 @@ let anf (p : tag program) : unit aprogram =
         let (e_imm, e_setup) = helpI e in
         let (new_imm, new_setup) = helpI newval in
         (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, new_imm, ()))])
-    | _ -> raise (NotYetImplemented "Finish the remaining cases")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right (fun (bind, exp) body -> ALet(bind, exp, body, ())) ans_setup (ACExpr ans)
@@ -306,8 +305,9 @@ let rec remove_one_str ls str =
  |TyDecl(name,args,loc)::rest -> if name = str then Some(TyDecl(name,args,loc)) else findecls rest str
 
 
-let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
-  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) : exn list = match e with
+let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
+  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) (tydecls: 'a tydecl list) 
+  : exn list = match e with
     | ENumber(n, pos) -> if n > 1073741823 || n < -1073741824 then
        [Overflow(n,pos)] else []
     | EBool(_, _) -> []
@@ -315,10 +315,10 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
       begin match find2 env name with
       |None -> [UnboundId(name,pos)]
       |Some(d) -> [] end
-    | EAnnot(exp, _, _) -> wf_E exp ds env
-    | EPrim1(op, arg, _) ->  wf_E arg ds env
-    | EPrim2(op, left, right, _) ->  wf_E left ds env @ wf_E right ds env
-    | EIf(cond, _then, _else, _) -> wf_E cond ds env @ wf_E _then ds env @ wf_E _else ds env
+    | EAnnot(exp, _, _) -> wf_E exp ds env tydecls
+    | EPrim1(op, arg, _) ->  wf_E arg ds env tydecls
+    | EPrim2(op, left, right, _) ->  wf_E left ds env tydecls @ wf_E right ds env tydecls
+    | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
     | EApp(funname, appargs, pos) -> 
        begin match find_decl ds funname with
        |None -> [UnboundFun(funname, pos)]
@@ -326,46 +326,52 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
          let no_appargs = List.length appargs in
          let no_defargs = List.length defargs  in
          if no_defargs = no_appargs then [] else
-         [Arity (no_appargs,no_defargs,pos)]
+         [Arity (no_defargs,no_appargs,pos)]
       end
-    |ELet((BTuple(blst, _), exp, bindloc)::rest as binds, body, pos) -> []
+    |ELet([], body, pos) -> wf_E body ds env tydecls
+    |ELet((BBlank(typ, _), exp, bindloc)::rest as binds, body, pos) -> []
+    |ELet((BTuple(blst, _), exp, bindloc)::rest, body, pos) -> []
     |ELet((BName(bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
       let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
+      |(BTuple(blst,_),e,y) -> ((wf_E e ds env tydecls), env)
+      |(BBlank(_,_),e,y) -> ((wf_E e ds env tydecls), env)
       |(BName(n,typ,loc),e,y) -> match find2 env n with 
       |None -> (exnlist, [(n,y)]@env)
-      |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env)) @ [DuplicateId(n,y,exploc)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
+      |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env) tydecls) @ [DuplicateId(n,exploc,y)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
     and shadowlist = match find2 env bind with
-      |None -> wf_E exp ds env
+      |None -> wf_E exp ds env tydecls
       |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
-    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv)) 
-   | ESeq(left, right,_) -> wf_E left ds env @ wf_E right ds env
-   | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env) [] exprlist
+    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv tydecls)) 
+   | ESeq(left, right,_) -> wf_E left ds env  tydecls @ wf_E right ds env tydecls
+   | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] exprlist
    | EGetItem(tuple,index,size,loc)-> 
-     if ( index+1 >  size) 
-     then  wf_E tuple ds env @ [IndexTooLarge(index,loc)]
-     else if (index < 0) then wf_E tuple ds env @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env
+     if ( index >=  size) 
+     then  wf_E tuple ds env tydecls @ [IndexTooLarge(index,loc)]
+     else if (index < 0) then wf_E tuple ds env tydecls @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env tydecls
    | ESetItem (exp,index,size,exp2,loc) -> 
-     if (index +1 >  size) 
-     then  wf_E exp ds env @ [IndexTooLarge(index,loc)] @  wf_E exp2 ds env
-     else if (index < 0) then wf_E exp ds env @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env 
-     else wf_E exp ds env @  wf_E exp2 ds env
-   | ENil(typ,_) ->  []
+     if (index >=  size) 
+     then  wf_E exp ds env tydecls @ [IndexTooLarge(index,loc)] @  wf_E exp2 ds env tydecls
+     else if (index < 0) then wf_E exp ds env tydecls @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env tydecls
+     else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
+   | ENil(typ,_) ->  wf_T typ  tydecls
 
-  and wf_D  (ds : 'a decl list): exn list = 
+  and wf_D  (ds : 'a decl list) (tydecls: 'a tydecl list): exn list = 
     let result = 
-    (List.fold_left (fun errorlst (DFun(funname,  ars,_, body, upos)) ->
+    (List.fold_left (fun errorlst (DFun(funname,  ars,sch, body, upos)) ->
       let args = strip_binds ars in 
       let dupfunlist = match (find_decl (remove_one_decl ds funname) funname)  with
-       |None -> errorlst@(wf_E body ds args)
-       |Some(DFun(name, _,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]@(wf_E body ds args) 
+       |None -> errorlst@(wf_E body ds args tydecls) @ (wf_S sch  tydecls)
+       |Some(DFun(name, _,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]
+         @(wf_E body ds args tydecls)
+         @ (wf_S sch tydecls)
       and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match (find2 (remove_one_arg args arg) arg) with
             |None -> errorlst
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
           ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
-  and wf_G (gds : 'a decl list list ): exn list  =
-   let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen))))  ([],[]) gds)
+  and wf_G (gds : 'a decl list list ) (tydecls: 'a tydecl list): exn list  =
+   let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen) tydecls)))  ([],[]) gds)
      in exnlist
-  (*check for type intlist = (intlist * int)*)
+  (*TODO check for type intlist = (intlist * int)*)
    and wf_T (t : sourcespan typ) (tydecls: 'a tydecl list)  : exn list = match t with 
     | TyBlank(_) -> []
     | TyCon("Int", _) -> []
@@ -377,8 +383,9 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
     | TyArr(typlist,typ,_)-> []
     | TyApp(typ,typlist,_) -> []
     | TyTup(typlst,_)-> List.fold_left (fun errlst t -> errlst@  wf_T t tydecls) [] typlst
-  and wf_S (s : sourcespan scheme)  : exn list = match s with 
-    | SForall(strlst,typ,loc) -> wf_T typ []
+  and wf_S (s : sourcespan scheme)  (tydecls: 'a tydecl list): exn list = match s with 
+    | SForall(strlst,typ,loc) ->   (wf_T typ  tydecls)
+
   and wf_TD (tlst : sourcespan tydecl list) : exn list = 
     let result = ( List.fold_left (fun error t ->   match t with 
         |TyDecl(name,args,loc) ->   match (findlst (remove_one_str tlst name) name) with
@@ -391,7 +398,7 @@ let is_well_formed (p : sourcespan program) : (sourcespan program) fallible =
   in
   match p with
   | Program(tydecls, decls, body, _) ->
-     let output = wf_TD tydecls @  wf_G decls @ wf_E body (List.flatten decls) [] in
+     let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls) [] tydecls in
      if output = [] then Ok(p) else Error(output)
 ;;
 
@@ -493,6 +500,7 @@ let desugar (p : sourcespan program) : sourcespan program =
         let (new_args, new_binds) = helpArgs args in
         let new_body = ELet(new_binds, (helpE body), pos) in
         DFun(name, new_args, scheme, helpE new_body, pos)
+        (* Makes a wasted let binding we might want to remove in the future. *)
   in
   match p with
   | Program(tydecls, decls, body, t) ->
@@ -503,7 +511,7 @@ let desugar (p : sourcespan program) : sourcespan program =
 ;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
-  let stack_offset =  ((count_vars body)+1) in
+  let stack_offset =  word_size * ((count_vars body)+1) in
   let lbl =
       if (is_entry_point=true) then
         ILabel(fun_name)
@@ -512,7 +520,6 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
   in
   let stack_setup_asm = [
       lbl;
-      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
       IMov(Reg(EBP), Reg(ESP));
       ISub(Reg(ESP), HexConst(stack_offset))
@@ -525,10 +532,7 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
       IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
   ]
   and body_asm = compile_aexpr body 1 env (List.length args) true in 
-    stack_setup_asm
-    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
-    @ body_asm
-    @ postlude_asm;
+    stack_setup_asm @ [ILabel(Printf.sprintf "fun_%s_body" fun_name)] @ body_asm @ postlude_asm;
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
@@ -786,9 +790,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
        else (
          [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
          List.flatten (List.map(fun x ->
-           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
+           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ]
            ) (List.rev exprs) )
-         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] 
+         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] 
          )
 
   | CTuple(lst,_)-> 
@@ -796,12 +800,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
       let args = List.map (fun e ->  compile_imm e env) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
-        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * 4, ESI)), Reg(EAX))]) args) in
+        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
 
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
                        IAdd(Reg(EAX), Const(1))] in
-      let offset = [IAdd(Reg(ESI), Const(4 * (List.length lst + 1)));
-                    IAdd(Reg(ESI), Const(4));
+      let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
+                    IAdd(Reg(ESI), Const(word_size));
                   ] in
 
        size @  instr @ to_tuple @ offset
@@ -809,8 +813,14 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
   | CGetItem(pair,index,_)-> 
    [
+
+    IMov(Reg(EDX),Const(index));
+    IMov(Reg(EAX),HexConst(0x0));
+    ICmp(Reg(EDX),Reg(EAX));
+    IJl("index_too_low");
     IMov(Reg(EAX),  compile_imm pair env);
-    (*TODO add tag check*)
+    ICmp(Reg(EAX),Reg(EDX));
+    IJge("index_too_high");
     ISub(Reg(EAX),HexConst(0x00000001));
     IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
    ]
@@ -820,7 +830,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      IMov(Reg(EDX), compile_imm newpair env);
      IMov(Reg(ECX), Reg(EAX));
      IAnd(Reg(ECX), HexConst(0x7));
-     (* TODO add tag checks*)
+     ICmp(Reg(ECX),HexConst(0x1));
+     IJne("error_not_tuple");
      ISub(Reg(EAX),HexConst(0x1));
      IMov(RegOffset( word_size * (index + 1), EAX),Reg(EDX));
      IAdd(Reg(EAX),HexConst(0x1));
@@ -837,17 +848,14 @@ and replace_args exprs env =
   let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env);
-         IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
-       @ _push_args tail
+       [ IMov(Reg(EAX), compile_imm head env); IPush(Reg(EAX))] @ _push_args tail
     | _ -> []
   and
   _replace_with_saved_args exprlist idx = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX)); 
-       IInstrComment(IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
-       @ _replace_with_saved_args tail (idx+1)
+      [ IPop(Reg(EAX));IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)) ] 
+      @ _replace_with_saved_args tail (idx+1)
     | _ -> []
   in
   _push_args (List.rev exprs)
@@ -858,7 +866,7 @@ let build_env (vars: string list) : (string * arg) list =
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
     | vname::tail -> 
-        let offset = 8+4*(List.length parsed) in
+        let offset = 8+ (word_size*(List.length parsed)) in
         let this_res = [(vname, RegOffset(offset, EBP))] in 
         (_build_env tail (parsed @ this_res)
         )
@@ -935,6 +943,21 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ILabel("overflow");
     IPush(Reg(EAX));
     IPush(Const(5));
+    ICall("error");
+
+    ILabel("error_not_tuple");
+    IPush(Reg(EDX));
+    IPush(Const(6));
+    ICall("error");
+
+    ILabel("index_too_high");
+    IPush(Reg(EDX));
+    IPush(Const(7));
+    ICall("error"); 
+
+    ILabel("index_too_low");
+    IPush(Reg(EAX));
+    IPush(Const(8));
     ICall("error") 
     ] in
   let fun_def =  List.flatten (List.map compile_decl decls) in

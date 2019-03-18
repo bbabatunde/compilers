@@ -23,5 +23,7 @@ def append(l1, l2):
   if l1[1 of 2] == false: l1[1 of 2 := l2]; l1
   else: link(l1[0 of 2], append(l1[1 of 2], l2))
 
-let mylist = link(1, (link(2, (link(3, false))))), mylist2 = link(4, (link(5, (link(6, false))))) in
-  length(append(mylist, mylist2)) + sum(reverse(mylist)) + sum(mylist2)
+let mylist = link(1, (link(2, (link(3, false))))) in
+  length(mylist);
+  sum(mylist);
+  reverse(mylist)
