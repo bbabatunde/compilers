@@ -215,19 +215,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let exp_type = apply_subst_typ final_subst exp_type in
           (final_subst, exp_type, e)
   | EPrim1(op, exp,loc) ->  begin match op with
-            | Add1 ->  
-              let typ_scheme = find_pos funenv "add1" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let add1typ = apply_subst_typ exp_sub tInt in 
-
-              let new_typevar = TyCon(gensym "add1result", loc) in
-
-              let add1_arrowtype = TyArr([add1typ], new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-
+            | Add1 ->  TyArr([tInt], tInt, loc)
             | Sub1 -> 
               let typ_scheme = find_pos funenv "sub1" loc in
               let instantiate_scheme = instantiate typ_scheme in
