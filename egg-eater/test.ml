@@ -26,7 +26,8 @@ let te name program input expected_err = name>::test_err [] input program name e
 let teq name actual expected = name>::fun _ ->
   assert_equal expected actual ~printer:(fun s -> s);;
 
- let tprog filename expected  = filename>::test_run_input filename [] expected filename;;
+let tprog filename expected = filename>::test_run_input filename [] "" expected;;
+
 
 let forty_one = "41";;
 
@@ -199,7 +200,15 @@ let suite =
              f()"
              "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
 
-
+  (* Testing tail-recursion.*)
+    t "tail_rec_len" "def link(first, rest):
+                   (first, rest)
+                 def length(l):
+                   if l == false : 0
+                 else:
+                   1 + length(l[1 of 2])
+                 let mylist = link(1, (link(2, (link(3, false))))) in
+                   length(mylist)" "" "10";
 
   tprog "lists.egg" "1";
   
