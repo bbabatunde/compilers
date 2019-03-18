@@ -210,7 +210,11 @@ let suite =
                  let mylist = link(1, (link(2, (link(3, false))))) in
                    length(mylist)" "" "10";
 
-  tprog "lists.egg" "1";
+  (* Placeholder lists tests. *)
+  tprog "listsAppend.egg" "";
+  tprog "listsLength.egg" "";
+  tprog "listsSum.egg" "";
+  tprog "listsReverse.egg" "";
   
   ]
 ;;
