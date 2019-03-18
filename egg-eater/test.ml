@@ -111,7 +111,7 @@ let suite =
   t "istuple3"   "istuple((1,2,(2,3)))"  "true";
 
   (*FIX THIS*)
-  (*t "istuple4"   " istuple(nil)" "true";*)
+  t "istuple4"   " istuple(nil)" "true";
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "5";
@@ -200,7 +200,7 @@ let suite =
 
   (* Test list programs *)
   tprog "lists.egg" "PLACEHOLDER";
-  
+
   ]
 ;;
 
