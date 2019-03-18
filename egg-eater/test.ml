@@ -167,12 +167,10 @@ let suite =
   (* Nested function argument bindings. *)
   t "desugar_fn1" "def f((x1, y1), (x2, y2)): (x1 + x2, y1 + y2)
                    f((1,2), (1, 2))" "(2, 4)";
-  (*t "desugar_fn2" "def f((x, y, z)): x + y + z
-                   f((1,1,1))" "3"; *)
-  (*t "desugar_fn3" "def f(): g((1, 2))
-                   and def g(a): h(a)
-                   and def h(v1, v2): v1 + v2
-                   f()" "3"; *)
+  t "desugar_fn2" "def f((x, y, z)): x + y + z
+                   f((1,1,1))" "3";
+  t "desugar_fn3" "def f(): g((1, 2))
+                   and def g(a): let (b, c) = a in h(b, c)
 
 
   (* Mixed function desugaring *)
