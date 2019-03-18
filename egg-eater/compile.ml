@@ -789,7 +789,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
          List.flatten (List.map(fun x ->
            [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
-           ) exprs)
+           ) (List.rev exprs) )
          @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] 
          )
 

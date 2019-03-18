@@ -198,7 +198,7 @@ let suite =
              "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
 
   (* Test list programs *)
-  tprog "lists.egg" "PLACEHOLDER";
+  tprog "lists.egg" "1";
   
   ]
 ;;
