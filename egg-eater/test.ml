@@ -172,10 +172,10 @@ let suite =
   t "desugar_fn2" "def f((x, y, z)): x + y + z
                    f((1,1,1))" "" "3";
 
-  (*t "desugar_fn3" "def f(): g((1, 2))
+  t "desugar_fn3" "def f(): g((1, 2))
                    and def g(a): let (b, c) = a in h(b, c)
                    and def h(v1, v2): v1 + v2
-                   f()" "3";*)
+                   f()" "" "3";
 
   (* Mixed function desugaring *)
   (* t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
@@ -204,7 +204,7 @@ let suite =
     t "tail_rec_len" "def link(first, rest):
                    (first, rest)
                  def length(l):
-                   if l == false : 0
+                   if l == false : 1
                  else:
                    1 + length(l[1 of 2])
                  let mylist = link(1, (link(2, (link(3, false))))) in
