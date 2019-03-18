@@ -28,6 +28,7 @@ let teq name actual expected = name>::fun _ ->
 
 let tprog filename expected = filename>::test_run_input filename [] "" expected;;
 
+
 let forty_one = "41";;
 
 let forty_one_a = (AProgram([], ACExpr(CImmExpr(ImmNum(41, ()))), ()))
@@ -112,8 +113,7 @@ let suite =
 
   t "istuple3"   "istuple((1,2,(2,3)))" "" "true";
 
-  (*FIX THIS*)
-  t "istuple4"   " istuple(nil)" "" "true";
+  t "istuple6"   "istuple(nil : Int) == true" "" "true";
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "" "5";
