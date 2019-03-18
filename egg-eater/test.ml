@@ -84,7 +84,32 @@ let suite =
 
   t "equalif" "if 1 == 1:  1 else: 0" "1";
 
-  t "plaineq" "(true && true)" "true";
+  t "and" "(true && true)" "true";
+
+  t "plaineq" "(1 == 1)" "true";
+
+  t "tupleeq1"  "let t = (4, 5) in t == t" "true";
+
+  t "tupleeq2"  "(4,5) == (4, 5)"   "true";
+
+  t "tupleeq3"  "(4,5,6) == (4,5,6)"   "true";
+
+  t "tupleeq4"  "(4,5) == (4,5,7)"   "false";
+
+  t "tupleeq5"  "(4,5,6) == (4,5,7)"   "false";
+
+  t "tupleeq6"  "(4,5,(1,6)) == (4,5,(1,6))"   "true";
+
+  t "tupleeq7"  "(4,5,(1,7)) == (4,5,(1,6))"   "false";
+
+  t "istuple1"   "istuple(1)"  "false";
+
+  t "istuple2"   "istuple((1,2,3) )"  "true";
+
+  t "istuple3"   "istuple((1,2,(2,3)))"  "true";
+
+  (*FIX THIS*)
+  (*t "istuple4"   " istuple(nil)" "true";*)
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "5";

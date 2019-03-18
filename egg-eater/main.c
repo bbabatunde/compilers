@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 
 extern int our_code_starts_here() asm("our_code_starts_here");
 extern int equal(int a, int b) asm("equal");
@@ -28,16 +27,74 @@ const int ERR_NOT_NUMBER = 10;
 
 int equal(int left, int right) {
    
-  if(left == right ) 
-  { return BOOL_TRUE; }
-  else
-   { return BOOL_FALSE; }
+  
+  if ( ((left & BOOL_TAG) == 0) && ((right & BOOL_TAG) == 0)   &&  left == right) {
+
+       return BOOL_TRUE;
+
+  } else if ( (left == BOOL_TRUE) && (left == BOOL_TRUE)) {
+
+       return BOOL_TRUE;
+
+  } else if ( (left == BOOL_FALSE) && (left == BOOL_FALSE)) {
+
+       return BOOL_TRUE;
+
+  }else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) == 1)) {
+      
+
+      int* lefttupptr = (int*)(left - 1);
+      int lefttupptrsize = *(lefttupptr);
+
+      int* righttupptr = (int*)(right - 1);
+      int righttupptrsize = *(righttupptr);
+
+      if(lefttupptrsize != righttupptrsize){
+
+        return BOOL_FALSE;
+
+      }
+
+      if ( ( (left - 1) == 0) && ( (right - 1) == 0 )) {
+
+        return BOOL_TRUE;
+      }
+
+      if(lefttupptrsize == 2){
+
+        if  ( ( (equal(*(lefttupptr + 1), *(righttupptr + 1))) == BOOL_TRUE)  &&  ((equal(*(lefttupptr + 2), *(righttupptr + 2))) == BOOL_TRUE) ) {
+
+          return BOOL_TRUE;
+        }
+        else{
+          return BOOL_FALSE;
+        }
+
+
+      }else {
+
+            int i;
+            for(i = 1; i < lefttupptrsize + 1; i++){
+               
+                if((equal(*(lefttupptr + i), *(righttupptr + i))) == BOOL_FALSE)
+                    return BOOL_FALSE;
+                }
+            }
+            
+            return BOOL_TRUE;
+      }
+
+
+  
+
+
+   return BOOL_FALSE;
 }
 
 
 int input(){
     char val[20];
-    scanf("%d", &input);
+    scanf("%s", val);
 
     if(isdigit(val)){
       int num = atoi(val);
@@ -56,12 +113,26 @@ int input(){
 
 int print(int val) {
   int tuple_size = 2;
-  if ((val & TUPLE_TAG) == 1){
+
+  if ((val & BOOL_TAG) == 0) {
+     printer(val, tuple_size);
+     printf("\n");
+  } else if (val == BOOL_TRUE) {
+       printer(val, tuple_size);
+       printf("\n");
+  } else if (val == BOOL_FALSE) {
+       printer(val, tuple_size);
+       printf("\n");
+  }
+  else if ((val & TUPLE_TAG) == 1){
+
      int* tupptr = (int*)(val - 1);
      tuple_size = *(tupptr);
+     printer(val, tuple_size);
+      printf("\n");
   }
-  printer(val, tuple_size);
-  printf("\n");
+
+  
 
   return val;
 }

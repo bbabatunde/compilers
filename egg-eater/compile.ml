@@ -607,7 +607,22 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         IJz("logic_expected_a_boolean");
         IXor(Reg(EAX),bool_mask)
        ]
-      | IsTuple -> failwith "IsTuple"
+      |IsTuple -> 
+        let  istuple_label = sprintf "istuple_label_%s" (string_of_int tag) in
+         let done_label = sprintf "istuple_labeldone_%s" (string_of_int tag) in
+         [
+          IMov(Reg(EAX),(compile_imm e env))] @ 
+          [
+            IAnd(Reg(EAX), Const(0x00000007));
+            ICmp(Reg(EAX), Const(0x00000001));
+            IMov(Reg(EAX),const_false);
+            IJne(done_label);
+            ILabel(istuple_label);
+            IMov(Reg(EAX),const_true);
+            ILabel(done_label)
+          ]
+
+
       |PrintStack -> failwith "print stack"
     end
 
@@ -660,10 +675,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    | And -> 
       instr @
     [
-            IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
+            IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
             IJz("logic_expected_a_boolean");
-            IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
+            IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
             IJz("logic_expected_a_boolean_edx");
             IAnd(Reg(EAX), Reg(EDX))
@@ -755,8 +770,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
      instr @
     [
-            IMov(Reg(EAX),  RegOffset(~-word_size*(si), EBP));
-            IMov(Reg(EDX),  RegOffset(~-word_size*(si + 1), EBP));
+            IMov(Reg(EAX),  RegOffset(~-word_size * (si), EBP));
+            IMov(Reg(EDX),  RegOffset(~-word_size * (si + 1), EBP));
             IPush(Reg(EAX));
             IPush(Reg(EDX));
             ICall("equal");
