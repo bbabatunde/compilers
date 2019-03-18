@@ -24,6 +24,8 @@ let tanf name program expected = name>::fun _ ->
 let teq name actual expected = name>::fun _ ->
   assert_equal expected actual ~printer:(fun s -> s);;
 
+let tprog filename expected = filename>::test_run_input filename expected;;
+
 let forty_one = "41";;
 
 let forty_one_a = (AProgram([], ACExpr(CImmExpr(ImmNum(41, ()))), ()))
@@ -195,6 +197,10 @@ let suite =
              g();
              f()"
              "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
+
+  (* Test list programs *)
+  tprog "lists.egg" "PLACEHOLDER";
+  
   ]
 ;;
 
