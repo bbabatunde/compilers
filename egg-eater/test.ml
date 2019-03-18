@@ -26,9 +26,7 @@ let te name program input expected_err = name>::test_err [] input program name e
 let teq name actual expected = name>::fun _ ->
   assert_equal expected actual ~printer:(fun s -> s);;
 
- (*let t name program expected = name>::test_run program name expected;;*)
-
- let tprog filename args expected test_ctxt = filename>::test_run_input filename args expected test_ctxt;;
+let tprog filename expected = filename>::test_run_input filename [] "" expected;;
 
 let forty_one = "41";;
 
@@ -204,7 +202,7 @@ let suite =
 
 
 
-  tprog "lists.egg" [] "1" "";
+  tprog "lists.egg" "1";
   
   ]
 ;;

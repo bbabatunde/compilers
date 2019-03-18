@@ -187,8 +187,8 @@ let test_err args std_input program_str outfile errmsg test_ctxt =
     )
 
     
-let test_run_input filename args expected test_ctxt =
-  test_run args (string_of_file ("input/" ^ filename)) filename expected test_ctxt
+let test_run_input filename args input expected test_ctxt =
+  test_run args input (string_of_file ("input/" ^ filename)) filename expected test_ctxt
 
 let test_err_input filename args expected test_ctxt =
   test_err args (string_of_file ("input/" ^ filename)) filename expected test_ctxt
