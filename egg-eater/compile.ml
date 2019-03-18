@@ -494,8 +494,6 @@ let desugar (p : sourcespan program) : sourcespan program =
         let (new_args, new_binds) = helpArgs args in
         let new_body = ELet(new_binds, (helpE body), pos) in
         DFun(name, new_args, scheme, helpE new_body, pos)
-  and helpT (t : sourcespan typ) (* other parameters may be needed here *) =
-    Error([NotYetImplemented "Implement desrugaring for types"])
   in
   match p with
   | Program(tydecls, decls, body, t) ->
