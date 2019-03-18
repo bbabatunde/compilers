@@ -171,7 +171,8 @@ let suite =
                    f((1,1,1))" "3";
   t "desugar_fn3" "def f(): g((1, 2))
                    and def g(a): let (b, c) = a in h(b, c)
-
+                   and def h(v1, v2): v1 + v2
+                   f()" "3";
 
   (* Mixed function desugaring *)
   (* t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
