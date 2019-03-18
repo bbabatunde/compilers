@@ -26,9 +26,7 @@ let te name program input expected_err = name>::test_err [] input program name e
 let teq name actual expected = name>::fun _ ->
   assert_equal expected actual ~printer:(fun s -> s);;
 
- (*let t name program expected = name>::test_run program name expected;;*)
-
- let tprog filename args expected test_ctxt = filename>::test_run_input filename args expected test_ctxt;;
+ let tprog filename expected  = filename>::test_run_input filename [] expected filename;;
 
 let forty_one = "41";;
 
@@ -114,8 +112,7 @@ let suite =
 
   t "istuple3"   "istuple((1,2,(2,3)))" "" "true";
 
-  (*FIX THIS*)
-  t "istuple4"   " istuple(nil)" "" "true";
+  t "istuple6"   "istuple(nil : Int) == true" "" "true";
 
   (* Sequence tests *)  
   t "seq1" "let a = 1; 2; 3; 4; 5 in a" "" "5";
@@ -204,7 +201,7 @@ let suite =
 
 
 
-  tprog "lists.egg" [] "1" "";
+  tprog "lists.egg" "1";
   
   ]
 ;;

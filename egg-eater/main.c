@@ -22,27 +22,25 @@ const int ERR_IF_PRED_BOOL = 2;
 const int ERR_ARITH_NUM = 3;
 const int ERR_CMP_NUM = 4;
 const int ERR_OVERFLOW = 5;
-const int ERR_NOT_NUMBER = 10;
+const int ERR_NOT_TUPLE = 6;
+const int ERR_INDEX_TOO_LARGE = 7;
+const int ERR_INDEX_TOO_SMALL = 8;
+const int ERR_INCORRECT_TUPLE_LENGTH = 9;
 
 
 int equal(int left, int right) {
    
-  
   if ( ((left & BOOL_TAG) == 0) && ((right & BOOL_TAG) == 0)   &&  left == right) {
 
        return BOOL_TRUE;
 
   } else if ( (left == BOOL_TRUE) && (left == BOOL_TRUE)) {
-
        return BOOL_TRUE;
 
   } else if ( (left == BOOL_FALSE) && (left == BOOL_FALSE)) {
-
        return BOOL_TRUE;
-
   }else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) == 1)) {
       
-
       int* lefttupptr = (int*)(left - 1);
       int lefttupptrsize = *(lefttupptr);
 
@@ -54,22 +52,20 @@ int equal(int left, int right) {
         return BOOL_FALSE;
 
       }
-
       if ( ( (left - 1) == 0) && ( (right - 1) == 0 )) {
 
         return BOOL_TRUE;
       }
-
       if(lefttupptrsize == 2){
 
-        if  ( ( (equal(*(lefttupptr + 1), *(righttupptr + 1))) == BOOL_TRUE)  &&  ((equal(*(lefttupptr + 2), *(righttupptr + 2))) == BOOL_TRUE) ) {
+        if  ( ( (equal(*(lefttupptr + 1), *(righttupptr + 1))) == BOOL_TRUE)  && 
+            ((equal(*(lefttupptr + 2), *(righttupptr + 2))) == BOOL_TRUE) ) {
 
           return BOOL_TRUE;
         }
         else{
           return BOOL_FALSE;
         }
-
 
       }else {
 
@@ -84,23 +80,19 @@ int equal(int left, int right) {
             return BOOL_TRUE;
       }
 
-
-  
-
-
    return BOOL_FALSE;
 }
 
 
 int input(){
-    char val[20];
-    scanf("%s", val);
+    char val[100];
+    scanf("%s", &val);
 
-    if(isdigit(val)){
+    if(isdigit(val[0])){
       int num = atoi(val);
-      return num << 1;
+      return (num << 1);
     }
-    else if(isalpha(val)){
+    else if(isalpha(val[0])){
       if(strcmp(val ,"true") == 0)
         return BOOL_TRUE;
       else if (strcmp(val ,"false") == 0)
@@ -185,9 +177,8 @@ void* printer(int val , int tuple_size){
 }
 
 void error(int errCode, int val) {
-  if (errCode == ERR_NOT_NUMBER) {
-    fprintf(stderr, "Expected number, but got %010x\n", val);
-  } else if (errCode == ERR_LOGIC_NOT_BOOLEAN) {
+
+  if (errCode == ERR_LOGIC_NOT_BOOLEAN) {
     fprintf(stderr, "logic expected a boolean, but got %d\n", val >> 1);
   } else  if (errCode == ERR_OVERFLOW) {
     fprintf(stderr, "overflow value %010x\n", val);
@@ -197,7 +188,14 @@ void error(int errCode, int val) {
     fprintf(stderr, "arithmetic expected a number, but got %010x\n", val);
   }else  if (errCode == ERR_CMP_NUM) {
     fprintf(stderr, "comparison expected a number, but got %010x\n", val);
+  }else  if (errCode == ERR_NOT_TUPLE) {
+    fprintf(stderr, " expected tuple, but got %010x\n", val);
+  }else  if (errCode == ERR_INDEX_TOO_SMALL) {
+    fprintf(stderr, "index too small,  got %010x\n", val);
+  }else  if (errCode == ERR_INDEX_TOO_LARGE) {
+    fprintf(stderr, "index too large, got %010x\n", val);
   }
+
 
 
   exit(errCode);

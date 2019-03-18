@@ -8,7 +8,6 @@ type prim1 =
   | Add1
   | Sub1
   | Print
-  | PrintB
   | IsBool
   | IsNum
   | IsTuple
@@ -26,7 +25,6 @@ type prim2 =
   | Less
   | LessEq
   | Eq
-  | EqB
 
 
 type 'a typ =

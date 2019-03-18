@@ -197,6 +197,8 @@ tydecls :
   | tydecl tydecls { $1 :: $2 }
 
 program :
+  | tydecls decls expr COLON typ EOF { Program($1, $2, EAnnot($3, $5, (Parsing.rhs_start_pos 3, Parsing.rhs_end_pos 5)), (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | tydecls decls expr EOF { Program($1, $2, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+
 
 %%
