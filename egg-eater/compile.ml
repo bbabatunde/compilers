@@ -512,7 +512,7 @@ let desugar (p : sourcespan program) : sourcespan program =
 ;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
-  let stack_offset =  ((count_vars body)+1) in
+  let stack_offset =  word_size * ((count_vars body)+1) in
   let lbl =
       if (is_entry_point=true) then
         ILabel(fun_name)
