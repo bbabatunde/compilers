@@ -124,7 +124,38 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
      else [(tyvarname, t)]
 ;;
 let ty_err t1 t2 loc reasons = TypeMismatch(loc, t2, t1, reasons)
-let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst = match (t1 , t2) with 
+let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst =
+    (match t1 with
+    | TyVar(varname, pos) ->
+        (match t2 with
+        | TyCon(ty2, pos) -> bind varname t2
+        | TyVar(ty2, pos) -> bind varname t2
+        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyCon(conname, pos) ->
+        (match t2 with
+        | TyCon(ty2, pos) -> if conname = ty2 then [] else raise (ty_err t1 t2 loc reasons)
+        | TyVar(varname, pos) -> bind varname t2
+        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyArr(l1, ty1, pos) ->
+        (match t2 with
+        | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (ty_err t1 t2 loc reasons) else
+            (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2)) @
+            (unify t1 t2 pos reasons)
+        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyApp(appTyp, l1, pos) ->
+        (match t2 with
+        | TyApp(ty2, l2, pos) ->
+            (unify appTyp ty2 pos reasons) @
+            (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2))
+        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyTup(l1, pos) ->
+        (match t2 with
+        | TyTup(l2, pos) ->
+            (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2))
+        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyBlank(pos) -> raise (ty_err t1 t2 loc reasons))
+
+(*
   | TyBlank(pos),TyBlank(pos2) -> []
   | TyCon(str,pos),TyCon(str2,pos2) ->   if str = str2 then [] else raise (ty_err t1 t2 loc reasons) 
   | TyVar(str,pos),TyVar(str2,pos2) ->   bind str t2 
@@ -134,7 +165,7 @@ let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason l
                                                           else raise (ty_err  t1 t2 loc reasons) 
   | TyApp(typ,typlist,pos), TyApp(typ2, typlist2,pos2)->  failwith "implement unify for TyApp" 
   |_ -> raise (ty_err t1 t2 loc reasons) 
-
+*)
 let gensym =
   let count = ref 0 in
   let next () =
@@ -214,20 +245,10 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           (* see if constraints have a solution *)
           let exp_type = apply_subst_typ final_subst exp_type in
           (final_subst, exp_type, e)
-  | EPrim1(op, exp,loc) ->  begin match op with
+  | EPrim1(op, exp,loc) ->  
+          (match op with
             | Add1 ->  ([], TyArr([tInt], tInt, loc), e)
-            | Sub1 -> 
-              let typ_scheme = find_pos funenv "sub1" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let exp_typ = apply_subst_typ exp_sub tInt in
-              let new_typevar = TyCon(gensym "sub1result", loc) in
-
-              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-
+            | Sub1 -> ([], TyArr([tInt], tInt, loc), e)
             | Print -> 
               
               let typ_scheme = find_pos funenv "print" loc in
@@ -240,43 +261,10 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
               (unif_sub1, add1_arrowtype, e)
 
-            | IsBool -> 
-              let typ_scheme = find_pos funenv "isbool" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let exp_typ = apply_subst_typ exp_sub tBool in
-              let new_typevar = TyCon(gensym "isboolresult", loc) in
-
-              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-
-            | IsNum ->
-              let typ_scheme = find_pos funenv "isnum" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let exp_typ = apply_subst_typ exp_sub tBool in
-              let new_typevar = TyCon(gensym "isnumresult", loc) in
-
-              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-
-            | Not ->  
-              let typ_scheme = find_pos funenv "not" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let exp_typ = apply_subst_typ exp_sub tBool in
-              let new_typevar = TyCon(gensym "notresult", loc) in
-
-              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-            | PrintStack ->  failwith "Finish implementing inferring types for PrintStack"
-          end
+            | IsBool  
+            | IsNum 
+            | Not -> ([], TyArr([tBool], tBool, loc), e)
+            | PrintStack ->  failwith "Finish implementing inferring types for PrintStack")
   | EPrim2(op, l,r,loc) -> begin match op with
       | Plus -> 
 
