@@ -107,7 +107,7 @@ let fun_tests = [
       f(2, 0)" "" "1";
  *)
   (* Tail tests: note we don't use valgrind here because it will complain about modifying our parent's stackframe *)
-    t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";
+    (*t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";*)
    
     (*
     t "func" "def f(x): x  f(1)" "" "1";
@@ -458,9 +458,20 @@ let integration_tests = [
   
   ]
 
+ let curr_test = [
+     t "tail_rec_len" "def link(first, rest):
+                   (first, rest)
+                 def length(l):
+                   if l == false : 0
+                   else:
+                    2 + length(l[1 of 2])
+                 let mylist = link(1, (link(2, (link(3, false))))) in
+                   length(mylist)" "" "10"; 
+ ]
+
 let suite =
 "suite">:::
- fun_tests @
+ curr_test @
  []
 ;;
 
