@@ -107,7 +107,7 @@ let fun_tests = [
       f(2, 0)" "" "1";
  *)
   (* Tail tests: note we don't use valgrind here because it will complain about modifying our parent's stackframe *)
-    t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";
+   (* t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";*)
    
     (*
     t "func" "def f(x): x  f(1)" "" "1";
@@ -458,9 +458,17 @@ let integration_tests = [
   
   ]
 
+  let curr_test = [
+    t "input1" "print(input())" "true" "true\ntrue";
+    t "input2" "print(input())" "1" "1\n1";
+    t "input3" "print(input())" "false" "false\nfalse";
+    t "input4" "input() + input()" "1" "2";
+
+  ]
+
 let suite =
 "suite">:::
- fun_tests @
+ curr_test @
  []
 ;;
 

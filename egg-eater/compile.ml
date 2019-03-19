@@ -74,7 +74,7 @@ let rec find_decl (ds : 'a decl list) (name : string) : 'a decl option =
   match ds with
     | [] -> None
     | (DFun(fname, _, _, _, _) as d)::ds_rest ->
-      if name = fname then Some(d) else find_decl ds_rest name
+      if name = fname then Some(d)  else find_decl ds_rest name
 
 let rec find_one (l : 'a list) (elt : 'a) : bool =
   match l with
@@ -89,6 +89,7 @@ let rec find_dup (l : 'a list) : 'a option =
       if find_one xs x then Some(x) else find_dup xs
 ;;
 
+  
  let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
   let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
   match ds with
@@ -306,6 +307,7 @@ let rec remove_one_str ls str =
  |[] -> None
  |TyDecl(name,args,loc)::rest -> if name = str then Some(TyDecl(name,args,loc)) else findecls rest str
 
+ let fun_prim = ["input";"print"]
 
 let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) (tydecls: 'a tydecl list) 
@@ -322,6 +324,8 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
     | EPrim2(op, left, right, _) ->  wf_E left ds env tydecls @ wf_E right ds env tydecls
     | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
     | EApp(funname, appargs, pos) -> 
+       if List.mem funname fun_prim then []
+       else
        begin match find_decl ds funname with
        |None -> [UnboundFun(funname, pos)]
        |Some(DFun(name, defargs,_, body, dpos)) -> 
@@ -400,7 +404,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
   in
   match p with
   | Program(tydecls, decls, body, _) ->
-     let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls) [] tydecls in
+     let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls)  [] tydecls in
      if output = [] then Ok(p) else Error(output)
 ;;
 
@@ -517,7 +521,7 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
       if (is_entry_point=true) then
         ILabel(fun_name)
       else
-        ILabel("fun_" ^ fun_name)
+        ILabel(fun_name)
   in
   let stack_setup_asm = [
       lbl;
@@ -576,11 +580,11 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         IJo("overflow")
         ]
 
-      |Print -> 
+      (*|Print -> 
         [IMov(Reg(EAX),(compile_imm e env))] @ 
         [IPush(Reg(EAX));
         ICall("print");
-        IAdd(Reg(ESP),Const(4))]
+        IAdd(Reg(ESP),Const(4))])*)
       |IsBool -> 
         let not_bool_label = sprintf "isBOOL_false_%s" (string_of_int tag) in
         let done_label = sprintf "isBool_done_%s" (string_of_int tag) in
@@ -793,7 +797,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          List.flatten (List.map(fun x ->
            [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ]
            ) (List.rev exprs) )
-         @ [ ICall(Printf.sprintf "fun_%s" name)] @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] 
+         @ [ ICall(name)] @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] 
          )
 
   | CTuple(lst,_)-> 
@@ -887,6 +891,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   extern equal 
   extern error
   extern print
+  extern input
   global our_code_starts_here" in
   let count = word_size *  count_vars body in
   let heap_start = [
