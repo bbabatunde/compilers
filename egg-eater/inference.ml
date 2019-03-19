@@ -212,6 +212,13 @@ let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
      SForall( StringSet.elements (StringSet.diff (ftv_env e) (ftv_type t)) ,TyVar(gensym "blank",dummy_span),dummy_span)
 ;;
 
+let opname op =
+    match op with
+    | Add1 -> "add1"
+    | Sub1 -> "sub1"
+    | _ -> "add1"
+;;
+
 (* Ex 14 *)
 let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) (e : sourcespan expr) reasons
         : (sourcespan typ subst * sourcespan typ * sourcespan expr) (* unification, result typ, rebuilt expr *)=
@@ -263,29 +270,21 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let exp_type = apply_subst_typ final_subst exp_type in
           (final_subst, exp_type, e)
   | EPrim1(op, exp,loc) ->  
-          let (subs, exp_typ, _) = infer_exp funenv env exp reasons in
-          let env = apply_subst_env subs env in
-          (match op with
-            | Add1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
-            | Sub1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)            
-            | IsBool ->
-                    let new_subs = unify exp_typ tBool loc reasons in
-                    (new_subs, (apply_subst_typ new_subs exp_typ), e)
-            | IsNum -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
-            | Not -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
-            | Print -> 
-              
-              let typ_scheme = find_pos funenv "print" loc in
-              let instantiate_scheme = instantiate typ_scheme in
-              let (exp_sub, exp_typ, exp) = infer_exp funenv env exp reasons in
-
-              let new_typevar = TyCon(gensym "printresult", loc) in
-
-              let add1_arrowtype = TyArr([exp_typ] , new_typevar, loc) in
-              let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
-              (unif_sub1, add1_arrowtype, e)
-
-            | PrintStack ->  failwith "Finish implementing inferring types for PrintStack")
+          (* Lookup the relevant scheme *)
+          let looked_up_scheme = find_pos funenv (opname op) loc in
+          (* Instantiate it to a type *)
+          let looked_up_tyarr = instantiate looked_up_scheme in
+          (* Infer a type for the argument(s) of the primitive. *)
+          let (subs, infered_arg_typ, _) = infer_exp funenv env exp reasons in
+          (* Make up a brand-new type variable for the return type of the operation. *)
+          let new_return_tyvar = TyVar(gensym "prim1res", loc) in
+          (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
+          let new_op_tyarr = TyArr([infered_arg_typ], new_return_tyvar, loc) in
+          (* Recursively unify the looked-up arrow type of the operator, with the constructed arrow type. *)
+          let unify_subs = unify looked_up_tyarr new_op_tyarr loc reasons in
+          (* If all goes well, return the newly-constructed return type variable, and the substitution obtained from the recursive unification call. *)
+          let all_subs = compose_subst subs unify_subs in
+          (all_subs, new_return_tyvar, e)
   | EPrim2(op, l,r,loc) -> begin match op with
       | Plus -> 
 
