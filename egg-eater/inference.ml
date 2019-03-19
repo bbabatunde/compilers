@@ -45,10 +45,25 @@ let anyany2bool = SForall(["X"], TyArr([tyVarX; tyVarX], tBool, dummy_span), dum
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
-      ("add1",int2int);("sub1",int2int);("print",any2any);("isbool",any2bool);("isnum",any2bool);("not",bool2bool);
-      ("plus",intint2int);("minus",intint2int);("and",boolbool2bool);("or",boolbool2bool);("greater",boolbool2bool);
-      ("greaterq",boolbool2bool);("less",boolbool2bool);("lesseq",boolbool2bool);("eq",anyany2bool);("eqb",boolbool2bool);
-      ("times",intint2int);("printb",any2any);
+      ("add1",int2int);
+      ("sub1",int2int);
+      ("print",any2any);
+      ("isbool",any2bool);
+      ("isnum",any2bool);
+      ("not",bool2bool);
+      ("plus",intint2int);
+      ("minus",intint2int);
+      ("and",boolbool2bool);
+      ("or",boolbool2bool);
+      ("greater",boolbool2bool);
+      ("greaterq",boolbool2bool);
+      ("less",boolbool2bool);
+      ("lesseq",boolbool2bool);
+      ("eq",anyany2bool);
+      ("eqb",boolbool2bool);
+      ("times",intint2int);
+      ("printb",any2any);
+      ("istuple", any2bool);
   ]
 
 let rec find_pos (ls : 'a envt) x pos : 'a =
@@ -216,7 +231,12 @@ let opname op =
     match op with
     | Add1 -> "add1"
     | Sub1 -> "sub1"
-    | _ -> "add1"
+    | Print -> "print"
+    | IsBool -> "isbool"
+    | IsNum -> "isnum"
+    | IsTuple -> "istuple"
+    | Not -> "not"
+    | _ -> raise (InternalCompilerError "Invalid op name :/")
 ;;
 
 (* Ex 14 *)
