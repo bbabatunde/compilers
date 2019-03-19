@@ -198,10 +198,6 @@ let rec unblank (t : 'a typ) : 'a typ =
      let lst = List.map unblank lst in TyTup(lst, tag)
 ;;
 
-let instantiate (s : 'a scheme) : 'a typ = match s with 
- |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym t,dummy_span))] ) [] strlst), unblank typ, pos)
-;;
-
 let rec replace_in_type rep_lst t =
     match t with
     | TyCon _ -> t
@@ -406,6 +402,7 @@ let init_fn fn =
     (funname, TyArr(ty_args, ty_bod, pos), new_env)
 
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
+    (*
     (* Instantiate the type schemes for the functions all at once. *)
     (* - Guess type variables for all functions in group. *)
     let typ_env_lst = List.map init_fn g in
@@ -434,6 +431,7 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
             (acc @ s)) [] new_types_and_subs in
     (* Check for a solution *)
     (funenv, g)
+    *)
 ;;
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
     match p with
