@@ -140,7 +140,7 @@ let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason l
         (match t2 with
         | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (ty_err t1 t2 loc reasons) else
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2)) @
-            (unify t1 t2 pos reasons)
+            (unify ty1 ty2 pos reasons)
         | _ -> raise (ty_err t1 t2 loc reasons))
     | TyApp(appTyp, l1, pos) ->
         (match t2 with
