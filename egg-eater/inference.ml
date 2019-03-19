@@ -348,7 +348,23 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
   | EBool(b, a) -> ([], tBool, e)
   | ENumber _ -> ([], tInt, e)
   | EId(str,loc) -> ([],find_pos env str loc, e)
-  | EApp(funame, arglist,loc) -> failwith "EApp decl."
+  | EApp(funame, arglist, loc) ->
+          (* Lookup the relevant scheme *)
+          let looked_up_scheme = find_pos funenv funame loc in
+          (* Instantiate it to a type *)
+          let looked_up_tyarr = instantiate looked_up_scheme in
+          (* Infer a type for the argument(s) of the primitive. *)
+          let sub_infer_trips = List.map (fun e -> infer_exp funenv env e reasons) arglist in
+          (* Make up a brand-new type variable for the return type of the operation. *)
+          let new_return_tyvar = TyVar(gensym "app_res", loc) in
+          (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
+          let infer_lst = List.map (fun (_, ele, _) -> ele) sub_infer_trips in
+          let new_op_tyarr = TyArr(infer_lst, new_return_tyvar, loc) in
+          (* Recursively unify the looked-up arrow type of the operator, with the constructed arrow type. *)
+          let unify_subs = unify looked_up_tyarr new_op_tyarr loc reasons in
+          (* If all goes well, return the newly-constructed return type variable, and the substitution obtained from the recursive unification call. *)
+          let all_subs = List.fold_left (fun acc ele -> compose_subst acc ele) unify_subs (List.map (fun (ele, _, _) -> ele) sub_infer_trips) in
+          (all_subs, new_return_tyvar, e)
   | EAnnot(exp, typ,loc) ->  
     let(exp_subt, exp_typ, exp)  = infer_exp funenv env exp reasons in
     let exp_type = apply_subst_typ exp_subt typ in
