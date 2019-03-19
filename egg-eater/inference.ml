@@ -79,6 +79,7 @@ let rec subst_var_typ (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_typ : '
   | TyVar(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
   | TyArr(typlist,typ,pos)-> TyArr((List.map (fun e -> (subst_var_typ sub e)) typlist),(subst_var_typ sub typ),pos)
   | TyApp(typ,typlist,pos)-> TyApp((subst_var_typ sub typ) , (List.map (fun e -> subst_var_typ sub e) typlist),pos)
+  | TyTup(lst, pos) -> TyTup((List.map (fun e -> (subst_var_typ sub e)) lst), pos)
 ;;
 let  subst_var_scheme (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_scheme : 'a scheme) : 'a scheme =
   match in_scheme with 
@@ -115,6 +116,10 @@ let rec ftv_type (t : 'a typ) : StringSet.t =
     List.fold_right (fun t ftvs -> StringSet.union (ftv_type t) ftvs)
                     args
                     (ftv_type typ)
+  | TyTup(lst, _) ->
+    List.fold_right (fun t ftvs -> StringSet.union (ftv_type t) ftvs)
+                    lst
+                    StringSet.empty
 ;;
 let ftv_scheme (s : 'a scheme) : StringSet.t =
   match s with
@@ -189,6 +194,8 @@ let rec unblank (t : 'a typ) : 'a typ =
   | TyApp(t, args, tag) ->
      let t = unblank t in
      let args = List.map unblank args in TyApp(t, args, tag)
+  | TyTup(lst, tag) ->
+     let lst = List.map unblank lst in TyTup(lst, tag)
 ;;
 
 let instantiate (s : 'a scheme) : 'a typ = match s with 
@@ -214,6 +221,7 @@ and rep_lookup name lst =
     | [] -> ""
     | (old_name, TyVar(new_name, _))::rest ->
         if old_name = name then new_name else rep_lookup name rest
+    | _ -> raise (InternalCompilerError "Weird call to replace in type, should not have no tyvar pairs.")
 ;;
 
 let instantiate (s: 'a scheme) : 'a typ =
@@ -252,7 +260,6 @@ let opname2 op =
     | Less -> "less"
     | LessEq -> "lesseq"
     | Eq ->  "eq"
-    | _ -> raise (InternalCompilerError "Invalid op name :/")
 ;;
 
 (* Ex 14 *)
@@ -358,23 +365,15 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
         if (i1 > i2) then raise (InternalCompilerError (sprintf "Index out of bounds %d of %d" i1 i2))
                      else (subst, (List.nth typ_list i1), new_e)
     | _ -> raise (InternalCompilerError "infered exp for tuple to non tytup :/"))
+  | ESeq _ -> raise (InternalCompilerError "Desugar fail much?")
+  | ESetItem(_, _, _, _, loc) -> ([], TyVar(gensym "you_shall_not_type", loc), e)
+  | ENil(t, loc) -> ([], t, e)
 ;;
 
 
 
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ subst =
-    (* Collect all the free type variables in the type of the function body *)
-    let DFun(name, args, _, body, loc) = decl in
-    (* Scheme for this funciton must be in funenev *)
-    let SForall(_, typ_scheme, _) = find_pos funenv name loc in
-    let TyArr(tmp_args, tmp_type, _) = typ_scheme in
-    let (body_subst, body_type, _) = infer_exp funenv env body reasons in
-    let body_type = apply_subst_typ body_subst tmp_type in
-    let unif_subst = unify tmp_type body_type loc reasons in
-    let final_subst = compose_subst body_subst unif_subst in
-    let final_type = apply_subst_typ final_subst tmp_type in
-    let funenv = apply_subst_funenv final_subst funenv in
-    ((StringMap.add name (generalize env final_type) funenv), body_subst)
+    failwith "Implement infer_decl"
 ;;
  
 let init_fn fn =
@@ -414,7 +413,7 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
             (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
         funenv new_types_and_subs in
     (* Combine the substs *)
-    let allsubst = List.fold_left
+    let _ = List.fold_left
         (fun acc (_, s) ->
             (acc @ s)) [] new_types_and_subs in
     (* Check for a solution *)
