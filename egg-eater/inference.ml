@@ -250,7 +250,10 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let env = apply_subst_env subs env in
           (match op with
             | Add1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
-            | Sub1 -> ([], TyArr([tInt], tInt, loc), e)
+            | Sub1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)            
+            | IsBool -> let new_subs = unify exp_typ tBool loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
+            | IsNum -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
+            | Not -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | Print -> 
               
               let typ_scheme = find_pos funenv "print" loc in
@@ -263,9 +266,6 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               let unif_sub1 = unify instantiate_scheme add1_arrowtype loc reasons in
               (unif_sub1, add1_arrowtype, e)
 
-            | IsBool  
-            | IsNum 
-            | Not -> ([], TyArr([tBool], tBool, loc), e)
             | PrintStack ->  failwith "Finish implementing inferring types for PrintStack")
   | EPrim2(op, l,r,loc) -> begin match op with
       | Plus -> 
