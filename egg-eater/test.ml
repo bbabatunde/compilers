@@ -379,6 +379,11 @@ let integration_tests = [
   t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "" "1";
   t "desugar4" "let (a, b) = (1, (2, 3)) in b" "" "(2, 3)";
 
+  (* Desugar more *)
+  t "desugar5" "def f(a): a
+                let (b, c) = f((1, 2)) in (b, c)" "" "(1, 2)";
+  (* Test the above with a fn that returns something on each call to test for temp var desugar stuff. *)
+
   (* Nested let bindings *)
   t "nlet1" "let a = (1, 2, 3) in
              let (b, c, d) = a in
@@ -468,6 +473,7 @@ let integration_tests = [
 
 let suite =
 "suite">:::
+ integration_tests@
  curr_test @
  []
 ;;

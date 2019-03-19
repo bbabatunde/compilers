@@ -506,6 +506,7 @@ let desugar (p : sourcespan program) : sourcespan program =
         let (new_args, new_binds) = helpArgs args in
         let new_body = ELet(new_binds, (helpE body), pos) in
         DFun(name, new_args, scheme, helpE new_body, pos)
+        (* Makes a wasted let binding we might want to remove in the future. *)
   in
   match p with
   | Program(tydecls, decls, body, t) ->
