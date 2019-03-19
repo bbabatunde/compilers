@@ -155,17 +155,6 @@ let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason l
         | _ -> raise (ty_err t1 t2 loc reasons))
     | TyBlank(pos) -> raise (ty_err t1 t2 loc reasons))
 
-(*
-  | TyBlank(pos),TyBlank(pos2) -> []
-  | TyCon(str,pos),TyCon(str2,pos2) ->   if str = str2 then [] else raise (ty_err t1 t2 loc reasons) 
-  | TyVar(str,pos),TyVar(str2,pos2) ->   bind str t2 
-  | TyArr(typlist, typ,pos),TyArr(typlist2,typ2, pos2) -> if List.length typlist = List.length typlist2
-                                                          then (List.flatten (List.map2 (fun e1 e2  ->  unify e1 e2 loc reasons) typlist typlist2)) @ 
-                                                          (unify typ typ2 loc reasons) 
-                                                          else raise (ty_err  t1 t2 loc reasons) 
-  | TyApp(typ,typlist,pos), TyApp(typ2, typlist2,pos2)->  failwith "implement unify for TyApp" 
-  |_ -> raise (ty_err t1 t2 loc reasons) 
-*)
 let gensym =
   let count = ref 0 in
   let next () =
@@ -189,6 +178,34 @@ let rec unblank (t : 'a typ) : 'a typ =
 
 let instantiate (s : 'a scheme) : 'a typ = match s with 
  |SForall(strlst, typ,pos) -> TyArr( (List.fold_left (fun lst t -> lst @ [(TyCon(gensym t,dummy_span))] ) [] strlst), unblank typ, pos)
+;;
+
+let rec replace_in_type rep_lst t =
+    match t with
+    | TyCon _ -> t
+    | TyVar(name, pos) ->
+        let replacement = rep_lookup name rep_lst in
+        if (String.equal replacement "") then t
+        else TyVar(replacement, pos)
+    | TyArr(lst, typ, pos) ->
+        TyArr((List.map (fun e -> replace_in_type rep_lst e) lst), (replace_in_type rep_lst typ), pos)
+    | TyApp(typ, lst, pos) ->
+        TyApp((replace_in_type rep_lst typ), (List.map (fun e -> replace_in_type rep_lst e) lst), pos)
+    | TyTup(lst, pos) ->
+        TyTup((List.map (fun e -> replace_in_type rep_lst e) lst), pos)
+    | TyBlank(_) -> raise (InternalCompilerError "Unblank broken? o.O")
+and rep_lookup name lst =
+    match lst with
+    | [] -> ""
+    | (old_name, TyVar(new_name, _))::rest ->
+        if old_name = name then new_name else rep_lookup name rest
+;;
+
+let instantiate (s: 'a scheme) : 'a typ =
+    match s with
+    | SForall(inp_lst, op_typ, pos) ->
+        let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", dummy_span))])) [] inp_lst in
+        replace_in_type inp_lst_typ (unblank op_typ)
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
@@ -251,7 +268,9 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           (match op with
             | Add1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | Sub1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)            
-            | IsBool -> let new_subs = unify exp_typ tBool loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
+            | IsBool ->
+                    let new_subs = unify exp_typ tBool loc reasons in
+                    (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | IsNum -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | Not -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | Print -> 
