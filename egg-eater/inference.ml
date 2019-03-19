@@ -246,8 +246,10 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let exp_type = apply_subst_typ final_subst exp_type in
           (final_subst, exp_type, e)
   | EPrim1(op, exp,loc) ->  
+          let (subs, exp_typ, _) = infer_exp funenv env exp reasons in
+          let env = apply_subst_env subs env in
           (match op with
-            | Add1 ->  ([], TyArr([tInt], tInt, loc), e)
+            | Add1 -> let new_subs = unify exp_typ tInt loc reasons in (new_subs, (apply_subst_typ new_subs exp_typ), e)
             | Sub1 -> ([], TyArr([tInt], tInt, loc), e)
             | Print -> 
               
