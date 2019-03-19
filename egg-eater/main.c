@@ -6,6 +6,8 @@
 extern int our_code_starts_here() asm("our_code_starts_here");
 extern int equal(int a, int b) asm("equal");
 extern int print(int val) asm("print");
+extern int input() asm("input");
+
 extern void error(int errCode, int val) asm("error");
 
 void* printer(int val, int tuple_size );
@@ -141,7 +143,6 @@ void* printer(int val , int tuple_size){
          if( (val - 1) == 0){
 
           }else{
-         
           int* tupptr = (int*)(val - 1);
           if(tuple_size == 2) {
           printf("(");
@@ -149,7 +150,6 @@ void* printer(int val , int tuple_size){
           printf(", ");
           printer(*(tupptr + 2), tuple_size);
           printf(")");
-          //TODO 1 OR 2
           *(tupptr) -= 2;
           }
           else {

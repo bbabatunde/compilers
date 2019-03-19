@@ -107,7 +107,11 @@ let fun_tests = [
       f(2, 0)" "" "1";
  *)
   (* Tail tests: note we don't use valgrind here because it will complain about modifying our parent's stackframe *)
+<<<<<<< HEAD
     (*t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";*)
+=======
+   (* t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";*)
+>>>>>>> 09e86eb5996d5c3bd425b03623afc0f13fd6cd76
    
     (*
     t "func" "def f(x): x  f(1)" "" "1";
@@ -379,6 +383,11 @@ let integration_tests = [
   t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "" "1";
   t "desugar4" "let (a, b) = (1, (2, 3)) in b" "" "(2, 3)";
 
+  (* Desugar more *)
+  t "desugar5" "def f(a): a
+                let (b, c) = f((1, 2)) in (b, c)" "" "(1, 2)";
+  (* Test the above with a fn that returns something on each call to test for temp var desugar stuff. *)
+
   (* Nested let bindings *)
   t "nlet1" "let a = (1, 2, 3) in
              let (b, c, d) = a in
@@ -458,6 +467,7 @@ let integration_tests = [
   
   ]
 
+<<<<<<< HEAD
  let curr_test = [
      t "tail_rec_len" "def link(first, rest):
                    (first, rest)
@@ -471,6 +481,19 @@ let integration_tests = [
 
 let suite =
 "suite">:::
+=======
+  let curr_test = [
+    t "input1" "print(input())" "true" "true\ntrue";
+    t "input2" "print(input())" "1" "1\n1";
+    t "input3" "print(input())" "false" "false\nfalse";
+    t "input4" "input() + input()" "1" "2";
+
+  ]
+
+let suite =
+"suite">:::
+ integration_tests@
+>>>>>>> 09e86eb5996d5c3bd425b03623afc0f13fd6cd76
  curr_test @
  []
 ;;

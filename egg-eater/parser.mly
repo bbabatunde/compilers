@@ -31,7 +31,6 @@ prim1 :
   | ADD1 { Add1 }
   | SUB1 { Sub1 }
   | NOT { Not }
-  | PRINT { Print }
   | ISBOOL { IsBool }
   | ISNUM { IsNum }
   | ISTUPLE { IsTuple }
