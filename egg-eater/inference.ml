@@ -385,7 +385,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
 
 
 let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ subst =
-    failwith "Implement infer_decl"
+    (funenv, [])
 ;;
  
 let init_fn fn =
@@ -402,7 +402,6 @@ let init_fn fn =
     (funname, TyArr(ty_args, ty_bod, pos), new_env)
 
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
-    (*
     (* Instantiate the type schemes for the functions all at once. *)
     (* - Guess type variables for all functions in group. *)
     let typ_env_lst = List.map init_fn g in
@@ -420,6 +419,7 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
     let new_types_and_subs = (List.map
         (fun fn -> infer_decl funenv env fn []) g) in
     (* Generalize all the remaining types all at once. *)
+    print_funenv funenv;
     let funenv = List.fold_left
         (fun e (n_map, _) ->
             List.fold_left
@@ -431,8 +431,8 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
             (acc @ s)) [] new_types_and_subs in
     (* Check for a solution *)
     (funenv, g)
-    *)
 ;;
+
 let infer_prog funenv env (p : sourcespan program) : sourcespan program =
     match p with
   | Program(tydecls, declgroups, body, tag) ->
