@@ -7,7 +7,7 @@ open Phases
 module StringMap = Map.Make(String);;
 module StringSet = Set.Make(String);;
 
-let show_debug_print = ref true
+let show_debug_print = ref false
 let debug_printf fmt =
   if !show_debug_print
   then printf fmt
@@ -347,6 +347,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let new_return_tyvar = TyVar(gensym "prim1res", loc) in
           (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
           let new_op_tyarr = TyArr([infered_arg_typ], new_return_tyvar, loc) in
+          debug_printf "\nnew_op_tyarr: %s\n" (string_of_typ new_op_tyarr);
           (* Recursively unify the looked-up arrow type of the operator, with the constructed arrow type. *)
           let unify_subs = unify looked_up_tyarr new_op_tyarr loc reasons in
           debug_printf "\nUNIFIED SUBS\n";
