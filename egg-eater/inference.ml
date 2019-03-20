@@ -155,7 +155,7 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
      then raise (OccursCheck (sprintf "Infinite types: %s occurs in %s" tyvarname (string_of_typ t)))
      else [(tyvarname, t)]
 ;;
-let ty_err t1 t2 loc reasons = TypeMismatch(loc, t2, t1, reasons)
+let ty_err t1 t2 loc reasons = TypeMismatch(loc, t1, t2, reasons)
 let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst =
     (match t1 with
     | TyVar(varname, pos) -> [(varname, t2)]
