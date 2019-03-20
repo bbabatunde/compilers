@@ -488,6 +488,8 @@ let integration_tests = [
 
   
 
+    
+
   ]
  
 let well_formed_tests = [
@@ -547,15 +549,32 @@ let well_formed_tests = [
    t "printtuple2" "let x = print((1,2)) in x" "" "";
 ]
 
+  let inference_tests = [
+    (* Infer prim1s *)
+    (*
+    terr "infer_sub1" "sub1(true)" "" "Type error at infer_sub1, 1:0-1:10: expected Int but got Bool";
+    terr "infer_add1" "add1(true)" "" "Type error at infer_add1, 1:0-1:10: expected Int but got Bool";
+    t "infer_isbool" "isbool(1)" "" "false";
+    t "infer_isbool2" "isbool(true)" "" "true";
+    t "infer_isnum" "isnum(true)" "" "false";
+    t "infer_isnum2" "isnum(1)" "" "true";
+    *)
+    (* Infer prim2s *)
+    terr "infer_plus" "1 + true" "" "";
+    terr "infer_minus" "1 - false" "" "";
+
+    ]
+
 let suite =
 "suite">:::
-  
  well_formed_tests @ (*
  if_tests @
  prim2_test @
  integration_tests @
  fun_tests @
- curr_tests @)0*)
+ curr_tests @)
+ curr_test @
+inference_tests @*)
  []
 ;;
 
