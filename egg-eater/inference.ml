@@ -19,15 +19,24 @@ type 'a subst = (string * 'a) list;;
 
 
 let print_funenv funenv =
-    debug_printf "PRINT_FUNENV";
-  StringMap.iter (fun name scheme -> debug_printf "\t%s => %s\n" name (string_of_scheme scheme)) funenv;;
+    debug_printf "START_PRINT_FUNENV\n";
+    StringMap.iter (fun name scheme -> debug_printf "\t%s => %s\n" name (string_of_scheme scheme)) funenv;
+    debug_printf "END_PRINT_FUNENV\n";;
+
 let print_env env =
-    debug_printf "PRINT_ENV";
-  StringMap.iter (fun name typ -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) env;;
+    debug_printf "START_PRINT_ENV\n";
+    StringMap.iter (fun name typ -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) env;
+    debug_printf "END_PRINT_ENV\n";;
+
+let print_set s =
+    debug_printf "START_PRINT_SET\n";
+    StringSet.iter  (fun ele -> debug_printf "%s\n" ele) s;
+    debug_printf "END_PRINT_SET\n";;
 
 let print_subst subst =
-    debug_printf "PRINT_SUBST";
-  List.iter (fun (name, typ) -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) subst;;
+    debug_printf "START_PRINT_SUBST";
+  List.iter (fun (name, typ) -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) subst;
+    debug_printf "END_PRINT_SUBST";;
 
 
 let dummy_span = (Lexing.dummy_pos, Lexing.dummy_pos)
@@ -78,10 +87,10 @@ let rec find_pos (ls : 'a envt) x pos : 'a =
 let rec subst_var_typ (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_typ : 'a typ) : 'a typ =
   match in_typ with
   | TyBlank(pos) -> TyBlank(pos)
-  | TyCon(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
-  | TyVar(str,pos)-> if str = tyvar then in_typ else TyBlank(pos)
-  | TyArr(typlist,typ,pos)-> TyArr((List.map (fun e -> (subst_var_typ sub e)) typlist),(subst_var_typ sub typ),pos)
-  | TyApp(typ,typlist,pos)-> TyApp((subst_var_typ sub typ) , (List.map (fun e -> subst_var_typ sub e) typlist),pos)
+  | TyCon(str, pos)-> in_typ
+  | TyVar(str, pos)-> if str = tyvar then to_typ else in_typ
+  | TyArr(typlist, typ, pos)-> TyArr((List.map (fun e -> (subst_var_typ sub e)) typlist),(subst_var_typ sub typ), pos)
+  | TyApp(typ, typlist, pos)-> TyApp((subst_var_typ sub typ) , (List.map (fun e -> subst_var_typ sub e) typlist), pos)
   | TyTup(lst, pos) -> TyTup((List.map (fun e -> (subst_var_typ sub e)) lst), pos)
 ;;
 let  subst_var_scheme (((tyvar : string ), (to_typ: 'a typ)) as sub) (in_scheme : 'a scheme) : 'a scheme =
@@ -149,15 +158,11 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
 let ty_err t1 t2 loc reasons = TypeMismatch(loc, t2, t1, reasons)
 let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst =
     (match t1 with
-    | TyVar(varname, pos) ->
-        (match t2 with
-        | TyCon(ty2, pos) -> bind varname t2
-        | TyVar(ty2, pos) -> bind varname t2
-        | _ -> raise (ty_err t1 t2 loc reasons))
+    | TyVar(varname, pos) -> [(varname, t2)]
     | TyCon(conname, pos) ->
         (match t2 with
         | TyCon(ty2, pos) -> if conname = ty2 then [] else raise (ty_err t1 t2 loc reasons)
-        | TyVar(varname, pos) -> bind varname t2
+        | TyVar(varname, pos) -> [(varname, t1)]
         | _ -> raise (ty_err t1 t2 loc reasons))
     | TyArr(l1, ty1, pos) ->
         (match t2 with
@@ -226,14 +231,29 @@ and rep_lookup name lst =
 let instantiate (s: 'a scheme) : 'a typ =
     match s with
     | SForall(inp_lst, op_typ, pos) ->
-        let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", dummy_span))])) [] inp_lst in
-        replace_in_type inp_lst_typ (unblank op_typ)
+            let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", dummy_span))])) [] inp_lst in
+            let op_typ = replace_in_type inp_lst_typ (unblank op_typ) in
+            debug_printf "\ninit to: %s\n" (string_of_typ op_typ);
+            op_typ
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
     (* collect all the free type variables in the type of the function body *)
     (* subtract away any type variables that appear free in the type environment *)
-    let leftover_free_vars = StringSet.elements (StringSet.diff (ftv_type t) (ftv_env e)) in
+    let (arg_typ_lst, fun_bod) = 
+        (match t with
+        | TyArr(arg_typ_lst, bod_typ, loc) -> (arg_typ_lst, bod_typ)
+        | _ -> raise (InternalCompilerError "Fn type not type Arr o.O")) in
+    let env = List.iter
+        (fun t -> debug_printf "arg_typ: %s\n" (string_of_typ t)) arg_typ_lst in
+    let arg_typ_lst = List.fold_left
+        (fun acc ele -> StringSet.union acc (ftv_type ele)) StringSet.empty arg_typ_lst in
+    print_set arg_typ_lst;
+    let ftv_t = ftv_type fun_bod in
+    let ftv_e = ftv_env e in
+    print_set ftv_t;
+    print_set ftv_e;
+    let leftover_free_vars = StringSet.elements(StringSet.union arg_typ_lst (StringSet.diff (ftv_type t) (ftv_env e))) in
     SForall(leftover_free_vars, t, dummy_span)
 ;;
 
@@ -308,7 +328,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
                     | BBlank _ -> (env, []) (*Ignoring type inference on blanked let, means nothing to bod type.*)
                     | _ -> raise (InternalCompilerError "Binding of non variable name found :/ Desugar much?"))) 
               (env, []) binds in
-          (* infer type on body to get result type *)
+          (* infer type on body to get eesult type *)
           let (exp_subst, exp_type, _) = infer_exp funenv new_env exp reasons in
           (* resulting substitution is final substitution *)
           let final_subst = compose_subst new_subst exp_subst in
@@ -320,17 +340,21 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let looked_up_scheme = find_pos funenv (opname op) loc in
           (* Instantiate it to a type *)
           let looked_up_tyarr = instantiate looked_up_scheme in
+          debug_printf "\nlooked_up_tyarr: %s\n" (string_of_typ looked_up_tyarr);
           (* Infer a type for the argument(s) of the primitive. *)
           let (subs, infered_arg_typ, _) = infer_exp funenv env exp reasons in
-          let env = apply_subst_env subs env in
+          debug_printf "\ninfered_arg_typ: %s\n" (string_of_typ infered_arg_typ);
           (* Make up a brand-new type variable for the return type of the operation. *)
           let new_return_tyvar = TyVar(gensym "prim1res", loc) in
           (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
           let new_op_tyarr = TyArr([infered_arg_typ], new_return_tyvar, loc) in
           (* Recursively unify the looked-up arrow type of the operator, with the constructed arrow type. *)
           let unify_subs = unify looked_up_tyarr new_op_tyarr loc reasons in
+          debug_printf "\nUNIFIED SUBS\n";
+          print_subst unify_subs;
           (* If all goes well, return the newly-constructed return type variable, and the substitution obtained from the recursive unification call. *)
-          let all_subs = compose_subst subs unify_subs in
+          let all_subs = compose_subst unify_subs  subs in
+          let new_return_tyvar = apply_subst_typ all_subs new_return_tyvar in
           (all_subs, new_return_tyvar, e)
   | EPrim2(op, exp1, exp2, loc) ->
           (* Lookup the relevant scheme *)
@@ -392,7 +416,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
 
 
 
-let infer_decl funenv env (decl : sourcespan decl) reasons  =
+let infer_decl funenv env (decl : sourcespan decl) reasons : (sourcespan scheme envt * sourcespan typ) =
     let DFun(funame, arg_lst, _, body, loc) = decl in
     let SForall(_, my_type, _) = find_pos funenv funame loc in
     let arg_names = List.map (fun ele ->
@@ -403,19 +427,24 @@ let infer_decl funenv env (decl : sourcespan decl) reasons  =
         |  TyArr(arg_typ, my_ret_typ, _) -> 
             let env = List.fold_left2
                 (fun e n b -> StringMap.add n b e) env arg_names arg_typ in
-            print_env env;
-            print_funenv funenv;
             let (b_sub, bod_typ, _) = infer_exp funenv env body reasons in
-            debug_printf "\ntype: %s %d" (string_of_typ bod_typ) (List.length b_sub);
-            let unify_subst = unify my_ret_typ bod_typ loc reasons in
+            debug_printf "\n type: %s %d" (string_of_typ bod_typ) (List.length b_sub);
+            print_subst b_sub;
+            let unify_subst = unify bod_typ my_ret_typ loc reasons in
+            debug_printf "\n UNIFY SUBST";
+            print_subst unify_subst;
             let all_subst = compose_subst b_sub unify_subst in
             print_subst all_subst;
             debug_printf "\nmytype: %s" (string_of_typ my_type);
-            let fin_type = replace_in_type all_subst my_type in
+            let fin_type = apply_subst_typ all_subst my_type in
             debug_printf "\ntype: %s" (string_of_typ fin_type);
-            let fin_scheme = generalize env fin_type in
+            let env = apply_subst_env all_subst env in
+            print_env env;
+            let fin_scheme = generalize env fin_type in            
+            let fin_scheme = apply_subst_scheme all_subst fin_scheme in
             debug_printf "\nscheme: %s" (string_of_scheme fin_scheme);
-            (funame, fin_scheme, all_subst)
+            let funenv = StringMap.add funame fin_scheme funenv in
+            (funenv, fin_type)
         | _ -> raise (InternalCompilerError "Fn init to something other than a tyarr :/")
 ;;
  
@@ -437,12 +466,12 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
         (fun e (fname, ftype) -> StringMap.add fname (generalize env ftype) e)
         funenv typ_env_lst in 
     (* Infer types for each function body, and accumulate the substitutions that result. *)
-    let new_types_and_subs = (List.map
-        (fun fn -> infer_decl tmp_funenv env fn []) g) in
-    (* Combine the substs *)
-    let funenv = List.fold_left
-        (fun e (name, scheme, _) -> StringMap.add name scheme e)
-        funenv new_types_and_subs in
+    let funenv = (List.fold_left
+        (fun acc ele ->
+            let (new_funenv, _) = infer_decl acc env ele [] in
+            new_funenv) 
+        tmp_funenv g) in
+    print_funenv funenv;
     (funenv, g)
 ;;
 
