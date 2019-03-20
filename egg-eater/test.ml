@@ -37,8 +37,8 @@ let test_prog = "let x : Int = if sub1(55) < 54: (if 1 > 0: add1(2) else: add1(3
 let anf1 = (anf     (tag (parse_string "test" test_prog)))
 
 let fun_tests = [
-   (*function call tests*)
-   (*  t "func_dual_call" "def f(x): let z=10 in z
+  
+    t "func_dual_call" "def f(x): let z=10 in z
                         def g(y): f(y)
                         g(1)"  "" "10";
 
@@ -69,9 +69,9 @@ let fun_tests = [
     t "tail1" "def f(x): if (x == 0): x else: f(x - 1) f(100000)" "" "0";
 
     t "tail0" "def f(x): if (x == 0): x else: f(x - 1)
-    f(2)" "" "0"; *)
+    f(2)" "" "0"; 
 
-    (* t "multiple_unused_function" 
+     t "multiple_unused_function" 
         "def f0(): 0
          def f1(): 1
          def f2(): 2
@@ -105,11 +105,8 @@ let fun_tests = [
         let innery = (x - 1) in
             g(innery, innery)
       f(2, 0)" "" "1";
- *)
-  (* Tail tests: note we don't use valgrind here because it will complain about modifying our parent's stackframe *)
-   (* t "tail1" "def f(counter,val): if (counter == 0): val else: f(counter - 1, 1) f(1, 2)" "" "1";*)
-   
-    (*
+
+    
     t "func" "def f(x): x  f(1)" "" "1";
     t "func2" "def f(x,y): x + (2*y) f(1,3)" "" "7";
     t "func3" "def f(x):\nx*2\n\nf(41)" "" "82";
@@ -157,7 +154,7 @@ let fun_tests = [
    
     te "multi_error" "def f(x, x): y
                        f(1)" ""
-                       ""; *)
+                       ""; 
   
 ]
 
@@ -202,70 +199,70 @@ let prim1_tests = [
 
 let prim2_test = [
 
-   t "plus_1" "(1 + 1)" "2";
-   t "plus_3" "(1 + 1) + (2 + 4)" "8";
-   t "printplus1" "print(1+1)" "2\n2";
+   t "plus_1" "(1 + 1)" "" "2";
+   t "plus_3" "(1 + 1) + (2 + 4)" "" "8";
+   t "printplus1" "print(1+1)" "" "2\n2";
    
-   t "sub_1" "(1 - 1)" "0";
-   t "sub_2" "(1 - 1) + (2 - 3)" "-1";
-   t "subprint2" "(print(1) - 1)" "1\n0";
-   t "subprint3" "(print(1) - print(1))" "1\n1\n0";
-   t "subprint4" "print(print(1) - print(1))" "1\n1\n0\n0";
+   t "sub_1" "(1 - 1)" "" "0";
+   t "sub_2" "(1 - 1) + (2 - 3)" "" "-1";
+   t "subprint2" "(print(1) - 1)" "" "1\n0";
+   t "subprint3" "(print(1) - print(1))" "" "1\n1\n0";
+   t "subprint4" "print(print(1) - print(1))" "" "1\n1\n0\n0";
 
-   t "times_1" "(3 * 2)" "6";
-   t "times_2" "2 * (-1)" "-2";
-   t "timesprint2" "(print(1) * 1)" "1\n1";
-   t "timesprint3" "(print(1) * print(1))" "1\n1\n1";
-   t "timesprint4" "print(print(1) * print(1))" "1\n1\n1\n1";
-   t "timesadd11" "(add1(3) * sub1(3))" "8";
+   t "times_1" "(3 * 2)" "" "6";
+   t "times_2" "2 * (-1)" "" "-2";
+   t "timesprint2" "(print(1) * 1)" "" "1\n1";
+   t "timesprint3" "(print(1) * print(1))" "" "1\n1\n1";
+   t "timesprint4" "print(print(1) * print(1))" "" "1\n1\n1\n1";
+   t "timesadd11" "(add1(3) * sub1(3))" "" "8";
 
 
-   t "and_1" "(true && true)" "true";
-   t "and_2" "(true && false)" "false"; 
+   t "and_1" "(true && true)" "" "true";
+   t "and_2" "(true && false)" "" "false"; 
  
-   t "and_8" "(print(false) && print(false))" "false\nfalse\nfalse";
-   te "and_4" "(1 && false)" "logic expected a boolean, but got 1";
-   te "and_5" "(false && 1)" "logic expected a boolean, but got 1";
-   te "and_6" "(1 && 1)" "logic expected a boolean, but got 1";
+   t "and_8" "(print(false) && print(false))" "" "false\nfalse\nfalse";
+   te "and_4" "(1 && false)" "" "logic expected a boolean, but got 1";
+   te "and_5" "(false && 1)" "" "logic expected a boolean, but got 1";
+   te "and_6" "(1 && 1)" "" "logic expected a boolean, but got 1";
 
-   t "or_1" "(true || true)" "true";
-   t "or_2" "(true || false)" "true"; 
-   t "or_3" "(false || false)" "false";
-   te "or_4" "(1 || false)" "logic expected a boolean, but got 1";
-   te "or_5" "(false || 1)" "logic expected a boolean, but got 1";
+   t "or_1" "(true || true)" "" "true";
+   t "or_2" "(true || false)" "" "true"; 
+   t "or_3" "(false || false)" "" "false";
+   te "or_4" "(1 || false)" "" "logic expected a boolean, but got 1";
+   te "or_5" "(false || 1)" "" "logic expected a boolean, but got 1";
 
-   t "greater_1" "(1 > 0)" "true";
-   t "greater_2" "(3 > 2)" "true"; 
-   t "greater_3" "(-1 > 10)" "false";
-   t "greater_6" "(1 > 1)" "false";
-   te "greater_4" "(1 > true)" "comparison expected a number, but got 00ffffffff";
-   te "greater_5" "(false > 1)" "comparison expected a number, but got 007fffffff";
+   t "greater_1" "(1 > 0)" "" "true";
+   t "greater_2" "(3 > 2)" "" "true"; 
+   t "greater_3" "(-1 > 10)" "" "false";
+   t "greater_6" "(1 > 1)" "" "false";
+   te "greater_4" "(1 > true)" "" "comparison expected a number, but got 00ffffffff";
+   te "greater_5" "(false > 1)" "" "comparison expected a number, but got 007fffffff";
 
-   t "greateq_1" "(1 >= 1)" "true";
-   t "greateq_2" "(3 >= 2)" "true"; 
-   t "greateq_3" "(-1 >= -1)" "true";
-   t "greateq_6" "(100 >= 100)" "true";
+   t "greateq_1" "(1 >= 1)" "" "true";
+   t "greateq_2" "(3 >= 2)" "" "true"; 
+   t "greateq_3" "(-1 >= -1)" "" "true";
+   t "greateq_6" "(100 >= 100)" "" "true";
 
-   te "greateq_4" "(1 >= true)"  "comparison expected a number, but got 00ffffffff";
-   te "greateq_5" "(false >= 1)" "comparison expected a number, but got 007fffffff";
+   te "greateq_4" "(1 >= true)" "" "comparison expected a number, but got 00ffffffff";
+   te "greateq_5" "(false >= 1)" "" "comparison expected a number, but got 007fffffff";
 
-   t "less1" "(1 < 0)" "false";
-   t "less2" "(3 < 2)" "false"; 
-   t "less3" "(-1 < 10)" "true";
-   t "less6" "(1 < 1)" "false";
-   te "less4" "(1 < true)"  "comparison expected a number, but got 00ffffffff";
-   te "less5" "(false < 1)" "comparison expected a number, but got 007fffffff";
+   t "less1" "(1 < 0)" "" "false";
+   t "less2" "(3 < 2)" "" "false"; 
+   t "less3" "(-1 < 10)" "" "true";
+   t "less6" "(1 < 1)" "" "false";
+   te "less4" "(1 < true)" "" "comparison expected a number, but got 00ffffffff";
+   te "less5" "(false < 1)" "" "comparison expected a number, but got 007fffffff";
 
-   t "lesseq_1" "(1 <= 1)" "true";
+   t "lesseq_1" "(1 <= 1)" "" "true";
   
-   te "lesseq_4" "(1 >= true)" "comparison expected a number, but got 00ffffffff";
-   te "lesseq_5" "(false >= 1)" "comparison expected a number, but got 007fffffff";
-   t "lesseq_6" "(100 >= 100)" "true";
+   te "lesseq_4" "(1 >= true)" "" "comparison expected a number, but got 00ffffffff";
+   te "lesseq_5" "(false >= 1)" "" "comparison expected a number, but got 007fffffff";
+   t "lesseq_6" "(100 >= 100)" "" "true";
 
-   t "eq_1" "(1 == 0)" "false";
-   t "eq_2" "(3 == 2)" "false";
-   t "eq_3"  "(print(1) == print(true))"  "1\ntrue\nfalse"; 
-   t "eq_4" "(1 == true)"  "false";
+   t "eq_1" "(1 == 0)" "" "false";
+   t "eq_2" "(3 == 2)" "" "false";
+   t "eq_3"  "(print(1) == print(true))" ""  "1\ntrue\nfalse"; 
+   t "eq_4" "(1 == true)" "" "false";
 
 
 ]
@@ -284,15 +281,8 @@ let integration_tests = [
        (Program([], [], EAnnot(ENumber(41, ()), TyBlank(), ()), ())) ""
        forty_one_a;
 
-  (* tanf "prim1_anf"
-   *      (Program([], (EPrim1(Sub1, ENumber(55, ()), ())), ()))
-   *      (AProgram([],
-   *                (ALet("unary_1", CPrim1(Sub1, ImmNum(55, ()), ()),
-   *                      ACExpr(CImmExpr(ImmId("unary_1", ()))),
-   *                      ())),
-   *               ())); *)
 
-  (*te "scope_err1" "let x : Bool = true in (let y : Bool = (let x : Bool = false in x) in y)" "shadows one defined";*)
+  te "scope_err1" "let x : Bool = true in (let y : Bool = (let x : Bool = false in x) in y)" "" "shadows one defined";
 
   ta "forty_one_run_anf" (atag forty_one_a) "" "41";
  
@@ -364,7 +354,7 @@ let integration_tests = [
   t "seq6" "def f(n): n
             f(1;2;3)" "" "3";
   t "seq7" "(1;2;3, 1;2;3)" "" "(3, 3)";
-  (*t "seq8" "(((1;2;3), (3;4)), 1)" "((3, 4), 1)"*)
+  t "seq9" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
  
   t "seq8" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
 
@@ -423,8 +413,8 @@ let integration_tests = [
                    f()" "" "3";
 
   (* Mixed function desugaring *)
-  (* t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
-                   f((1, 2), 3)" "(4, 5)"; *)
+  t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
+                   f((1, 2), 3)" "" "(4, 5)"; 
   t "desugar_fn5" "def f((a, b), c, (d, e)): a + b + c + d + e
                    f((1, 1), 1, (1, 1))" "" "5";
   t "desugar_fn6" "def f(a): let (b, c, d, e) = a in b + c + d; e
@@ -445,27 +435,13 @@ let integration_tests = [
              f()"
              "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
 
-  (* Testing tail-recursion.*)
-    t "tail_rec_len" "def link(first, rest):
-                   (first, rest)
-                 def length(l):
-                   if l == 3 : 0
-                   else:
-                    1 + length(l[1 of 2])
-                 let mylist = link(1, (link(2, (link(3, false))))) in
-                    length(mylist)" "" "10";
-
-  (* Placeholder lists tests. 
-  tprog "listsAppend.egg" "";
-  tprog "listsLength.egg" "";
-  tprog "listsSum.egg" "";
-  tprog "listsReverse.egg" "";*)
   
+
   ]
 
-  let curr_test = [
+  let curr_tests = [
 
-   (*  t "input1" "print(input())" "true" "true\ntrue";
+    t "input1" "print(input())" "true" "true\ntrue";
     t "input2" "print(input())" "1" "1\n1";
     t "input3" "print(input())" "false" "false\nfalse";
     t "input4" "input() + input()" "1" "2";
@@ -492,26 +468,94 @@ let integration_tests = [
                                 print(b)
                              else:
                                  next
-                    f(0,0,0,1,3)" "" "3\n3"; *)
+                    f(0,0,0,1,3)" "" "3\n3"; 
 
-     t "tail_rec_len" "def link(first, rest):
-                   (first, rest)
-                 def length(l):
-                   if l == false: 0
-                   else:
-                    1 + length(l[1 of 2])
-                 let mylist = link(1, (link(2, (link(3, false))))) in
-                    length(mylist)" "" "3";
+ 
 
     t "nillequal" "(nil : Int) == (nil : Int)"   "" "true";
     t "tupleeqbool" "(1,2) == true"  "" "false";
     t "tupleeqint" "(1,2) == false"  "" "false";
+ 
+    tprog "listsAppend.egg" "(1, (2, (3, (4, (5, (6, false))))))";
+    tprog "listsLength.egg" "3";
+    tprog "listsSum.egg" "6";
+    tprog "listsReverse.egg" "(3, (2, (1, false)))";
+    tprog "typelist.egg" "(3, (2, (1, false)))";
+
+
+    te "niladd" "(nil: Int) + (nil: Int)" "" "arithmetic expected a number, but got 0000000001";
+
+
+  
 
   ]
+ 
+let well_formed_tests = [
+   te "welfrom1" "let three = ((4, (true, 3))) in
+                  three[-1 of 2]" "" "error index too small: The tuple  at <welfrom1, 2:18-2:32>  was accessed with an index of -1";
+
+  te "welfrom2" "let three = ((4, (true, 3))) in
+                  three[2 of 2]" "" "error index too large: The tuple  at <welfrom2, 2:18-2:31> has a maximun size of 1, was indexed with 2";
+
+  te "welfformnillequal" "(nil : String) == (nil : Int)"   "" "Unsupported Type: String at <welfformnillequal, 1:7-1:13>";
+
+  te "wellformederrortypelist"  "type intlist = (Int * intlist)
+
+                                def length(l : intlist):
+                                  if l == (nil : boollist): 0
+                                  else: 1 + length(l[1 of 2])
+
+                                let mylistlength = (1, (2, (3, nil:Int))) in
+                                  length(mylistlength)" "" "Unsupported Type: boollist at <wellformederrortypelist, 4:49-4:57>";
+
+
+    te "wellformederrortypelist2"  "type intlist = (Int * intlist)
+
+                                def length(l : intlist):
+                                  if l == (nil : intlist): 0
+                                  else: 1 + length(l[1 of 2])
+
+                                let mylistlength = (1, (2, (3, nil:boollist))) in
+                                  length(mylistlength)" "" "Unsupported Type: boollist at <wellformederrortypelist2, 7:67-7:75>";
+
+
+   te "wellformederrortypelist3"  "type intlist = (Int * intlist)
+                                    type intlist = (intlist * intlist)
+                                def length(l : intlist):
+                                  if l == (nil : intlist): 0
+                                  else: 1 + length(l[1 of 2])
+
+                                let mylistlength = (1, (2, (3, nil:intlist))) in
+                                  length(mylistlength)" "" "Duplicate type: intlist at <wellformederrortypelist3, 1:0-1:30>";
+
+
+  te "wellformederrortypelist4"  "type intlist = (Int * intlist)
+                                   type intintlist = (intlist * intlist * intintlist)
+                                def length(l : intlist):
+                                  if l == (nil : intlist): 0
+                                  else: 1 + length(l[1 of 2])
+
+                                let mylistlength = (1, (2, (3, nil:intlist))) in
+                                  length(mylistlength)" "" "type declaration length is invalid: intintlist at <wellformederrortypelist4, 2:35-2:85>";
+
+
+   te "lesseq" "(nil: Int) <= (nil: Int)" "" "comparison expected a number, but got 0000000001";
+   t "nilequal1"  "(nil: Int) == (nil: Int)" "" "true";
+   te "nillequal2"  "(nil: Int) == input()" "nil" "invalid input";
+
+   t "printtupleinput" "print((input(),()))" "1" "(1, (0, 1))";
+   t "printtuple2" "let x = print((1,2)) in x" "" "";
+]
 
 let suite =
 "suite">:::
- curr_test @
+  
+ well_formed_tests @ (*
+ if_tests @
+ prim2_test @
+ integration_tests @
+ fun_tests @
+ curr_tests @)0*)
  []
 ;;
 

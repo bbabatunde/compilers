@@ -349,11 +349,11 @@ let rec remove_one_str ls str =
    | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] exprlist
    | EGetItem(tuple,index,size,loc)-> 
      if ( index >=  size) 
-     then  wf_E tuple ds env tydecls @ [IndexTooLarge(index,loc)]
+     then  wf_E tuple ds env tydecls @ [IndexTooLarge(index,size,loc)]
      else if (index < 0) then wf_E tuple ds env tydecls @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env tydecls
    | ESetItem (exp,index,size,exp2,loc) -> 
      if (index >=  size) 
-     then  wf_E exp ds env tydecls @ [IndexTooLarge(index,loc)] @  wf_E exp2 ds env tydecls
+     then  wf_E exp ds env tydecls @ [IndexTooLarge(index,size, loc)] @  wf_E exp2 ds env tydecls
      else if (index < 0) then wf_E exp ds env tydecls @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env tydecls
      else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
@@ -368,7 +368,7 @@ and check_shadowid_tuple b expr exploc env ds tydecls: exn list = match b with
 
 
 and check_shadowid bind expr exploc env ds tydecls: exn list = match find2 env bind with
-  |None -> []
+  |None -> wf_E expr ds env tydecls
   |Some(loc) -> [ShadowId(bind,loc,exploc)]
 
 and check_binding_list (bindings: 'a binding list) (env : (string * sourcespan) list) (ds : 'a decl list) (tydecls: 'a tydecl list) : 
@@ -411,7 +411,9 @@ and add_bindlst_env blst env =
     | TyBlank(_) -> []
     | TyCon("Int", _) -> []
     | TyCon("Bool",_)-> []
-    | TyCon(str,loc) -> [Unsupported(str,loc)]
+    | TyCon(str,loc) -> begin match (findlst  tydecls  str) with 
+                          |None -> [Unsupported(str,loc)]
+                          |Some(x) -> [] end
     | TyVar(name,loc)->  begin match findecls tydecls name with
                         |None -> [InvalidTyLen(name, loc)]
                         |Some(x) -> [] end
@@ -889,20 +891,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
   
-(* Given a list of arguments and an env, replace them on the stack for tail calls *)
 and replace_args exprs env = 
-  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
-   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
-  (*let rec _replace_args exprlist idx = 
-    match exprlist with
-    | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env );
-       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
-       @ _replace_args tail (idx+1)
 
-    | _ -> []
-  and
-  *)
   let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
@@ -915,28 +905,23 @@ and replace_args exprs env =
   _replace_with_saved_args exprlist idx = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX)); (* Pop old value off stack into Eax *)
+      [ IPop(Reg(EAX)); 
        IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
        @ _replace_with_saved_args tail (idx+1)
 
     | _ -> []
   in
 
-  (* First: push all old args onto our function's stack *)
   _push_args (List.rev exprs)
-  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
-  (*@ _replace_args exprs 1 *)
+
   @ _replace_with_saved_args exprs 1
 
 let build_env (vars: string list) : (string * arg) list =
-  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
-  (* First var is at ebp-8, second is ebp-12, ... *)
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
     | vname::tail -> 
         let offset = 8+4*(List.length parsed) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in (* Params are EBP relative *)
-        (* (Printf.printf "Building env: %s -> EBP+%d\n" vname offset); *)
+        let this_res = [(vname, RegOffset(offset, EBP))] in 
         (_build_env tail (parsed @ this_res)
         )
     | _ -> ([], parsed)

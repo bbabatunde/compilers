@@ -28,7 +28,7 @@ const int ERR_NOT_TUPLE = 6;
 const int ERR_INDEX_TOO_LARGE = 7;
 const int ERR_INDEX_TOO_SMALL = 8;
 const int ERR_INCORRECT_TUPLE_LENGTH = 9;
-
+const int ERR_INVALID_INPUT = 10;
 
 int equal(int left, int right) {
    
@@ -139,9 +139,9 @@ int input(){
       else if (strcmp(val ,"false") == 0)
         return BOOL_FALSE;
       else
-        exit(1);
+        error(ERR_INVALID_INPUT, 0);
     }
-  exit(1);
+ error(ERR_INVALID_INPUT, 0);
 }
 
 int print(int val) {
@@ -162,7 +162,7 @@ int print(int val) {
      int* tupptr = (int*)(val - 1);
      tuple_size = *(tupptr);
      printer(val, tuple_size);
-      printf("\n");
+    printf("\n");
   }
 
   
@@ -180,7 +180,8 @@ void* printer(int val , int tuple_size){
     printf("false");
   } else if ((val & TUPLE_TAG) == 1) {
          if( (val - 1) == 0){
-              printf(")");
+              //printf("()");
+              return 0;
           }else{
           int* tupptr = (int*)(val - 1);
           if(tuple_size == 2) {
@@ -233,6 +234,8 @@ void error(int errCode, int val) {
     fprintf(stderr, "index too small,  got %010x\n", val);
   }else  if (errCode == ERR_INDEX_TOO_LARGE) {
     fprintf(stderr, "index too large, got %010x\n", val);
+  }else if (errCode == ERR_INVALID_INPUT){
+    fprintf(stderr, "invalid input");
   }
 
 
