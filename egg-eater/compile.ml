@@ -309,7 +309,8 @@ let rec remove_one_str ls str =
 
  let fun_prim = ["input";"print"]
 
-let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
+
+ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) (tydecls: 'a tydecl list) 
   : exn list = match e with
     | ENumber(n, pos) -> if n > 1073741823 || n < -1073741824 then
@@ -335,19 +336,15 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
          [Arity (no_defargs,no_appargs,pos)]
       end
     |ELet([], body, pos) -> wf_E body ds env tydecls
-    |ELet((BBlank(typ, _), exp, bindloc)::rest as binds, body, pos) -> []
-    |ELet((BTuple(blst, _), exp, bindloc)::rest, body, pos) -> []
-    |ELet((BName(bind, _, _), exp, bindloc)::rest as binds, body, pos) -> 
-      let(exnbinds_list,newenv) = (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
-      |(BTuple(blst,_),e,y) -> ((wf_E e ds env tydecls), env)
-      |(BBlank(_,_),e,y) -> ((wf_E e ds env tydecls), env)
-      |(BName(n,typ,loc),e,y) -> match find2 env n with 
-      |None -> (exnlist, [(n,y)]@env)
-      |Some(exploc) ->  ( (wf_E e ds ([(n,y)] @ env) tydecls) @ [DuplicateId(n,exploc,y)] @exnlist , [(n,y)] @ env)) ([], env) binds) 
-    and shadowlist = match find2 env bind with
-      |None -> wf_E exp ds env tydecls
-      |Some(exploc) -> [ShadowId(bind,bindloc,exploc)]
-    in (shadowlist @ exnbinds_list @ (wf_E body ds newenv tydecls)) 
+    |ELet((bind,expr,exploc)::rest as bindings, body, pos) -> 
+     let shadowlist = begin match bind with
+                     | BBlank(typ,loc) -> wf_T typ tydecls
+                     | BName(name, typ,loc) ->  (check_shadowid name  expr exploc env ds tydecls) @ wf_T typ tydecls
+                     | BTuple(bindlist,loc) ->  check_bind_list bindlist expr exploc env ds tydecls end
+    in
+    let(exnbinds_list,newenv) = check_binding_list bindings env ds tydecls in 
+    (shadowlist @ exnbinds_list @ (wf_E body ds newenv tydecls))  
+
    | ESeq(left, right,_) -> wf_E left ds env  tydecls @ wf_E right ds env tydecls
    | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] exprlist
    | EGetItem(tuple,index,size,loc)-> 
@@ -360,6 +357,38 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
      else if (index < 0) then wf_E exp ds env tydecls @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env tydecls
      else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
+
+and check_bind_list bind_list expr exproc env ds tydecls: exn list = 
+  List.fold_left (fun exnlst b -> exnlst @  check_shadowid_tuple b expr exproc env ds tydecls) [] bind_list
+
+and check_shadowid_tuple b expr exploc env ds tydecls: exn list = match b with
+  | BBlank(typ,_) ->  []
+  | BName(str, typ,loc) -> (check_shadowid str  expr exploc env ds tydecls) 
+  | BTuple(bindlist,_) ->  check_bind_list bindlist expr exploc env ds tydecls
+
+
+and check_shadowid bind expr exploc env ds tydecls: exn list = match find2 env bind with
+  |None -> []
+  |Some(loc) -> [ShadowId(bind,loc,exploc)]
+
+and check_binding_list (bindings: 'a binding list) (env : (string * sourcespan) list) (ds : 'a decl list) (tydecls: 'a tydecl list) : 
+  ((exn list )  * ((string * sourcespan) list))=
+   (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
+       |(BBlank(typ, _),    e,   y) ->  (wf_E e ds env tydecls, env)
+       |(BTuple(blst, _),   e,   y) ->  (wf_E e ds (add_bindlst_env blst env) tydecls, (add_bindlst_env blst env))
+       |(BName(n,typ,loc),  e,   y)  -> match find2 env n with  
+                                          |None ->(exnlist, [(n,y)]@env)
+                                          |Some(exploc) ->((wf_E e ds ([(n,y)] @ env) tydecls) @[DuplicateId(n,exploc,y)]@exnlist , [(n,y)]@env))
+
+   ([],env) bindings)
+ 
+and add_bindlst_env blst env = 
+ List.fold_left (fun env e -> 
+    match e with
+   | BBlank(typ,_) ->  env
+   | BName(str, typ,loc) -> [(str,loc)]@env
+   | BTuple(bindlist,_) -> env @ add_bindlst_env bindlist env
+    )  env blst
 
   and wf_D  (ds : 'a decl list) (tydecls: 'a tydecl list): exn list = 
     let result = 
@@ -825,7 +854,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     ICmp(Reg(EDX),Reg(EAX));
     IJl("index_too_low");
     IMov(Reg(EAX),  compile_imm pair env);
-    ICmp(Reg(EAX),Reg(EDX));
+    ICmp(Reg(EDX),Reg(EAX));
     IJge("index_too_high");
     ISub(Reg(EAX),HexConst(0x00000001));
     IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
