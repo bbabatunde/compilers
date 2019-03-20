@@ -32,32 +32,51 @@ const int ERR_INCORRECT_TUPLE_LENGTH = 9;
 
 int equal(int left, int right) {
    
-  if ( ((left & BOOL_TAG) == 0) && ((right & BOOL_TAG) == 0)   &&  left == right) {
+  if ( (left & BOOL_TAG) == 0 ) {
 
-       return BOOL_TRUE;
+        if(left == right)
+          return BOOL_TRUE;
+        else
+          return BOOL_FALSE;
 
-  } else if ( (left == BOOL_TRUE) && (left == BOOL_TRUE)) {
-       return BOOL_TRUE;
+  } else if ((left == BOOL_TRUE) && (right == BOOL_TRUE) ){
+       
+       if (left == right)
+        return BOOL_TRUE;
+       else
+        return BOOL_FALSE;
 
-  } else if ( (left == BOOL_FALSE) && (left == BOOL_FALSE)) {
-       return BOOL_TRUE;
-  }else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) == 1)) {
+  }
+  else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) == 1)) {
       
+      //compare nill
+      if ( ( (left - 1) == 0) && ( (right - 1) == 0 )) {
+
+        return BOOL_TRUE;
+
+      }else if ( ( (left - 1) == 0) && ( (right - 1) != 0 )){
+        
+         return BOOL_FALSE;
+      }
+
       int* lefttupptr = (int*)(left - 1);
       int lefttupptrsize = *(lefttupptr);
 
       int* righttupptr = (int*)(right - 1);
       int righttupptrsize = *(righttupptr);
 
+
+      //size equality 
       if(lefttupptrsize != righttupptrsize){
 
         return BOOL_FALSE;
 
       }
-      if ( ( (left - 1) == 0) && ( (right - 1) == 0 )) {
 
-        return BOOL_TRUE;
-      }
+
+    
+
+      //two length tuple
       if(lefttupptrsize == 2){
 
         if  ( ( (equal(*(lefttupptr + 1), *(righttupptr + 1))) == BOOL_TRUE)  && 
@@ -69,6 +88,7 @@ int equal(int left, int right) {
           return BOOL_FALSE;
         }
 
+      //any size tuple
       }else {
 
             int i;
@@ -141,7 +161,7 @@ void* printer(int val , int tuple_size){
     printf("false");
   } else if ((val & TUPLE_TAG) == 1) {
          if( (val - 1) == 0){
-
+              printf(")");
           }else{
           int* tupptr = (int*)(val - 1);
           if(tuple_size == 2) {

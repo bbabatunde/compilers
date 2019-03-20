@@ -318,7 +318,7 @@ let integration_tests = [
                   three" "" "(4, (true, 3))";
 
   t "tuplepair4" "let three = ((4, (true, 3))) in
-                  three" "" "(4, (true, 3))";
+                  three[1 of 2]" "" "(true, 3)";
  
   t "tuplepair3" "let three = (1, 2, 3,4) in
                   three" "" "(1, 2, 3, 4)";
@@ -449,11 +449,11 @@ let integration_tests = [
     t "tail_rec_len" "def link(first, rest):
                    (first, rest)
                  def length(l):
-                   if l == false : 0
+                   if l == 3 : 0
                    else:
-                    2 + length(l[1 of 2])
+                    1 + length(l[1 of 2])
                  let mylist = link(1, (link(2, (link(3, false))))) in
-                   length(mylist)" "" "10";
+                    length(mylist)" "" "10";
 
   (* Placeholder lists tests. 
   tprog "listsAppend.egg" "";
@@ -465,16 +465,49 @@ let integration_tests = [
 
   let curr_test = [
 
-    t "input1" "print(input())" "true" "true\ntrue";
+   (*  t "input1" "print(input())" "true" "true\ntrue";
     t "input2" "print(input())" "1" "1\n1";
     t "input3" "print(input())" "false" "false\nfalse";
     t "input4" "input() + input()" "1" "2";
 
+    t "fntail_mutual" "def f(c, v): if (c == 0): v else: f2(c - 1, v + 1)
+                         and def f2(c2, v2): if (c2 == 0): v2 else: f(c2 - 1, v2 + 1)
+                         f(4, 0)" "" "4";
+
+    t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
+                      and def g(x,y): if (y==0): x else: f(y, x - 1)
+                    f(1,1)" "" "1";
+
+    t "many_tail" "def f(a,b,c,d,e): if (a==1): print(b) else: f(b,c,d,e,a)
+                    f(0,0,0,1,3)" "" "3\n3";
+
+    t "min" "def min(x, y):
+          if x < y: x
+            else: min(y, x)
+        min(3,2)" "" "2";
+
+    t "many_no_tail" "def f(a,b,c,d,e): 
+                        let next = (if a==0: f(b,c,d,e,a) else: 0) in 
+                            if (a==1):
+                                print(b)
+                             else:
+                                 next
+                    f(0,0,0,1,3)" "" "3\n3"; *)
+
+     t "tail_rec_len" "def link(first, rest):
+                   (first, rest)
+                 def length(l):
+                   if l == false : 0
+                   else:
+                    1 + length(l[1 of 2])
+                 let mylist = link(1, (link(2, (link(3, false))))) in
+                    length(mylist)" "" "10";
+
+    t "nillequal" "(nil : Int) == (nil : Int)"   "" "true";
   ]
 
 let suite =
 "suite">:::
- integration_tests@
  curr_test @
  []
 ;;

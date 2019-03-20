@@ -546,8 +546,8 @@ let desugar (p : sourcespan program) : sourcespan program =
 ;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
-  let stack_offset =  word_size * ((count_vars body)+1) in
-  let lbl =
+  let stack_offset = 4*((count_vars body)+1) in
+  let lbl = 
       if (is_entry_point=true) then
         ILabel(fun_name)
       else
@@ -555,6 +555,7 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
   in
   let stack_setup_asm = [
       lbl;
+      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
       IMov(Reg(EBP), Reg(ESP));
       ISub(Reg(ESP), HexConst(stack_offset))
@@ -567,7 +568,13 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
       IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
   ]
   and body_asm = compile_aexpr body 1 env (List.length args) true in 
-    stack_setup_asm @ [ILabel(Printf.sprintf "fun_%s_body" fun_name)] @ body_asm @ postlude_asm;
+    stack_setup_asm
+    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
+    @ body_asm
+    @ postlude_asm;
+
+
+
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
   | ALet(name, bind, body, _)  -> 
@@ -610,11 +617,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         IJo("overflow")
         ]
 
-      (*|Print -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
-        [IPush(Reg(EAX));
-        ICall("print");
-        IAdd(Reg(ESP),Const(4))])*)
       |IsBool -> 
         let not_bool_label = sprintf "isBOOL_false_%s" (string_of_int tag) in
         let done_label = sprintf "isBool_done_%s" (string_of_int tag) in
@@ -814,21 +816,24 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
             IAdd(Reg(ESP), Const(8))
      ]
    end
-  | CApp(name, exprs, _) ->
-  
+    | CApp(name, exprs, _) ->
+   
        if is_tail=true && num_args=(List.length exprs) then
          (
-    
-          (replace_args exprs env) @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
-
+         [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
+         @ (replace_args exprs env)
+         @ [ IJmp(Printf.sprintf "fun_%s_body" name)]
         )
        else (
          [ILineComment(Printf.sprintf "Prepare to call function fun_%s" name); ] @
          List.flatten (List.map(fun x ->
-           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ]
-           ) (List.rev exprs) )
-         @ [ ICall(name)] @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] 
+           [ IMov(Reg(EAX), compile_imm x env ); IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Argument %s" (string_of_immexpr x))) ] (* Copy off memory into EAX, then push EAX *)
+           ) (List.rev exprs)    ) 
+
+         @ [ ICall(name)]
+         @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] (* Reset stack pointer after call *)
          )
+
 
   | CTuple(lst,_)-> 
       let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))] in
@@ -849,14 +854,19 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | CGetItem(pair,index,_)-> 
    [
 
-    IMov(Reg(EDX),Const(index));
-    IMov(Reg(EAX),HexConst(0x0));
-    ICmp(Reg(EDX),Reg(EAX));
-    IJl("index_too_low");
+
     IMov(Reg(EAX),  compile_imm pair env);
-    ICmp(Reg(EDX),Reg(EAX));
+    ISub(Reg(EAX),HexConst(0x1));
+
+    IMov(Reg(EDX),Const(index));
+
+    IMov(Reg(ECX),HexConst(0x0));
+
+    ICmp(Reg(EDX),Reg(ECX));
+    IJl("index_too_low");
+    
+    ICmp(Reg(EDX),RegOffset(word_size * 0, EAX));
     IJge("index_too_high");
-    ISub(Reg(EAX),HexConst(0x00000001));
     IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
    ]
   | CSetItem(pair,index,newpair,loc)-> 
@@ -879,35 +889,60 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
   
+(* Given a list of arguments and an env, replace them on the stack for tail calls *)
 and replace_args exprs env = 
+  (* _replace_args would work if we never had to replace our arguments with other arguments (as opposed to local vars), if we do that directly
+   * we'll clober the only copy of these variables. Instead, we use replace_with_saved_args *)
+  (*let rec _replace_args exprlist idx = 
+    match exprlist with
+    | head::tail ->
+       [ IMov(Reg(EAX), compile_imm head env );
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_args tail (idx+1)
+
+    | _ -> []
+  and
+  *)
   let rec _push_args exprlist = 
     match exprlist with
     | head::tail ->
-       [ IMov(Reg(EAX), compile_imm head env); IPush(Reg(EAX))] @ _push_args tail
+       [ IMov(Reg(EAX), compile_imm head env);
+         IInstrComment(IPush(Reg(EAX)), (Printf.sprintf "Save %s onto our stack" (string_of_immexpr head))) ]
+       @ _push_args tail
+
     | _ -> []
   and
   _replace_with_saved_args exprlist idx = 
     match exprlist with
     | head::tail ->
-      [ IPop(Reg(EAX));IMov(RegOffset(word_size*(idx+1), EBP), Reg(EAX)) ] 
-      @ _replace_with_saved_args tail (idx+1)
+      [ IPop(Reg(EAX)); (* Pop old value off stack into Eax *)
+       IInstrComment(IMov(RegOffset(4*(idx+1), EBP), Reg(EAX)), (Printf.sprintf "Argument %s (idx %d)" (string_of_immexpr head) idx)) ]
+       @ _replace_with_saved_args tail (idx+1)
+
     | _ -> []
   in
-  _push_args (List.rev exprs)
 
+  (* First: push all old args onto our function's stack *)
+  _push_args (List.rev exprs)
+  (* Second: copy all args from our stack into our parent's stack (updating arguments *)
+  (*@ _replace_args exprs 1 *)
   @ _replace_with_saved_args exprs 1
 
 let build_env (vars: string list) : (string * arg) list =
+  (* Given a list of variable names, return a (string * arg) list of (varname,RegOffset) with offests relative to EBP *)
+  (* First var is at ebp-8, second is ebp-12, ... *)
   let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
     match vars with
     | vname::tail -> 
-        let offset = 8+ (word_size*(List.length parsed)) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in 
+        let offset = 8+4*(List.length parsed) in
+        let this_res = [(vname, RegOffset(offset, EBP))] in (* Params are EBP relative *)
+        (* (Printf.printf "Building env: %s -> EBP+%d\n" vname offset); *)
         (_build_env tail (parsed @ this_res)
         )
     | _ -> ([], parsed)
   in let (_, result) = _build_env vars [] in
     result
+
 
 let rec compile_decl (d: tag adecl ) : instruction list = match d with
   | ADFun(fun_name, args, body, tag) -> 
@@ -987,7 +1022,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ICall("error");
 
     ILabel("index_too_high");
-    IPush(Reg(EDX));
+    IPush(Reg(EAX));
     IPush(Const(7));
     ICall("error"); 
 
