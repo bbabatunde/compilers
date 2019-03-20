@@ -32,21 +32,40 @@ const int ERR_INCORRECT_TUPLE_LENGTH = 9;
 
 int equal(int left, int right) {
    
-  if ( (left & BOOL_TAG) == 0 ) {
+  if ( (left & BOOL_TAG) == 0  || (right & BOOL_TAG) == 0 ) {
 
         if(left == right)
           return BOOL_TRUE;
         else
           return BOOL_FALSE;
 
-  } else if ((left == BOOL_TRUE) && (right == BOOL_TRUE) ){
+  } else if ((left == BOOL_TRUE) || (left == BOOL_FALSE) ){
        
        if (left == right)
         return BOOL_TRUE;
        else
         return BOOL_FALSE;
 
+  } else if ((right == BOOL_TRUE) || (right == BOOL_FALSE) ){
+       
+       if (left == right)
+        return BOOL_TRUE;
+       else
+        return BOOL_FALSE;
+
+     }
+
+
+  else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) != 1)){
+
+              return BOOL_FALSE;
+
+  }else if ( ((left & TUPLE_TAG) != 1) && ((right & TUPLE_TAG) == 1)){
+
+              return BOOL_FALSE;
+
   }
+
   else if ( ((left & TUPLE_TAG) == 1) && ((right & TUPLE_TAG) == 1)) {
       
       //compare nill

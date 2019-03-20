@@ -497,13 +497,16 @@ let integration_tests = [
      t "tail_rec_len" "def link(first, rest):
                    (first, rest)
                  def length(l):
-                   if l == false : 0
+                   if l == false: 0
                    else:
                     1 + length(l[1 of 2])
                  let mylist = link(1, (link(2, (link(3, false))))) in
-                    length(mylist)" "" "10";
+                    length(mylist)" "" "3";
 
     t "nillequal" "(nil : Int) == (nil : Int)"   "" "true";
+    t "tupleeqbool" "(1,2) == true"  "" "false";
+    t "tupleeqint" "(1,2) == false"  "" "false";
+
   ]
 
 let suite =
