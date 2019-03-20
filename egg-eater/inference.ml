@@ -7,7 +7,7 @@ open Phases
 module StringMap = Map.Make(String);;
 module StringSet = Set.Make(String);;
 
-let show_debug_print = ref false
+let show_debug_print = ref true
 let debug_printf fmt =
   if !show_debug_print
   then printf fmt
@@ -155,33 +155,35 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
      then raise (OccursCheck (sprintf "Infinite types: %s occurs in %s" tyvarname (string_of_typ t)))
      else [(tyvarname, t)]
 ;;
-let ty_err t1 t2 loc reasons = TypeMismatch(loc, t1, t2, reasons)
+
+let ty_err t1 t2 loc reasons = TypeMismatch(loc, t1, t2, reasons);;
+
 let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst =
-    (match t1 with
+    match t1 with
     | TyVar(varname, pos) -> [(varname, t2)]
     | TyCon(conname, pos) ->
         (match t2 with
-        | TyCon(ty2, pos) -> if conname = ty2 then [] else raise (ty_err t1 t2 loc reasons)
+        | TyCon(ty2, pos) -> if conname = ty2 then [] else (debug_printf "teehee"; raise (TypeMismatch(pos, t1, t2, reasons)))
         | TyVar(varname, pos) -> [(varname, t1)]
-        | _ -> raise (ty_err t1 t2 loc reasons))
+        | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
     | TyArr(l1, ty1, pos) ->
         (match t2 with
-        | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (ty_err t1 t2 loc reasons) else
+        | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (TypeMismatch(pos, t1, t2, reasons)) else
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2)) @
             (unify ty1 ty2 pos reasons)
-        | _ -> raise (ty_err t1 t2 loc reasons))
+        | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
     | TyApp(appTyp, l1, pos) ->
         (match t2 with
         | TyApp(ty2, l2, pos) ->
             (unify appTyp ty2 pos reasons) @
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2))
-        | _ -> raise (ty_err t1 t2 loc reasons))
+        | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
     | TyTup(l1, pos) ->
         (match t2 with
         | TyTup(l2, pos) ->
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2))
-        | _ -> raise (ty_err t1 t2 loc reasons))
-    | TyBlank(pos) -> raise (ty_err t1 t2 loc reasons))
+        | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
+    | TyBlank(pos) -> raise (TypeMismatch(pos, t1, t2, reasons))
 
 let gensym =
   let count = ref 0 in
@@ -361,15 +363,21 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let looked_up_scheme = find_pos funenv (opname2 op) loc in
           (* Instantiate it to a type *)
           let looked_up_tyarr = instantiate looked_up_scheme in
+          debug_printf "\nlooked_up_tyarr: %s\n" (string_of_typ looked_up_tyarr);
           (* Infer a type for the argument(s) of the primitive. *)
           let (subs1, infered_arg_typ1, _) = infer_exp funenv env exp1 reasons in
+          debug_printf "\ninfered_arg_typ1: %s\n" (string_of_typ infered_arg_typ1);
           let (subs2, infered_arg_typ2, _) = infer_exp funenv env exp2 reasons in
+          debug_printf "\ninfered_arg_typ2: %s\n" (string_of_typ infered_arg_typ2);
           (* Make up a brand-new type variable for the return type of the operation. *)
           let new_return_tyvar = TyVar(gensym "prim2res", loc) in
           (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
           let new_op_tyarr = TyArr([infered_arg_typ1; infered_arg_typ2], new_return_tyvar, loc) in
+          debug_printf "\nnew_op_tyarr: %s\n" (string_of_typ new_op_tyarr);
           (* Recursively unify the looked-up arrow type of the operator, with the constructed arrow type. *)
           let unify_subs = unify looked_up_tyarr new_op_tyarr loc reasons in
+          debug_printf "\nUNIFIED SUBS\n";
+          print_subst unify_subs;
           (* If all goes well, return the newly-constructed return type variable, and the substitution obtained from the recursive unification call. *)
           let all_subs = compose_subst (compose_subst subs1 unify_subs) subs2 in
           (all_subs, new_return_tyvar, e)

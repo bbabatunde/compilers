@@ -530,6 +530,7 @@ let integration_tests = [
 let suite =
 "suite">:::
  curr_test @
+inference_tests @
  []
 ;;
 
