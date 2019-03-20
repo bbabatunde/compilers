@@ -244,7 +244,7 @@ let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
         (match t with
         | TyArr(arg_typ_lst, bod_typ, loc) -> (arg_typ_lst, bod_typ)
         | _ -> raise (InternalCompilerError "Fn type not type Arr o.O")) in
-    let env = List.iter
+    let _ = List.iter
         (fun t -> debug_printf "arg_typ: %s\n" (string_of_typ t)) arg_typ_lst in
     let arg_typ_lst = List.fold_left
         (fun acc ele -> StringSet.union acc (ftv_type ele)) StringSet.empty arg_typ_lst in
@@ -262,7 +262,6 @@ let opname op =
     (* Prim1s *)
     | Add1 -> "add1"
     | Sub1 -> "sub1"
-    | Print -> "print"
     | IsBool -> "isbool"
     | IsNum -> "isnum"
     | IsTuple -> "istuple"
@@ -484,7 +483,7 @@ let infer_prog funenv env (p : sourcespan program) : sourcespan program =
             funenv (* Accumulate new funenv elements into old one. *)
             declgroups in
           (* Infer type on body in built env *)
-          let (subs, infered, _) = infer_exp built_env env body [] in
+          let _ = infer_exp built_env env body [] in
           (* If we get this far, looks like the types are fine. *)
           p
 ;;
