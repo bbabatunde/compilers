@@ -7,7 +7,7 @@ open Phases
 module StringMap = Map.Make(String);;
 module StringSet = Set.Make(String);;
 
-let show_debug_print = ref false
+let show_debug_print = ref true
 let debug_printf fmt =
   if !show_debug_print
   then printf fmt
@@ -19,11 +19,14 @@ type 'a subst = (string * 'a) list;;
 
 
 let print_funenv funenv =
+    debug_printf "PRINT_FUNENV";
   StringMap.iter (fun name scheme -> debug_printf "\t%s => %s\n" name (string_of_scheme scheme)) funenv;;
 let print_env env =
+    debug_printf "PRINT_ENV";
   StringMap.iter (fun name typ -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) env;;
 
 let print_subst subst =
+    debug_printf "PRINT_SUBST";
   List.iter (fun (name, typ) -> debug_printf "\t%s => %s\n" name (string_of_typ typ)) subst;;
 
 
@@ -294,15 +297,16 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
               List.fold_left (fun acc ele ->
                   let (env, subs) = acc in
                   let (btype, e, l) = ele in
-                  let (n, t, _) =  (match btype with
-                    | BName(n, t, l) -> (n, t, l)
-                    | _ -> raise (InternalCompilerError "Binding of non variable name found :/ Desugar much?")) in
-                  (* Process expr and get subs *)
-                  let (e_sub, e_type, _) = infer_exp funenv env e reasons in
-                  (* Throw out the annotated type, should be blank. *)
-                  (* Add new computed binding to env *)
-                  let new_env = StringMap.add n e_type env in
-                  (new_env, e_sub))
+                  (match btype with
+                    | BName(n, t, l) ->
+                        (* Process expr and get subs *)
+                        let (e_sub, e_type, _) = infer_exp funenv env e reasons in
+                        (* Throw out the annotated type, should be blank. *)
+                        (* Add new computed binding to env *)
+                        let new_env = StringMap.add n e_type env in
+                        (new_env, e_sub)
+                    | BBlank _ -> (env, []) (*Ignoring type inference on blanked let, means nothing to bod type.*)
+                    | _ -> raise (InternalCompilerError "Binding of non variable name found :/ Desugar much?"))) 
               (env, []) binds in
           (* infer type on body to get result type *)
           let (exp_subst, exp_type, _) = infer_exp funenv new_env exp reasons in
@@ -318,6 +322,7 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
           let looked_up_tyarr = instantiate looked_up_scheme in
           (* Infer a type for the argument(s) of the primitive. *)
           let (subs, infered_arg_typ, _) = infer_exp funenv env exp reasons in
+          let env = apply_subst_env subs env in
           (* Make up a brand-new type variable for the return type of the operation. *)
           let new_return_tyvar = TyVar(gensym "prim1res", loc) in
           (* Construct a new arrow type using the inferred types of the argument(s) and the made-up return type variable. *)
@@ -387,8 +392,31 @@ let rec infer_exp (funenv : sourcespan scheme envt) (env : sourcespan typ envt) 
 
 
 
-let infer_decl funenv env (decl : sourcespan decl) reasons : sourcespan scheme envt * sourcespan typ subst =
-    (funenv, [])
+let infer_decl funenv env (decl : sourcespan decl) reasons  =
+    let DFun(funame, arg_lst, _, body, loc) = decl in
+    let SForall(_, my_type, _) = find_pos funenv funame loc in
+    let arg_names = List.map (fun ele ->
+        (match ele with
+        | BName(n, _, _) -> n
+        | _ -> raise (InternalCompilerError "Arg name not bname :/"))) arg_lst in
+    match my_type with
+        |  TyArr(arg_typ, my_ret_typ, _) -> 
+            let env = List.fold_left2
+                (fun e n b -> StringMap.add n b e) env arg_names arg_typ in
+            print_env env;
+            print_funenv funenv;
+            let (b_sub, bod_typ, _) = infer_exp funenv env body reasons in
+            debug_printf "\ntype: %s %d" (string_of_typ bod_typ) (List.length b_sub);
+            let unify_subst = unify my_ret_typ bod_typ loc reasons in
+            let all_subst = compose_subst b_sub unify_subst in
+            print_subst all_subst;
+            debug_printf "\nmytype: %s" (string_of_typ my_type);
+            let fin_type = replace_in_type all_subst my_type in
+            debug_printf "\ntype: %s" (string_of_typ fin_type);
+            let fin_scheme = generalize env fin_type in
+            debug_printf "\nscheme: %s" (string_of_scheme fin_scheme);
+            (funame, fin_scheme, all_subst)
+        | _ -> raise (InternalCompilerError "Fn init to something other than a tyarr :/")
 ;;
  
 let init_fn fn =
@@ -397,41 +425,24 @@ let init_fn fn =
         (match ele with
         | BName(arg_name, _, _) -> arg_name
         | _ -> raise (InternalCompilerError "Arg name not bname :/"))) arg_lst in
-    let ty_args = List.map (fun ele -> TyVar(gensym "fn_arg", pos)) arg_lst in
-    let new_env = (List.fold_left2
-        (fun ne arg_name arg_type -> (StringMap.add arg_name arg_type ne))
-        StringMap.empty arg_lst ty_args) in
-    let ty_bod = TyVar(gensym "fn_bod", pos) in
-    (funname, TyArr(ty_args, ty_bod, pos), new_env)
+    let ty_args = List.map (fun ele -> TyVar(gensym (sprintf "fn_arg_%s" ele), pos)) arg_lst in
+    let ty_bod = TyVar(gensym (sprintf "%s_bod" funname), pos) in
+    (funname, TyArr(ty_args, ty_bod, pos))
 
 let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt * sourcespan decl list) =
-    (* Instantiate the type schemes for the functions all at once. *)
     (* - Guess type variables for all functions in group. *)
     let typ_env_lst = List.map init_fn g in
-    (* - Bind args to these type variables in env to process decls in. *)
-    let tmp_env = List.fold_left
-        (fun e (_, _, n_map) -> 
-            List.fold_left
-            (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
-        env typ_env_lst in
     (* Add new function to type mappings to funenv *)
     let tmp_funenv = List.fold_left
-        (fun e (fname, ftype, _) -> StringMap.add fname (generalize env ftype) e)
-        funenv typ_env_lst in
+        (fun e (fname, ftype) -> StringMap.add fname (generalize env ftype) e)
+        funenv typ_env_lst in 
     (* Infer types for each function body, and accumulate the substitutions that result. *)
     let new_types_and_subs = (List.map
-        (fun fn -> infer_decl tmp_funenv tmp_env fn []) g) in
-    (* Generalize all the remaining types all at once. *)
-    let funenv = List.fold_left
-        (fun e (n_map, _) ->
-            List.fold_left
-            (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
-        funenv new_types_and_subs in
+        (fun fn -> infer_decl tmp_funenv env fn []) g) in
     (* Combine the substs *)
-    let _ = List.fold_left
-        (fun acc (_, s) ->
-            (acc @ s)) [] new_types_and_subs in
-    (* Check for a solution *)
+    let funenv = List.fold_left
+        (fun e (name, scheme, _) -> StringMap.add name scheme e)
+        funenv new_types_and_subs in
     (funenv, g)
 ;;
 
@@ -444,9 +455,9 @@ let infer_prog funenv env (p : sourcespan program) : sourcespan program =
             funenv (* Accumulate new funenv elements into old one. *)
             declgroups in
           (* Infer type on body in built env *)
-          let _ = infer_exp built_env env body []
+          let (subs, infered, _) = infer_exp built_env env body [] in
           (* If we get this far, looks like the types are fine. *)
-          in p
+          p
 ;;
 let type_synth (p : sourcespan program) : sourcespan program fallible =
   try
