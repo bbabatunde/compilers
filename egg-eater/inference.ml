@@ -228,7 +228,10 @@ let instantiate (s: 'a scheme) : 'a typ =
 ;;
 
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
-     SForall( StringSet.elements (StringSet.diff (ftv_env e) (ftv_type t)) ,TyVar(gensym "blank",dummy_span),dummy_span)
+    (* collect all the free type variables in the type of the function body *)
+    (* subtract away any type variables that appear free in the type environment *)
+    let leftover_free_vars = StringSet.elements (StringSet.diff (ftv_type t) (ftv_env e)) in
+    SForall(leftover_free_vars, t, dummy_span)
 ;;
 
 let opname op =
@@ -406,20 +409,19 @@ let infer_group funenv env (g : sourcespan decl list) : (sourcespan scheme envt 
     (* - Guess type variables for all functions in group. *)
     let typ_env_lst = List.map init_fn g in
     (* - Bind args to these type variables in env to process decls in. *)
-    let env = List.fold_left
+    let tmp_env = List.fold_left
         (fun e (_, _, n_map) -> 
             List.fold_left
             (fun e (k, d) -> StringMap.add k d e) e (StringMap.bindings n_map))
         env typ_env_lst in
     (* Add new function to type mappings to funenv *)
-    let funenv = List.fold_left
+    let tmp_funenv = List.fold_left
         (fun e (fname, ftype, _) -> StringMap.add fname (generalize env ftype) e)
         funenv typ_env_lst in
     (* Infer types for each function body, and accumulate the substitutions that result. *)
     let new_types_and_subs = (List.map
-        (fun fn -> infer_decl funenv env fn []) g) in
+        (fun fn -> infer_decl tmp_funenv tmp_env fn []) g) in
     (* Generalize all the remaining types all at once. *)
-    print_funenv funenv;
     let funenv = List.fold_left
         (fun e (n_map, _) ->
             List.fold_left
