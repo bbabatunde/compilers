@@ -492,7 +492,7 @@ let integration_tests = [
                                 print(b)
                              else:
                                  next
-                    f(0,0,0,1,3)" "" "3\n3"; *)
+                    f(0,0,0,1,3)" "" "3\n3"; 
 
      t "tail_rec_len" "def link(first, rest):
                    (first, rest)
@@ -507,7 +507,25 @@ let integration_tests = [
     t "tupleeqbool" "(1,2) == true"  "" "false";
     t "tupleeqint" "(1,2) == false"  "" "false";
 
+    *)
+
   ]
+
+  let inference_tests = [
+    (* Infer prim1s *)
+    (*
+    terr "infer_sub1" "sub1(true)" "" "Type error at infer_sub1, 1:0-1:10: expected Int but got Bool";
+    terr "infer_add1" "add1(true)" "" "Type error at infer_add1, 1:0-1:10: expected Int but got Bool";
+    t "infer_isbool" "isbool(1)" "" "false";
+    t "infer_isbool2" "isbool(true)" "" "true";
+    t "infer_isnum" "isnum(true)" "" "false";
+    t "infer_isnum2" "isnum(1)" "" "true";
+    *)
+    (* Infer prim2s *)
+    terr "infer_plus" "1 + true" "" "";
+    terr "infer_minus" "1 - false" "" "";
+
+    ]
 
 let suite =
 "suite">:::
