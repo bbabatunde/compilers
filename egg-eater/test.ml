@@ -20,7 +20,7 @@ let terr name program input expected = name>::test_err [] input program name exp
 let tgcerr name heap_size program input expected = name>::test_err [string_of_int heap_size] input program name expected;;
 let tanf name program input expected = name>::fun _ ->
   assert_equal expected (anf (tag program)) ~printer:string_of_aprogram;;
-let te name program input expected_err = name>::test_err [] input program name expected_err;;
+let te name program input expected_err = name>::test_run_error [] input program name expected_err;;
 
 
 let teq name actual expected = name>::fun _ ->
@@ -513,18 +513,27 @@ let integration_tests = [
 
   let inference_tests = [
     (* Infer prim1s *)
-    (*
-    terr "infer_sub1" "sub1(true)" "" "Type error at infer_sub1, 1:0-1:10: expected Int but got Bool";
-    terr "infer_add1" "add1(true)" "" "Type error at infer_add1, 1:0-1:10: expected Int but got Bool";
+    te "infer_sub1" "sub1(true)" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    te "infer_add1" "add1(true)" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
     t "infer_isbool" "isbool(1)" "" "false";
     t "infer_isbool2" "isbool(true)" "" "true";
     t "infer_isnum" "isnum(true)" "" "false";
     t "infer_isnum2" "isnum(1)" "" "true";
-    *)
     (* Infer prim2s *)
-    terr "infer_plus" "1 + true" "" "";
-    terr "infer_minus" "1 - false" "" "";
+    te "infer_plus" "1 + true" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    te "infer_minus" "1 - false" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    t "infer_plus2" "1 + 1" "" "2";
+    t "infer_minus2" "1 - 1" "" "0";
+    te "greaterf" "1 > true" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    te "greatereqf" "1 >= true" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    te "lessf" "1 < true" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    te "lesseqf" "1 <= true" "" "Type error at , 0:-1-0:-1: expected Int but got Bool";
+    t "greaterp" "1 > 2" "" "false";
+    t "greatereqp" "1 >= 2" "" "false";
+    t "lessp" "1 < 2" "" "true";
+    t "lesseqp" "1 <= 2" "" "true";
 
+    (* Infer *)
     ]
 
 let suite =
