@@ -17,7 +17,11 @@ exception Unsupported of string * sourcespan
 exception InternalCompilerError of string (* Major failure: message to show *)
 exception OccursCheck of string * sourcespan typ * sourcespan
 exception LetRecNonFunction of sourcespan bind * sourcespan (* name binding, where defined *)
-
+exception IndexTooSmall of int  * sourcespan
+exception IndexTooLarge of int * int  * sourcespan
+exception InvalidTyLen of string * sourcespan
+exception CyclicTy of string * sourcespan
+exception DuplicateType of string * sourcespan
 
 type reason =
   | InferExp of sourcespan expr
@@ -38,6 +42,18 @@ let print_errors (exns : exn list) : string list =
   List.map (fun e ->
       match e with
       | ParseError msg -> msg
+       | DuplicateType (msg, loc) ->
+         sprintf "Duplicate type: %s at <%s>" msg (string_of_sourcespan loc)
+      | CyclicTy (msg, loc) ->
+         sprintf "type declaration is cyclic: %s at <%s>" msg (string_of_sourcespan loc)
+      | InvalidTyLen (msg, loc) ->
+         sprintf "type declaration length is invalid: %s at <%s>" msg (string_of_sourcespan loc)
+      |IndexTooLarge(expected, actual, loc) ->
+          sprintf "error index too large: The tuple  at <%s> has a maximun size of %d, was indexed with %d"
+                 (string_of_sourcespan loc) (expected - 1) actual
+      |IndexTooSmall(index, loc) ->
+        sprintf " error index too small: The tuple  at <%s>  was accessed with an index of %d"
+                 (string_of_sourcespan loc) index
       | NotYetImplemented msg ->
          "Not yet implemented: " ^ msg
       | Unsupported(msg, loc) ->
