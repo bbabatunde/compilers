@@ -831,7 +831,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
            ) (List.rev exprs)    ) 
 
          @ [ ICall(name)]
-         @ [ IAdd(Reg(ESP), HexConst(4*(List.length exprs))) ] (* Reset stack pointer after call *)
+         @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] (* Reset stack pointer after call *)
          )
 
 
@@ -845,7 +845,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
                        IAdd(Reg(EAX), Const(1))] in
       let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
-                    IAdd(Reg(ESI), Const(word_size));
+                    IAdd(Reg(ESI), Const(7));
+                    IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
                   ] in
 
        size @  instr @ to_tuple @ offset
@@ -855,24 +856,24 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    [
 
 
-    IMov(Reg(EAX),  compile_imm pair env);
-    ISub(Reg(EAX),HexConst(0x1));
-
-    IMov(Reg(EDX),Const(index));
-
-    IMov(Reg(ECX),HexConst(0x0));
-
-    ICmp(Reg(EDX),Reg(ECX));
-    IJl("index_too_low");
-    
-    ICmp(Reg(EDX),RegOffset(word_size * 0, EAX));
-    IJge("index_too_high");
-    IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
+     IMov(Reg(EAX),  compile_imm pair env);
+     IMov(Reg(ECX), Reg(EAX));
+     IAnd(Reg(ECX), HexConst(0x7));
+     ICmp(Reg(ECX), HexConst(0x1));
+     IJne("error_not_tuple");
+      ISub(Reg(EAX),HexConst(0x1));
+      IMov(Reg(EDX),Const(index));
+      IMov(Reg(ECX),HexConst(0x0));
+      ICmp(Reg(EDX),Reg(ECX));
+      IJl("index_too_low");
+      ICmp(Reg(EDX),RegOffset(word_size * 0, EAX));
+      IJge("index_too_high");
+      IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
    ]
-  | CSetItem(pair,index,newpair,loc)-> 
+  | CSetItem(pair,index,newitem,loc)-> 
     [
      IMov(Reg(EAX), compile_imm pair env);
-     IMov(Reg(EDX), compile_imm newpair env);
+     IMov(Reg(EDX), compile_imm newitem env);
      IMov(Reg(ECX), Reg(EAX));
      IAnd(Reg(ECX), HexConst(0x7));
      ICmp(Reg(ECX),HexConst(0x1));
@@ -1000,12 +1001,12 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ICall("error");
 
     ILabel("error_not_tuple");
-    IPush(Reg(EDX));
+    IPush(Reg(EAX));
     IPush(Const(6));
     ICall("error");
 
     ILabel("index_too_high");
-    IPush(Reg(EAX));
+    IPush(Reg(EDX));
     IPush(Const(7));
     ICall("error"); 
 
@@ -1025,7 +1026,7 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared desugar)
-  |> (add_err_phase type_checked type_synth)
+  (*|> (add_err_phase type_checked type_synth)*)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))

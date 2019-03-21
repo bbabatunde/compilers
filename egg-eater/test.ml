@@ -275,7 +275,7 @@ let if_tests = [
    t "if_5" "if print(false): 1 else: print(2)" "" "false\n2\n2";
 ]
 
-let integration_tests = [
+let tuple_tests = [
 
    tanf "forty_one_anf"
        (Program([], [], EAnnot(ENumber(41, ()), TyBlank(), ()), ())) ""
@@ -310,6 +310,11 @@ let integration_tests = [
   t "tuplepair4" "let three = ((4, (true, 3))) in
                   three[1 of 2]" "" "(true, 3)";
  
+
+  te "tuplepairinvalid" "let three = (1+1) in
+                  three[1 of 2]" "" "expected tuple, but got 0000000004";
+
+
   t "tuplepair3" "let three = (1, 2, 3,4) in
                   three" "" "(1, 2, 3, 4)";
   
@@ -345,33 +350,11 @@ let integration_tests = [
 
   t "istuple6"   "istuple(nil : Int) == true" "" "true";
 
-  (* Sequence tests *)  
-  t "seq1" "let a = 1; 2; 3; 4; 5 in a" "" "5";
-  t "seq2" "1 + ( 2;3;4;5 )" "" "6";
-  t "seq3" "add1(2;3;4;5)" "" "6";
-  t "seq4" "if(false; true): 1;2;3 else: 2;2;3" "" "3";
-  t "seq5" "if(false; false): 1 else: 2;3;4" "" "4";
-  t "seq6" "def f(n): n
-            f(1;2;3)" "" "3";
-  t "seq7" "(1;2;3, 1;2;3)" "" "(3, 3)";
-  t "seq9" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
  
-  t "seq8" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
 
-  (* Desugar tuple tests *)
-  t "desugar1" "let (a, b, c) = (1, 2, 3) in c" "" "3";
-  t "desugar2" "let (a, (b, c)) = (1, (2, 3)) in c" "" "3";
-  t "desugar2_1" "let (a, (b, c)) = (1, (2, 3)) in b" "" "2";
-  t "desugar2_2" "let (a, (b, c)) = (1, (2, 3)) in a" "" "1";
-  t "desugar3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in d" "" "4";
-  t "desugar3_2" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in c" "" "3";
-  t "desugar3_3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in b" "" "2";
-  t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "" "1";
-  t "desugar4" "let (a, b) = (1, (2, 3)) in b" "" "(2, 3)";
+  
 
-  (* Desugar more *)
-  t "desugar5" "def f(a): a
-                let (b, c) = f((1, 2)) in (b, c)" "" "(1, 2)";
+ 
   (* Test the above with a fn that returns something on each call to test for temp var desugar stuff. *)
 
   (* Nested let bindings *)
@@ -389,19 +372,49 @@ let integration_tests = [
   t "nlet4" "let a = (1, (2, 3)) in
              a[1 of 2][1 of 2]" "" "3";
 
-  (* Test sequence of sets *)
-  t "set1" "let a = (1,2) in
-                a[0 of 2 := 0];
-                a[1 of 2 := 0];
-                a" "" "(0, 0)";
-  t "set2" "let a = ((1, 2), (3, 4)) in
-                a[0 of 2][0 of 2 := 0];
-                a[0 of 2][1 of 2 := 0];
-                a[1 of 2][0 of 2 := 0];
-                a[1 of 2][1 of 2 := 0];
-                a" "" "((0, 0), (0, 0))";
+   te "nlet5" "let a = (1, 2, 3) in
+             let (b, c, d) = a in
+             let e = (b, c) in
+             let (f, g, q) = e in
+             g" "" "index too large, got 0000000002";
 
-  (* Nested function argument bindings. *)
+  t "istuplefalse" "istuple(false)" "" "false";
+  te "istupletrue" "istuple(input())" "(1,2)" "invalid input";
+
+  ]
+
+
+  let sequence_test = [
+       (* Sequence tests *)  
+    t "seq1" "let a = 1; 2; 3; 4; 5 in a" "" "5";
+    t "seq2" "1 + ( 2;3;4;5 )" "" "6";
+    t "seq3" "add1(2;3;4;5)" "" "6";
+    t "seq4" "if(false; true): 1;2;3 else: 2;2;3" "" "3";
+    t "seq5" "if(false; false): 1 else: 2;3;4" "" "4";
+    t "seq6" "def f(n): n
+              f(1;2;3)" "" "3";
+    t "seq7" "(1;2;3, 1;2;3)" "" "(3, 3)";
+    t "seq9" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
+   
+    t "seq8" "(((1;2;3), (3;4)), 1)" "" "((3, 4), 1)";
+
+      (* Test sequence of sets *)
+    t "set1" "let a = (1,2) in
+                  a[0 of 2 := 0];
+                  a[1 of 2 := 0];
+                  a" "" "(0, 0)";
+    t "set2" "let a = ((1, 2), (3, 4)) in
+                  a[0 of 2][0 of 2 := 0];
+                  a[0 of 2][1 of 2 := 0];
+                  a[1 of 2][0 of 2 := 0];
+                  a[1 of 2][1 of 2 := 0];
+                  a" "" "((0, 0), (0, 0))";
+
+  ]
+
+  let desugaring_tests = [
+
+      (* Nested function argument bindings. *)
   t "desugar_fn1" "def f((x1, y1), (x2, y2)): (x1 + x2, y1 + y2)
                    f((1,2), (1, 2))" "" "(2, 4)";
   t "desugar_fn2" "def f((x, y, z)): x + y + z
@@ -420,22 +433,21 @@ let integration_tests = [
   t "desugar_fn6" "def f(a): let (b, c, d, e) = a in b + c + d; e
                    let z = (1, 2, 3, 4) in f(z)" "" "4";
 
-  (* Test scoped functions with and. *)
-  t "fnt1" "def f(): g()
-            and def g(): h()
-            and def h(): 1
-            h();
-            g();
-            f()" "" "1";
-  te "fnt2" "def f(): g()
-             def g(): h()
-             and def h(): 1
-             h();
-             g();
-             f()"
-             "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
 
-  
+  (* Desugar tuple tests *)
+  t "desugar1" "let (a, b, c) = (1, 2, 3) in c" "" "3";
+  t "desugar2" "let (a, (b, c)) = (1, (2, 3)) in c" "" "3";
+  t "desugar2_1" "let (a, (b, c)) = (1, (2, 3)) in b" "" "2";
+  t "desugar2_2" "let (a, (b, c)) = (1, (2, 3)) in a" "" "1";
+  t "desugar3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in d" "" "4";
+  t "desugar3_2" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in c" "" "3";
+  t "desugar3_3" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in b" "" "2";
+  t "desugar3_4" "let (a, (b, (c, d))) = (1, (2, (3, 4))) in a" "" "1";
+  t "desugar4" "let (a, b) = (1, (2, 3)) in b" "" "(2, 3)";
+
+   (* Desugar more *)
+  t "desugar5" "def f(a): a
+                let (b, c) = f((1, 2)) in (b, c)" "" "(1, 2)";
 
   ]
 
@@ -480,13 +492,19 @@ let integration_tests = [
     tprog "listsLength.egg" "3";
     tprog "listsSum.egg" "6";
     tprog "listsReverse.egg" "(3, (2, (1, false)))";
-    tprog "typelist.egg" "(3, (2, (1, false)))";
+    tprog "typelist.egg" "3";
 
 
     te "niladd" "(nil: Int) + (nil: Int)" "" "arithmetic expected a number, but got 0000000001";
 
 
-  
+   te "lesseq" "(nil: Int) <= (nil: Int)" "" "comparison expected a number, but got 0000000001";
+   t "nilequal1"  "(nil: Int) == (nil: Int)" "" "true";
+   te "nillequal2"  "(nil: Int) == input()" "nil" "invalid input";
+
+   t "printtupleinput" "print((input(),()))" "1" "(1, (0, 1))\n()";
+   t "printtuple2" "let x = print((1,2)) in x" "" "(1, 2)\n()";
+   t "printnil" "print(nil: Int)" "" "()\n()";
 
     
 
@@ -541,24 +559,35 @@ let well_formed_tests = [
                                   length(mylistlength)" "" "type declaration length is invalid: intintlist at <wellformederrortypelist4, 2:35-2:85>";
 
 
-   te "lesseq" "(nil: Int) <= (nil: Int)" "" "comparison expected a number, but got 0000000001";
-   t "nilequal1"  "(nil: Int) == (nil: Int)" "" "true";
-   te "nillequal2"  "(nil: Int) == input()" "nil" "invalid input";
+     (* Test scoped functions with and. *)
+  t "fnt1" "def f(): g()
+            and def g(): h()
+            and def h(): 1
+            h();
+            g();
+            f()" "" "1";
+  te "fnt2" "def f(): g()
+             def g(): h()
+             and def h(): 1
+             h();
+             g();
+             f()"
+             "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
 
-   t "printtupleinput" "print((input(),()))" "1" "(1, (0, 1))";
-   t "printtuple2" "let x = print((1,2)) in x" "" "";
+  
 ]
 
+  (*fails but should pass*)
   let inference_tests = [
     (* Infer prim1s *)
-    (*
+    
     terr "infer_sub1" "sub1(true)" "" "Type error at infer_sub1, 1:0-1:10: expected Int but got Bool";
     terr "infer_add1" "add1(true)" "" "Type error at infer_add1, 1:0-1:10: expected Int but got Bool";
     t "infer_isbool" "isbool(1)" "" "false";
     t "infer_isbool2" "isbool(true)" "" "true";
     t "infer_isnum" "isnum(true)" "" "false";
     t "infer_isnum2" "isnum(1)" "" "true";
-    *)
+    
     (* Infer prim2s *)
     terr "infer_plus" "1 + true" "" "";
     terr "infer_minus" "1 - false" "" "";
@@ -567,14 +596,13 @@ let well_formed_tests = [
 
 let suite =
 "suite">:::
- well_formed_tests @ (*
+ well_formed_tests @ 
  if_tests @
  prim2_test @
- integration_tests @
+ tuple_tests @
  fun_tests @
- curr_tests @)
- curr_test @
-inference_tests @*)
+ curr_tests @
+  (*inference_tests @*)
  []
 ;;
 

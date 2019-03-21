@@ -158,11 +158,14 @@ int print(int val) {
        printf("\n");
   }
   else if ((val & TUPLE_TAG) == 1){
-
-     int* tupptr = (int*)(val - 1);
-     tuple_size = *(tupptr);
-     printer(val, tuple_size);
-    printf("\n");
+      if( (val - 1) == 0){
+              printf("()");
+        }else {
+         int* tupptr = (int*)(val - 1);
+         tuple_size = *(tupptr);
+         printer(val, tuple_size);
+        }
+        printf("\n");
   }
 
   
@@ -180,32 +183,30 @@ void* printer(int val , int tuple_size){
     printf("false");
   } else if ((val & TUPLE_TAG) == 1) {
          if( (val - 1) == 0){
-              //printf("()");
-              return 0;
+              printf("()");
           }else{
-          int* tupptr = (int*)(val - 1);
-          if(tuple_size == 2) {
-          printf("(");
-          printer(*(tupptr + 1),tuple_size);
-          printf(", ");
-          printer(*(tupptr + 2), tuple_size);
-          printf(")");
-          *(tupptr) -= 2;
-          }
-          else {
-            int i;
-            printf("(");
-            for(i = 1; i < tuple_size + 1; i++){
-               printer(*(tupptr + i),tuple_size);
-                if(i == tuple_size){
+              int* tupptr = (int*)(val - 1);
+              if(tuple_size == 2) {
+              printf("(");
+              printer(*(tupptr + 1),tuple_size);
+              printf(", ");
+              printer(*(tupptr + 2), tuple_size);
+              printf(")");
+              *(tupptr) -= 2;
+              } else {
+                int i;
+                printf("(");
+                for(i = 1; i < tuple_size + 1; i++){
+                   printer(*(tupptr + i),tuple_size);
+                    if(i == tuple_size){
 
+                    }
+                    else
+                    printf(", ");
                 }
-                else
-                printf(", ");
-            }
-            printf(")");
+                printf(")");
 
-          }
+              }
 
         }
 
