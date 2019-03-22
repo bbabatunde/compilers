@@ -4,9 +4,13 @@ open Phases
 open Exprs
 open Assembly
 open Errors
-open Inference
+(* Add at least one of these two *)
+(* open TypeCheck *)
+(* open Inference *)
        
 type 'a envt = (string * 'a) list
+
+let skip_typechecking = ref false
 
 let rec is_anf (e : 'a expr) : bool =
   match e with
@@ -37,6 +41,29 @@ let err_LOGIC_NOT_BOOL = 2
 let err_IF_NOT_BOOL    = 3
 let err_OVERFLOW       = 4
 
+ let fun_prim = ["input";"print"]
+
+let rec strip_binds arg =
+  let result = (List.fold_left (fun env b -> match b with 
+  |BBlank(_,_) -> env
+  |BName( str, typ , loc) ->  [(str , loc)]@env
+  |BTuple(binds,loc) ->  env @ (strip_binds binds) ) [] arg) in result
+
+let rec findlst ls str = 
+   match ls with
+  |[] -> None
+  |TyDecl(x,_,_)::rest  -> if x = str then  Some(x) else findlst rest str 
+
+let rec remove_one_str ls str =
+  match ls with
+  |[] -> ls
+  |TyDecl(x,_,_)::rest -> if x == str then  rest else remove_one_str rest str 
+
+ let rec findecls decls str =
+ match decls with 
+ |[] -> None
+ |TyDecl(name,args,loc)::rest -> if name = str then Some(TyDecl(name,args,loc)) else findecls rest str
+
 
 
 (* You may find some of these helpers useful *)
@@ -45,6 +72,7 @@ let rec find ls x =
   | [] -> raise (InternalCompilerError (sprintf "Name %s not found" x))
   | (y,v)::rest ->
      if y = x then v else find rest x
+
 
 let rec find2 ls x =
   match ls with
@@ -55,7 +83,10 @@ let rec find2 ls x =
 let count_vars e =
   let rec helpA e =
     match e with
+    | ASeq(e1, e2, _) -> max (helpC e1) (helpA e2)
     | ALet(_, bind, body, _) -> 1 + (max (helpC bind) (helpA body))
+    | ALetRec(binds, body, _) ->
+       (List.length binds) + List.fold_left max (helpA body) (List.map (fun (_, rhs) -> helpC rhs) binds)
     | ACExpr e -> helpC e
   and helpC e =
     match e with
@@ -72,7 +103,7 @@ let rec find_decl (ds : 'a decl list) (name : string) : 'a decl option =
   match ds with
     | [] -> None
     | (DFun(fname, _, _, _, _) as d)::ds_rest ->
-      if name = fname then Some(d)  else find_decl ds_rest name
+      if name = fname then Some(d) else find_decl ds_rest name
 
 let rec find_one (l : 'a list) (elt : 'a) : bool =
   match l with
@@ -87,8 +118,7 @@ let rec find_dup (l : 'a list) : 'a option =
       if find_one xs x then Some(x) else find_dup xs
 ;;
 
-  
- let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
+let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list = 
   let rec find_decl2 (ds : 'a decl list) (name : string) : 'a decl list option =
   match ds with
     | [] -> None
@@ -100,8 +130,7 @@ let rec find_dup (l : 'a list) : 'a option =
   |Some(e) -> e
 
 
-
-  let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
+let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
   let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
   match l with
     | [] -> None
@@ -170,12 +199,31 @@ let rename_and_tag (p : tag program) : tag program =
        let (binds', env') = helpBG env binds in
        let body' = helpE env' body in
        ELet(binds', body', tag)
+    | ELetRec(bindings, body, tag) ->
+       let (revbinds, env) = List.fold_left (fun (revbinds, env) (b, e, t) ->
+                                 let (b, env) = helpB env b in ((b, e, t)::revbinds, env)) ([], env) bindings in
+       let bindings' = List.fold_left (fun bindings (b, e, tag) -> (b, helpE env e, tag)::bindings) [] revbinds in
+       let body' = helpE env body in
+       ELetRec(bindings', body', tag)
+    | ELambda(binds, body, tag) ->
+       let (binds', env') = helpBS env binds in
+       let body' = helpE env' body in
+       ELambda(binds', body', tag)
   in (rename [] p)
 ;;
 
 
 
 (* IMPLEMENT EVERYTHING BELOW *)
+
+(* This data type lets us keep track of how a binding was introduced.
+   We'll use it to discard unnecessary Seq bindings, and to distinguish 
+   letrec from let. Essentially, it accumulates just enough information 
+   in our binding list to tell us how to reconstruct an appropriate aexpr. *)
+type 'a anf_bind =
+  | BSeq of 'a cexpr
+  | BLet of string * 'a cexpr
+  | BLetRec of (string * 'a cexpr) list
 
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
@@ -189,10 +237,9 @@ let anf (p : tag program) : unit aprogram =
        let args = List.map (fun a ->
                       match a with
                       | BName(a, _, _) -> a
-                      | BBlank(_, _) -> raise (InternalCompilerError "Can't have blank in fn call o.O")
-                      | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag))) args in
+                      | _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away"))) args in
        ADFun(name, args, helpA body, ())
-  and helpC (e : tag expr) : (unit cexpr * (string * unit cexpr) list) = 
+  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
     match e with
     | EAnnot(e, _, _) -> helpC e
     | EPrim1(op, arg, _) ->
@@ -206,18 +253,22 @@ let anf (p : tag program) : unit aprogram =
        let (cond_imm, cond_setup) = helpI cond in
        (CIf(cond_imm, helpA _then, helpA _else, ()), cond_setup)
     | ELet([], body, _) -> helpC body
-    | ELet((b1, exp, _)::rest, body, pos) ->
-        let bind = (match b1 with
-            | BBlank(t, _) -> (sprintf "_%d" pos)
-            | BName(name, _, _) -> name
-            | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag)))in
+    | ELet((BBlank(_, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
-       (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup)
+       (body_ans, exp_setup @ [BSeq(exp_ans)] @ body_setup)
+    | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
+       let (exp_ans, exp_setup) = helpC exp in
+       let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
+       (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
+    | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
+       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
+    | ESeq(e1, e2, _) ->
+       let (e1_ans, e1_setup) = helpC e1 in
+       let (e2_ans, e2_setup) = helpC e2 in
+       (e2_ans, e1_setup @ [BSeq e1_ans] @ e2_setup)
     | EApp(funname, args, _) ->
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (CApp(funname, new_args, ()), List.concat new_setup)
-    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
+       raise (NotYetImplemented("Revise this case"))
     | ETuple(expr_list, _) ->
         let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
         (CTuple(tup_args, ()), List.concat tup_setup)
@@ -228,84 +279,89 @@ let anf (p : tag program) : unit aprogram =
         let (e_imm, e_setup) = helpI e in
         let (new_imm, new_setup) = helpI newval in
         (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
+    | ELambda(binds, body, _) ->
+       raise (NotYetImplemented("Finish this case"))
+    | ELetRec(binds, body, _) ->
+       raise (NotYetImplemented("Finish this case"))
+
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
-  and helpI (e : tag expr) : (unit immexpr * (string * unit cexpr) list) =
+  and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
     match e with
     | ENumber(n, _) -> (ImmNum(n, ()), [])
     | EBool(b, _) -> (ImmBool(b, ()), [])
     | EId(name, _) -> (ImmId(name, ()), [])
+    | ENil _ -> (ImmNil(), [])
     | EAnnot(e, _, _) -> helpI e
-    | ENil(_,_) -> (ImmNil(),[])
+
+    | ESeq(e1, e2, _) ->
+       let (e1_imm, e1_setup) = helpI e1 in
+       let (e2_imm, e2_setup) = helpI e2 in
+       (e2_imm, e1_setup @ e2_setup)
+    | ETuple(args, tag) ->
+       raise (NotYetImplemented("Finish this case"))
+       (* Hint: use BLet to bind the result *)
+    | EGetItem(e, idx, len, a) ->
+       (*let tmp = sprintf "eget_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, ()))])*)
+         raise (NotYetImplemented("Finish this case"))
+    | ESetItem(e, idx, len, newval, a) ->
+        (*let tmp = sprintf "eset_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        let (new_imm, new_setup) = helpI newval in
+        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, new_imm, ()))])*)
+        raise (NotYetImplemented("Finish this case"))
     | EPrim1(op, arg, tag) ->
        let tmp = sprintf "unary_%d" tag in
        let (arg_imm, arg_setup) = helpI arg in
-       (ImmId(tmp, ()), arg_setup @ [(tmp, CPrim1(op, arg_imm, ()))])
+       (ImmId(tmp, ()), arg_setup @ [BLet(tmp, CPrim1(op, arg_imm, ()))])
     | EPrim2(op, left, right, tag) ->
        let tmp = sprintf "binop_%d" tag in
        let (left_imm, left_setup) = helpI left in
        let (right_imm, right_setup) = helpI right in
-       (ImmId(tmp, ()), left_setup @ right_setup @ [(tmp, CPrim2(op, left_imm, right_imm, ()))])
+       (ImmId(tmp, ()), left_setup @ right_setup @ [BLet(tmp, CPrim2(op, left_imm, right_imm, ()))])
     | EIf(cond, _then, _else, tag) ->
        let tmp = sprintf "if_%d" tag in
        let (cond_imm, cond_setup) = helpI cond in
-       (ImmId(tmp, ()), cond_setup @ [(tmp, CIf(cond_imm, helpA _then, helpA _else, ()))])
+       (ImmId(tmp, ()), cond_setup @ [BLet(tmp, CIf(cond_imm, helpA _then, helpA _else, ()))])
     | EApp(funname, args, tag) ->
-       let tmp = sprintf "app_%d" tag in
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (ImmId(tmp, ()), (List.concat new_setup) @ [(tmp, CApp(funname, new_args, ()))])
+       raise (NotYetImplemented("Revise this case"))
     | ELet([], body, _) -> helpI body
-    | ELet((b1, exp, _)::rest, body, pos) ->
-        let bind = (match b1 with
-            | BBlank(t, _) -> (sprintf "_%d" pos)
-            | BName(name, _, _) -> name
-            | BTuple(_, tag) -> raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" tag))) in
-        let (exp_ans, exp_setup) = helpC exp in
-        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
-        (body_ans, exp_setup @ [(bind, exp_ans)] @ body_setup)
-    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
-    | ETuple(expr_list, tag) ->
-        let tmp = sprintf "tup_%d" tag in
-        let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
-        (ImmId(tmp, ()), (List.concat tup_setup) @ [(tmp, CTuple(tup_args, ()))])
-    | EGetItem(e, idx, len, a) ->
-        let tmp = sprintf "eget_%d" a in
-        let (e_imm, e_setup) = helpI e in
-        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, ()))])
-    | ESetItem(e, idx, len, newval, a) ->
-        let tmp = sprintf "eset_%d" a in
-        let (e_imm, e_setup) = helpI e in
-        let (new_imm, new_setup) = helpI newval in
-        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, new_imm, ()))])
+    | ELet((BBlank(_, _), exp, _)::rest, body, pos) ->
+       let (exp_ans, exp_setup) = helpI exp in (* MUST BE helpI, to avoid any missing final steps *)
+       let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
+       (body_ans, exp_setup @ body_setup)
+    | ELambda(binds, body, tag) ->
+       raise (NotYetImplemented("Finish this case"))
+       (* Hint: use BLet to bind the answer *)
+    | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
+       let (exp_ans, exp_setup) = helpC exp in
+       let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
+       (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
+    | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
+       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
+    | ELetRec(binds, body, tag) ->
+       raise (NotYetImplemented("Finish this case"))
+       (* Hint: use BLetRec for each of the binds, and BLet for the final answer *)
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
-    List.fold_right (fun (bind, exp) body -> ALet(bind, exp, body, ())) ans_setup (ACExpr ans)
+    List.fold_right
+      (fun bind body ->
+        (* Here's where the anf_bind datatype becomes most useful:
+             BSeq binds get dropped, and turned into ASeq aexprs.
+             BLet binds get wrapped back into ALet aexprs.
+             BLetRec binds get wrapped back into ALetRec aexprs.
+           Syntactically it looks like we're just replacing Bwhatever with Awhatever,
+           but that's exactly the information needed to know which aexpr to build. *)
+        match bind with
+        | BSeq(exp) -> ASeq(exp, body, ())
+        | BLet(name, exp) -> ALet(name, exp, body, ())
+        | BLetRec(names) -> ALetRec(names, body, ()))
+      ans_setup (ACExpr ans)
   in
   helpP p
 ;;
-
-let rec strip_binds arg =
-  let result = (List.fold_left (fun env b -> match b with 
-  |BBlank(_,_) -> env
-  |BName( str, typ , loc) ->  [(str , loc)]@env
-  |BTuple(binds,loc) ->  env @ (strip_binds binds) ) [] arg) in result
-
-let rec findlst ls str = 
-   match ls with
-  |[] -> None
-  |TyDecl(x,_,_)::rest  -> if x = str then  Some(x) else findlst rest str 
-
-let rec remove_one_str ls str =
-  match ls with
-  |[] -> ls
-  |TyDecl(x,_,_)::rest -> if x == str then  rest else remove_one_str rest str 
-
- let rec findecls decls str =
- match decls with 
- |[] -> None
- |TyDecl(name,args,loc)::rest -> if name = str then Some(TyDecl(name,args,loc)) else findecls rest str
-
- let fun_prim = ["input";"print"]
 
 
  let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
@@ -323,7 +379,7 @@ let rec remove_one_str ls str =
     | EPrim2(op, left, right, _) ->  wf_E left ds env tydecls @ wf_E right ds env tydecls
     | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
     | EApp(funname, appargs, pos) -> 
-       if List.mem funname fun_prim then []
+       (*if List.mem funname fun_prim then []
        else
        begin match find_decl ds funname with
        |None -> [UnboundFun(funname, pos)]
@@ -332,7 +388,9 @@ let rec remove_one_str ls str =
          let no_defargs = List.length defargs  in
          if no_defargs = no_appargs then [] else
          [Arity (no_defargs,no_appargs,pos)]
-      end
+      end*)
+      raise (NotYetImplemented("Finish this case"))
+
     |ELet([], body, pos) -> wf_E body ds env tydecls
     |ELet((bind,expr,exploc)::rest as bindings, body, pos) -> 
      let shadowlist = begin match bind with
@@ -435,7 +493,7 @@ and add_bindlst_env blst env =
   | Program(tydecls, decls, body, _) ->
      let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls)  [] tydecls in
      if output = [] then Ok(p) else Error(output)
-;;
+
 
 let rec tupArgs arg_lst =
     match arg_lst with
@@ -545,6 +603,8 @@ let desugar (p : sourcespan program) : sourcespan program =
           new_p
 ;;
 
+
+
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
   let stack_offset = 4*((count_vars body)+1) in
   let lbl = 
@@ -572,8 +632,6 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
     @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
     @ body_asm
     @ postlude_asm;
-
-
 
 
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
@@ -818,7 +876,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    end
     | CApp(name, exprs, _) ->
    
-       if is_tail=true && num_args=(List.length exprs) then
+       (*if is_tail=true && num_args=(List.length exprs) then
          (
          [ILineComment(Printf.sprintf "Prepare for tailcall to function fun_%s" name); ]
          @ (replace_args exprs env)
@@ -832,7 +890,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
          @ [ ICall(name)]
          @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] (* Reset stack pointer after call *)
-         )
+         )*)
+      raise (NotYetImplemented("Finish this case"))
 
 
   | CTuple(lst,_)-> 
@@ -926,12 +985,11 @@ let build_env (vars: string list) : (string * arg) list =
     | _ -> ([], parsed)
   in let (_, result) = _build_env vars [] in
     result
-
-
 let rec compile_decl (d: tag adecl ) : instruction list = match d with
   | ADFun(fun_name, args, body, tag) -> 
       let local_env = build_env args in (compile_fun fun_name body args local_env false) 
   
+
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
@@ -1020,13 +1078,20 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
 
+let typecheck p =
+  (* You should replace this with either type_synth or type_check *)
+  Ok p
+           
+(* Feel free to add additional phases to your pipeline.
+   The final pipeline phase needs to return a string,
+   but everything else is up to you. *)
 
-(* Add a desugaring phase somewhere in here, as well as your typechecker *)
+(* Add at least one desugaring phase somewhere in here, as well as your typechecker *)
+(* You may want to desugar once before type-checking, and once afterward *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  |> (add_phase desugared desugar)
-  (*|> (add_err_phase type_checked type_synth)*)
+  |> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> atag (anf p)))
