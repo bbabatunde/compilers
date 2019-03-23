@@ -225,6 +225,15 @@ type 'a anf_bind =
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
 
+let rec bindsToStrings binds =
+    match binds with
+    | first::rest ->
+        (match first with
+        | BName(n, _, _) -> n :: (bindsToStrings rest)
+        | _ -> raise (InternalCompilerError("Lamdas must take only Bnames after desugar.")))
+    | [] -> []
+;;
+
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
     match p with
@@ -268,10 +277,9 @@ let anf (p : tag program) : unit aprogram =
         let (new_imm, new_setup) = helpI newval in
         (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | ELambda(binds, body, _) ->
-       raise (NotYetImplemented("Finish this case"))
+        (CLambda(bindsToStrings binds, helpA body, ()), [])
     | ELetRec(binds, body, _) ->
        raise (NotYetImplemented("Finish this case"))
-
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
