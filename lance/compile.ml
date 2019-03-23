@@ -234,6 +234,15 @@ let rec bindsToStrings binds =
     | [] -> []
 ;;
 
+let rec bindingsToStrings binds =
+    match binds with
+    | (first, _, _)::rest ->
+        (match first with
+        | BName(n, _, _) -> n :: (bindingsToStrings rest)
+        | _ -> raise (InternalCompilerError("BLetRecs need to be BNames!")))
+    | [] -> []
+;;
+
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
     match p with
@@ -280,8 +289,8 @@ let anf (p : tag program) : unit aprogram =
         (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | ELambda(binds, body, _) ->
         (CLambda(bindsToStrings binds, helpA body, ()), [])
-    | ELetRec(bindings, e, _) ->
-        raise (NotYetImplemented("Finish this case"))
+    | ELetRec(bindings, body, _) ->
+        (CLambda(bindingsToStrings bindings, helpA body, ()), [])
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
