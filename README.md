@@ -3,7 +3,6 @@
 # TODO 
 
 # AMOGH
-1. Implement ANF for ELambda. Hint: it’s quite similar to what needed to be done to ANF a declaration.2. 
 2. EXTRA: Update your type system to handle the new constructs.
 
 # BABA
@@ -16,5 +15,6 @@
 # DONE
 
 # AMOGH
+1. Implement ANF for ELambda. Hint: it’s quite similar to what needed to be done to ANF a declaration.2. 
 
 # BABA

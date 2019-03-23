@@ -265,7 +265,9 @@ let anf (p : tag program) : unit aprogram =
        raise (InternalCompilerError("Tuple bindings should have been desugared away"))
     | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
     | EApp(funname, args, tag) ->
-       raise (NotYetImplemented("Finish this case"))
+        let (name_imm, name_setup) = helpI funname in
+        let (args_imm, args_setup) = List.split (List.map helpI args) in
+        (CApp(name_imm, args_imm, ()), name_setup @ (List.concat args_setup))
     | ETuple(expr_list, _) ->
         let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
         (CTuple(tup_args, ()), List.concat tup_setup)
@@ -278,8 +280,8 @@ let anf (p : tag program) : unit aprogram =
         (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | ELambda(binds, body, _) ->
         (CLambda(bindsToStrings binds, helpA body, ()), [])
-    | ELetRec(binds, body, _) ->
-       raise (NotYetImplemented("Finish this case"))
+    | ELetRec(bindings, e, _) ->
+        raise (NotYetImplemented("Finish this case"))
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
