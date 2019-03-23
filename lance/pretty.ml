@@ -111,7 +111,7 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(let %s in %s)%s" binds_str (string_of_expr body) (print_a a)
   | ELetRec(binds, body, a) ->
-     let binds_strs = List.map string_of_bind binds in
+     let binds_strs = List.map (string_of_binding_with print_a) binds in
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(let-rec %s in %s)%s" binds_str (string_of_expr body) (print_a a)
   | EIf(cond, thn, els, a) ->
@@ -377,7 +377,7 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
        close_paren fmt;
        pp_print_string fmt (maybe_angle (print_a a)) in
      open_label fmt "ELetRec" (print_a a);
-     open_paren fmt; print_list fmt (fun fmt -> format_bind fmt print_a) binds print_comma_sep; close_paren fmt;
+     open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
      print_comma_sep fmt;
      help body;
      close_paren fmt

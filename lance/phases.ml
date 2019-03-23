@@ -19,7 +19,7 @@ type phase =
   | WellFormed of sourcespan program
   | DesugaredPreTC of sourcespan program
   | TypeChecked of sourcespan program
-  | DesugaredPostTC of tag program
+  | DesugaredPostTC of sourcespan program
   | Renamed of tag program
   | Tagged of tag program
   | ANFed of tag aprogram
