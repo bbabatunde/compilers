@@ -41,13 +41,9 @@ bindings :
   | bind EQUAL expr { [($1, $3, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
   | bind EQUAL expr COMMA bindings { ($1, $3, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$5 }
 
-namebindings :
-  | namebind EQUAL expr { [($1, $3, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
-  | namebind EQUAL expr COMMA namebindings { ($1, $3, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$5 }
-
 expr :
   | LET bindings IN expr { ELet($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LET REC namebindings IN expr { ELetRec($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | LET REC namebinds IN expr { ELetRec($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | IF expr COLON expr ELSECOLON expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | BEGIN expr END { $2 }
   | binop_expr SEMI expr { ESeq($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
@@ -165,6 +161,10 @@ bind :
   | namebind { $1 }
   | LPARENNOSPACE binds RPAREN { BTuple($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | LPARENSPACE binds RPAREN { BTuple($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+
+namebinds :
+  | namebind { [$1] }
+  | namebind COMMA namebinds { $1:: $3 }
 
 namebind :
   | ID %prec SEMI { make_namebind($1, TyBlank(Parsing.symbol_start_pos (), Parsing.symbol_end_pos ()), (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }

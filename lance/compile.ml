@@ -199,12 +199,10 @@ let rename_and_tag (p : tag program) : tag program =
        let (binds', env') = helpBG env binds in
        let body' = helpE env' body in
        ELet(binds', body', tag)
-    | ELetRec(bindings, body, tag) ->
-       let (revbinds, env) = List.fold_left (fun (revbinds, env) (b, e, t) ->
-                                 let (b, env) = helpB env b in ((b, e, t)::revbinds, env)) ([], env) bindings in
-       let bindings' = List.fold_left (fun bindings (b, e, tag) -> (b, helpE env e, tag)::bindings) [] revbinds in
+    | ELetRec(binds, body, tag) ->
+       let (binds', env') = helpBS env binds in
        let body' = helpE env body in
-       ELetRec(bindings', body', tag)
+       ELetRec(binds', body', tag)
     | ELambda(binds, body, tag) ->
        let (binds', env') = helpBS env binds in
        let body' = helpE env' body in
@@ -228,7 +226,8 @@ type 'a anf_bind =
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
     match p with
-    | Program(_, decls, body, _) -> AProgram(List.concat(List.map helpG decls), helpA body, ())
+    | Program(_, [], body, _) -> AProgram([], helpA body, ())
+    | Program(_, decls, body, _) -> raise (InternalCompilerError("DFuns are supposed to be desugared to let recs :/"))
   and helpG (g : tag decl list) : unit adecl list =
     List.map helpD g
   and helpD (d : tag decl) : unit adecl =
@@ -263,12 +262,9 @@ let anf (p : tag program) : unit aprogram =
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
     | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
        raise (InternalCompilerError("Tuple bindings should have been desugared away"))
-    | ESeq(e1, e2, _) ->
-       let (e1_ans, e1_setup) = helpC e1 in
-       let (e2_ans, e2_setup) = helpC e2 in
-       (e2_ans, e1_setup @ [BSeq e1_ans] @ e2_setup)
-    | EApp(funname, args, _) ->
-       raise (NotYetImplemented("Revise this case"))
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
+    | EApp(funname, args, tag) ->
+       raise (NotYetImplemented("Finish this case"))
     | ETuple(expr_list, _) ->
         let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
         (CTuple(tup_args, ()), List.concat tup_setup)
@@ -293,13 +289,11 @@ let anf (p : tag program) : unit aprogram =
     | EId(name, _) -> (ImmId(name, ()), [])
     | ENil _ -> (ImmNil(), [])
     | EAnnot(e, _, _) -> helpI e
-
-    | ESeq(e1, e2, _) ->
-       let (e1_imm, e1_setup) = helpI e1 in
-       let (e2_imm, e2_setup) = helpI e2 in
-       (e2_imm, e1_setup @ e2_setup)
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
     | ETuple(args, tag) ->
-       raise (NotYetImplemented("Finish this case"))
+       let tmp = sprintf "tup_%d" tag in
+       let (tup_args, tup_setup) = List.split (List.map helpI args) in
+       (ImmId(tmp, ()), (List.concat tup_setup) @ [BLet(tmp, CTuple(tup_args, ()))])
        (* Hint: use BLet to bind the result *)
     | EGetItem(e, idx, len, a) ->
        (*let tmp = sprintf "eget_%d" a in
@@ -332,18 +326,19 @@ let anf (p : tag program) : unit aprogram =
        let (exp_ans, exp_setup) = helpI exp in (* MUST BE helpI, to avoid any missing final steps *)
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ body_setup)
-    | ELambda(binds, body, tag) ->
-       raise (NotYetImplemented("Finish this case"))
-       (* Hint: use BLet to bind the answer *)
+    | ELambda([], body, tag) ->
+       (* Converting constant functions to be just their bodies. 
+        * Maybe this breaks something, needs testing. *)
+       helpI body
+    | ELambda(some, body, tag) -> 
+       raise (UnsupportedTagged("Lambda not a constant function.", tag))
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
     | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
-       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
-    | ELetRec(binds, body, tag) ->
-       raise (NotYetImplemented("Finish this case"))
-       (* Hint: use BLetRec for each of the binds, and BLet for the final answer *)
+       raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" pos))
+    | ELetRec(binds, body, tag) -> raise (UnsupportedTagged("Function definiton can't be immediate.", tag))
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
@@ -504,13 +499,13 @@ let rec tupArgs arg_lst =
     | [] -> []
 ;;
 
-let rec replaceTups arg_lst ctr =
-    let tmp_tup_name = (sprintf "desugar_args_%d" ctr) in
+let rec replaceTups tag arg_lst ctr =
+    let tmp_tup_name = (sprintf "%s_%d" tag ctr) in
     match arg_lst with
     | first::rest ->
         (match first with
-        | BTuple(_, loc) -> BName(tmp_tup_name, bind_to_typ first, loc) :: (replaceTups rest (ctr + 1))
-        | BName(_, _, _) -> first :: (replaceTups rest ctr)
+        | BTuple(_, loc) -> BName(tmp_tup_name, bind_to_typ first, loc) :: (replaceTups tag rest (ctr + 1))
+        | BName(_, _, _) -> first :: (replaceTups tag rest ctr)
         | _ -> raise (InternalCompilerError "BBlank in function definition o.O"))
     | [] -> []
 ;;
@@ -539,8 +534,11 @@ let desugar (p : sourcespan program) : sourcespan program =
     | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
     | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-    | _ -> e
-  and expandHelper binds tmp_var ctr len loc=
+    | ELetRec(bindl, e, loc) ->
+        raise (NotYetImplemented("Do this."))
+    | ELambda(bindl, e, loc) ->
+        raise (NotYetImplemented("Do this."))
+  and expandHelper binds tmp_var ctr len loc =
     match binds with
     | first::rest ->
       let this_expanded_binding =
@@ -560,15 +558,16 @@ let desugar (p : sourcespan program) : sourcespan program =
     | first::rest ->
       let (bind, e, loc) = first in
       let e = helpE e in
-      (match bind with
+     (match bind with
       | BTuple(bind_list, loc1) ->
         let first_binding = (BName(tmp_var, bind_to_typ bind, loc1), e, loc) in
         let expanded_bindings = expandHelper bind_list tmp_var 0 (List.length bind_list) loc1 in
         ([first_binding] @ expanded_bindings @ (expandBinding rest tmp_name len))
       | _ -> ([(bind, e, loc)] @ expandBinding rest tmp_name len))
     | _ -> []
-  and tupToName binds ctr =
-    let tmp_name = (sprintf "desugar_args_%d" ctr) in
+(*
+  and tupToName tag binds ctr =
+    let tmp_name = (sprintf "%s_%d" tag ctr) in
     match binds with
     | first::rest ->
         (match first with
@@ -584,16 +583,24 @@ let desugar (p : sourcespan program) : sourcespan program =
       | _ -> raise (InternalCompilerError "Processing args broken o.O"))
     | _ -> raise (InternalCompilerError "tupToName or tupArgs broken O.o")
   and helpArgs args =
-    let new_args = (replaceTups args 0) in
+    let new_args = (replaceTups "desugar_args" args 0) in
     let new_bindings = List.map2 helpNewBinds (tupArgs args) (tupToName args 0) in
     (new_args, new_bindings)
+
+  and helpBinds oldBinds =
+      let new_binds = (replaceTups "desugar_lambda" oldBinds 0) in
+      let new_let_binds = List.map2 helpNewLambdaBinds (tupArgs oldBinds) (tupTo) in
+      (new_binds, new_let_binds)
+      *)
   and helpD (d : sourcespan decl) (* other parameters may be needed here *) =
     match d with
     | DFun(name, args, scheme, body, pos) ->
+        raise (NotYetImplemented("Implement dfun desugaring."))
+        (*
         let (new_args, new_binds) = helpArgs args in
         let new_body = ELet(new_binds, (helpE body), pos) in
         DFun(name, new_args, scheme, helpE new_body, pos)
-        (* Makes a wasted let binding we might want to remove in the future. *)
+        Makes a wasted let binding we might want to remove in the future. *)
   in
   match p with
   | Program(tydecls, decls, body, t) ->
@@ -1091,6 +1098,7 @@ let typecheck p =
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
+  |> (add_phase desugared_preTC desugar)
   |> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)

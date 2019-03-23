@@ -53,7 +53,7 @@ and 'a expr =
   | EGetItem of 'a expr * int * int * 'a
   | ESetItem of 'a expr * int * int * 'a expr * 'a
   | ELet of 'a binding list * 'a expr * 'a
-  | ELetRec of 'a binding list * 'a expr * 'a
+  | ELetRec of 'a bind list * 'a expr * 'a
   | EPrim1 of prim1 * 'a expr * 'a
   | EPrim2 of prim2 * 'a expr * 'a expr * 'a
   | EIf of 'a expr * 'a expr * 'a expr * 'a
@@ -145,7 +145,7 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
        let tag_b = map_tag_B f b in
        let tag_e = map_tag_E f e in
        (tag_b, tag_e, tag_bind) in
-     let tag_binds = List.map tag_binding binds in
+     let tag_binds = List.map (map_tag_B f) binds in
      let tag_body = map_tag_E f body in
      ELetRec(tag_binds, tag_body, tag_let)
   | EIf(cond, thn, els, a) ->
@@ -256,7 +256,7 @@ and untagE e =
   | ELet(binds, body, _) ->
      ELet(List.map (fun (b, e, _) -> (untagB b, untagE e, ())) binds, untagE body, ())
   | ELetRec(binds, body, _) ->
-     ELetRec(List.map (fun (b, e, _) -> (untagB b, untagE e, ())) binds, untagE body, ())
+     ELetRec(List.map untagB binds, untagE body, ())
   | EIf(cond, thn, els, _) ->
      EIf(untagE cond, untagE thn, untagE els, ())
   | EApp(name, args, _) ->
