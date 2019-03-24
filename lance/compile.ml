@@ -605,6 +605,27 @@ let desugar (p : sourcespan program) : sourcespan program =
 
 
 
+
+let rec freeVars_aexpr env e : string list =
+  match e with
+  | ASeq(cexp, aexp,tag) -> (freeVars_aexpr env aexp) @ (freeVars_cexpr env cexp)
+  | ALet(name, cexp, aexp, tag) -> (freeVars_aexpr env aexp) @ (freeVars_cexpr env cexp)
+  | ALetRec(cexplst, aexp, tag) -> (freeVars_aexpr env aexp) 
+  | ACExpr(cexp) -> (freeVars_cexpr env cexp)
+and freeVars_cexpr env e : string list =  match e with 
+  | CIf(pred, _then, _else, _) ->   (freeVars_imm env pred) @ (freeVars_aexpr env _then) @  (freeVars_aexpr env _else)
+  | CPrim1(op,expr,_) -> freeVars_imm env expr
+  | CPrim2(op, left, right, _) -> (freeVars_imm env left) @ (freeVars_imm env right) 
+  | CApp(name, args, _) -> (freeVars_imm env name) @ List.flatten (List.map (fun e -> freeVars_imm env e) args)
+  | CImmExpr(exp) ->  freeVars_imm env exp
+  | CTuple(args,_) -> List.flatten (List.map (fun e -> freeVars_imm env e) args)
+  | CGetItem(tuple, index, _) -> freeVars_imm env tuple
+  | CSetItem(tuple, index, newval, _) ->  (freeVars_imm env tuple) @ (freeVars_imm env newval)
+  | CLambda(args, body, _) -> freeVars_aexpr (args@env) body
+and freeVars_imm env e : string list = match e with 
+  | ImmId(str,_) -> if List.mem str env  then [] else [str]
+  | _-> []      
+
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
   let stack_offset = 4*((count_vars body)+1) in
   let lbl = 
@@ -640,20 +661,22 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
   let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
   prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
+  | ALetRec(cexplist, aexp,_) -> []
+  | ASeq(cexp, aexp, _) -> []
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
       let false_label = sprintf "if_false_%s" (string_of_int tag) in
       let done_label  =  sprintf "if_done_%s" (string_of_int tag) in
-      [IMov(Reg(EAX),(compile_imm cond env))] @
-      [ICmp(Reg(EAX), const_true)] @
-      [IJne(false_label)] @
-      [ILabel(true_label)] @
+      [IMov(Reg(EAX),(compile_imm cond env));
+       ICmp(Reg(EAX), const_true);
+       IJne(Label(false_label));
+       ILabel(true_label)] @ 
       (compile_aexpr _then (si + 1) env num_args is_tail) @
-      [IJmp(done_label)] @
-      [ILabel(false_label)] @
-      [ICmp(Reg(EAX), const_false)] @
-      [IJne("error_not_boolean_if")] @
+      [IJmp(Label(done_label));
+       ILabel(false_label);
+       ICmp(Reg(EAX), const_false);
+       IJne(Label("error_not_boolean_if"))] @
       (compile_aexpr _else (si + 2) env num_args is_tail) @
       [ILabel(done_label)]
 
@@ -663,16 +686,16 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         [IMov(Reg(EAX),(compile_imm e env))] @ 
         [
         ITest(Reg(EAX),tag_as_bool);
-        IJnz("arithmetic_expected_a_number");
+        (*IJnz("arithmetic_expected_a_number");*)
         IAdd(Reg(EAX),Const(2));
-        IJo("overflow")
+        (*IJo("overflow")*)
        ] 
       |Sub1 -> 
         [IMov(Reg(EAX),(compile_imm e env))] @ 
         [ITest(Reg(EAX),tag_as_bool);
-        IJnz("arithmetic_expected_a_number");
+        IJnz(Label("arithmetic_expected_a_number"));
         ISub(Reg(EAX),Const(2));
-        IJo("overflow")
+        IJo(Label("overflow"))
         ]
 
       |IsBool -> 
@@ -680,9 +703,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         let done_label = sprintf "isBool_done_%s" (string_of_int tag) in
        [IMov(Reg(EAX),(compile_imm e env))] @  [
         ITest(Reg(EAX), tag_as_bool);
-        IJz(not_bool_label);
+        IJz(Label (not_bool_label));
         IMov(Reg(EAX),const_true);
-        IJmp(done_label);
+        IJmp(Label(done_label));
         ILabel(not_bool_label);
         IMov(Reg(EAX),const_false);
         ILabel(done_label)]
@@ -691,16 +714,16 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          let done_label = sprintf "isNumdone_%s" (string_of_int tag) in
          [IMov(Reg(EAX),(compile_imm e env))] @ [
          ITest(Reg(EAX), tag_as_bool);
-         IJz(isNum_label);
+         IJz(Label(isNum_label));
          IMov(Reg(EAX),const_false);
-         IJmp(done_label);
+         IJmp(Label(done_label));
          ILabel(isNum_label);
          IMov(Reg(EAX),const_true);
          ILabel(done_label)]
       |Not -> 
         [IMov(Reg(EAX),(compile_imm e env))] @ [
         ITest(Reg(EAX), tag_as_bool);
-        IJz("logic_expected_a_boolean");
+        IJz(Label("logic_expected_a_boolean"));
         IXor(Reg(EAX),bool_mask)
        ]
       |IsTuple -> 
@@ -712,7 +735,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
             IAnd(Reg(EAX), Const(0x00000007));
             ICmp(Reg(EAX), Const(0x00000001));
             IMov(Reg(EAX),const_false);
-            IJne(done_label);
+            IJne(Label(done_label));
             ILabel(istuple_label);
             IMov(Reg(EAX),const_true);
             ILabel(done_label)
@@ -733,12 +756,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
       [ 
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
+            IJnz(Label("arithmetic_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
+            IJnz(Label("arithmetic_expected_a_number_EDX"));
             IAdd(Reg(EAX), Reg(EDX));
-            IJo("overflow")
+            IJo(Label("overflow"))
 
 
         ]
@@ -746,12 +769,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
+            IJnz(Label("arithmetic_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
+            IJnz(Label("arithmetic_expected_a_number_EDX"));
             ISub(Reg(EAX), Reg(EDX));
-            IJo("overflow")
+            IJo(Label("overflow"))
 
      ]
    | Times -> 
@@ -759,24 +782,24 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number");
+            IJnz(Label("arithmetic_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("arithmetic_expected_a_number_EDX");
+            IJnz(Label("arithmetic_expected_a_number_EDX"));
             IMul(Reg(EAX), Reg(EDX));
-            IJo("overflow");
+            IJo(Label("overflow"));
             ISar(Reg(EAX),Const(1));
-            IJo("overflow")
+            IJo(Label("overflow"))
      ]
    | And -> 
       instr @
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJz("logic_expected_a_boolean");
+            IJz(Label("logic_expected_a_boolean"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJz("logic_expected_a_boolean_edx");
+            IJz(Label("logic_expected_a_boolean_edx"));
             IAnd(Reg(EAX), Reg(EDX))
      ]
    | Or -> 
@@ -784,10 +807,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJz("logic_expected_a_boolean");
+            IJz(Label("logic_expected_a_boolean"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJz("logic_expected_a_boolean_edx");
+            IJz(Label("logic_expected_a_boolean_edx"));
             IOr(Reg(EAX), Reg(EDX))
      ]
    | Greater -> 
@@ -797,13 +820,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
+            IJnz(Label("comparison_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
+            IJnz(Label("comparison_expected_a_number_EDX"));
             ICmp(Reg(EAX), Reg(EDX));
             IMov(Reg(EAX), const_true);
-            IJg(greater_label);
+            IJg(Label(greater_label));
             IMov(Reg(EAX), const_false);
             ILabel(greater_label)
 
@@ -815,13 +838,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size * (si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
+            IJnz(Label("comparison_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size * (si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
+            IJnz(Label("comparison_expected_a_number_EDX"));
             ICmp(Reg(EAX), Reg(EDX));
             IMov(Reg(EAX), const_true);
-            IJge(greatereq_label);
+            IJge(Label(greatereq_label));
             IMov(Reg(EAX), const_false);
             ILabel(greatereq_label)
 
@@ -833,13 +856,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
+            IJnz(Label("comparison_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
+            IJnz(Label("comparison_expected_a_number_EDX"));
             ICmp(Reg(EAX), Reg(EDX));
             IMov(Reg(EAX), const_true);
-            IJl(less_label);
+            IJl(Label(less_label));
             IMov(Reg(EAX), const_false);
             ILabel(less_label)
 
@@ -851,13 +874,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     [
             IMov(Reg(EAX), RegOffset(~-word_size *(si), EBP));
             ITest(Reg(EAX), tag_as_bool);
-            IJnz("comparison_expected_a_number");
+            IJnz(Label("comparison_expected_a_number"));
             IMov(Reg(EDX), RegOffset(~-word_size *(si + 1), EBP));
             ITest(Reg(EDX), tag_as_bool);
-            IJnz("comparison_expected_a_number_EDX");
+            IJnz(Label("comparison_expected_a_number_EDX"));
             ICmp(Reg(EAX), Reg(EDX));
             IMov(Reg(EAX), const_true);
-            IJle(lesseq_label);
+            IJle(Label(lesseq_label));
             IMov(Reg(EAX), const_false);
             ILabel(lesseq_label)
 
@@ -870,11 +893,11 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
             IMov(Reg(EDX),  RegOffset(~-word_size * (si + 1), EBP));
             IPush(Reg(EAX));
             IPush(Reg(EDX));
-            ICall("equal");
+            ICall(Label("equal"));
             IAdd(Reg(ESP), Const(8))
      ]
    end
-    | CApp(name, exprs, _) ->
+    | CApp(imm_name, imm_args, _) ->
    
        (*if is_tail=true && num_args=(List.length exprs) then
          (
@@ -891,7 +914,24 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          @ [ ICall(name)]
          @ [ IAdd(Reg(ESP), HexConst(word_size*(List.length exprs))) ] (* Reset stack pointer after call *)
          )*)
-      raise (NotYetImplemented("Finish this case"))
+
+        let fname = compile_imm imm_name env in
+        let args = List.map  (fun e -> IPush(compile_imm e env))  imm_args in
+           [
+                IMov(Reg(ECX),fname);
+                IAnd(Reg(ECX), HexConst(0x7));
+                ICmp(Reg(ECX), HexConst(0x5));
+                IJne(Label("error_not_fun"));
+
+                IMov(Reg(EAX), fname);
+                ISub(Reg(EAX), Const(5));
+                ICmp(Reg(EAX), Const(List.length imm_args));
+                IJne(Label("error_wrong_arity"))
+         ] @ args @ [
+                IPush(Reg(EAX));
+                ICall(RegOffset(4, EAX));
+                IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
+         ]
 
 
   | CTuple(lst,_)-> 
@@ -915,18 +955,18 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
    [
 
 
-     IMov(Reg(EAX),  compile_imm pair env);
-     IMov(Reg(ECX), Reg(EAX));
-     IAnd(Reg(ECX), HexConst(0x7));
-     ICmp(Reg(ECX), HexConst(0x1));
-     IJne("error_not_tuple");
+      IMov(Reg(EAX),  compile_imm pair env);
+      IMov(Reg(ECX), Reg(EAX));
+      IAnd(Reg(ECX), HexConst(0x7));
+      ICmp(Reg(ECX), HexConst(0x1));
+      IJne(Label("error_not_tuple"));
       ISub(Reg(EAX),HexConst(0x1));
       IMov(Reg(EDX),Const(index));
       IMov(Reg(ECX),HexConst(0x0));
       ICmp(Reg(EDX),Reg(ECX));
-      IJl("index_too_low");
+      IJl(Label("index_too_low"));
       ICmp(Reg(EDX),RegOffset(word_size * 0, EAX));
-      IJge("index_too_high");
+      IJge(Label("index_too_high"));
       IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
    ]
   | CSetItem(pair,index,newitem,loc)-> 
@@ -936,11 +976,64 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
      IMov(Reg(ECX), Reg(EAX));
      IAnd(Reg(ECX), HexConst(0x7));
      ICmp(Reg(ECX),HexConst(0x1));
-     IJne("error_not_tuple");
+     IJne(Label("error_not_tuple"));
      ISub(Reg(EAX),HexConst(0x1));
      IMov(RegOffset( word_size * (index + 1), EAX),Reg(EDX));
      IAdd(Reg(EAX),HexConst(0x1));
     ]
+
+  | CLambda(args,body,tag) ->  
+         let inner_lambda_label = sprintf "inner_lambda_%s" (string_of_int tag) in
+         let inner_lambda_end_label = sprintf "inner_lambda_end_%s" (string_of_int tag) in
+         let free = List.sort compare (freeVars_aexpr args body) in
+         let moveClosureVarToStack (idx: int) : instruction list = 
+              [IMov(RegOffset(~-4 * idx, EBP), RegOffset(12 + (4*idx), ECX))] in 
+         let moveClosureVarToStacklist = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) free) in 
+         let inner_lambda_prologue =  [
+             ILabel(inner_lambda_label);
+             IPush(Reg(EBP));
+             IMov(Reg(EBP),Reg(ESP));
+             IMov(Reg(ECX), RegOffset(8, EBP));
+             ISub(Reg(ECX), Const(0x5));
+
+
+         ] @  moveClosureVarToStacklist in 
+         let stackLocFreeVar = List.flatten (List.mapi (fun i a ->  [RegOffset(~-4 * i, EBP)]) free)  in 
+         let moveClosureVarToStacklistEnv = List.flatten (List.map2 (fun  str addr -> [(str, addr)] ) free stackLocFreeVar) in 
+         let newenv = env@moveClosureVarToStacklistEnv in 
+         let compile_body = compile_aexpr body (List.length free) newenv num_args is_tail in
+         let inner_lambda_epilogue =  [ 
+                IMov(Reg(ESP), Reg(EBP));
+                IPop(Reg(EBP));
+                IRet;
+          ] in
+
+         let lambda_section = inner_lambda_prologue @ compile_body @ inner_lambda_epilogue in 
+
+         let freeValAddr = List.flatten (List.map (fun x -> [find env x]) free) in
+
+         let move_free = List.flatten ( List.mapi (fun  i addr ->  [IMov(RegOffset(12 + 4*i, ESI), addr)] )  freeValAddr) in 
+
+         let inner_lambda_end = 
+            [
+              ILabel(inner_lambda_end_label);
+              IMov(RegOffset(0, ESI), Const(List.length args));
+              IMov(RegOffset(4, ESI), LabelContents(inner_lambda_label));
+              IMov(RegOffset(8, ESI), Const(List.length free))
+            ]
+            @ move_free @ 
+            [
+              IMov(Reg(EAX), Reg(ESI)); 
+              IAdd(Reg(ESI), HexConst(0x5));
+              IAdd(Reg(ESI), Const(List.length move_free + 12));
+              IAdd(Reg(ESI), Const(7));
+              IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
+            ]
+
+          in
+          [IJmp(Label(inner_lambda_label))] @ lambda_section  @ inner_lambda_end
+
+
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
  and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
@@ -1022,56 +1115,56 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ILabel("logic_expected_a_boolean");
     IPush(Reg(EAX));
     IPush(Const(1));
-    ICall("error");
+    ICall(Label("error"));
     ILabel("logic_expected_a_boolean_edx");
     IPush(Reg(EDX));
     IPush(Const(1));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("error_not_boolean_if");
     IPush(Reg(EAX));
     IPush(Const(2));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("arithmetic_expected_a_number");
     IPush(Reg(EAX));
     IPush(Const(3));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("arithmetic_expected_a_number_EDX");
     IPush(Reg(EDX));
     IPush(Const(3));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("comparison_expected_a_number");
     IPush(Reg(EAX));
     IPush(Const(4));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("comparison_expected_a_number_EDX");
     IPush(Reg(EDX));
     IPush(Const(4));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("overflow");
     IPush(Reg(EAX));
     IPush(Const(5));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("error_not_tuple");
     IPush(Reg(EAX));
     IPush(Const(6));
-    ICall("error");
+    ICall(Label("error"));
 
     ILabel("index_too_high");
     IPush(Reg(EDX));
     IPush(Const(7));
-    ICall("error"); 
+    ICall(Label("error"));
 
     ILabel("index_too_low");
     IPush(Reg(EAX));
     IPush(Const(8));
-    ICall("error") 
+    ICall(Label("error"));
     ] in
   let fun_def =  List.flatten (List.map compile_decl decls) in
   let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
