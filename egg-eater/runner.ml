@@ -160,6 +160,12 @@ let test_run args std_input program_str outfile expected test_ctxt =
   let result = run program full_outfile run_no_vg args std_input in
   assert_equal (Ok(expected ^ "\n")) result ~printer:result_printer
 
+let test_run_error args std_input program_str outfile expected test_ctxt =
+    let full_outfile = "output/" ^ outfile in
+    let program = parse_string outfile program_str in
+    let result = run program full_outfile run_no_vg args std_input in
+    assert_equal (Error(expected)) result ~printer:result_printer;;
+
 let test_run_anf args std_input program_anf outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let result = run_anf program_anf full_outfile run_no_vg args std_input in
@@ -182,7 +188,7 @@ let test_err args std_input program_str outfile errmsg test_ctxt =
     ~cmp: (fun check result ->
       match check, result with
       | Error(expect_msg), Error(actual_message) ->
-         String.exists actual_message expect_msg
+         String.equal actual_message expect_msg
       | _ -> false
     )
 

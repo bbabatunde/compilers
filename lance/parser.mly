@@ -166,6 +166,10 @@ bind :
   | LPARENNOSPACE binds RPAREN { BTuple($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | LPARENSPACE binds RPAREN { BTuple($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
 
+namebinds :
+  | namebind { [$1] }
+  | namebind COMMA namebinds { $1:: $3 }
+
 namebind :
   | ID %prec SEMI { make_namebind($1, TyBlank(Parsing.symbol_start_pos (), Parsing.symbol_end_pos ()), (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | ID COLON typ { make_namebind($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }

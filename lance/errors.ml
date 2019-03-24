@@ -14,6 +14,7 @@ exception Overflow of int * sourcespan (* value, where used *)
 exception Arity of int * int * sourcespan (* intended arity, actual arity, where called *)
 exception NotYetImplemented of string (* TODO: Message to show *)
 exception Unsupported of string * sourcespan
+exception UnsupportedTagged of string * int
 exception InternalCompilerError of string (* Major failure: message to show *)
 exception OccursCheck of string * sourcespan typ * sourcespan
 exception LetRecNonFunction of sourcespan bind * sourcespan (* name binding, where defined *)
@@ -58,6 +59,8 @@ let print_errors (exns : exn list) : string list =
          "Not yet implemented: " ^ msg
       | Unsupported(msg, loc) ->
          sprintf "Unsupported: %s at <%s>" msg (string_of_sourcespan loc)
+      | UnsupportedTagged(msg, tag) ->
+         sprintf "Unsupported: %s, tag: %d" msg tag
       | InternalCompilerError msg ->
          "Internal Compiler Error: " ^ msg
       | OccursCheck(tyvar, t, loc) ->

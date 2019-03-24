@@ -7,7 +7,7 @@ open Phases
 module StringMap = Map.Make(String);;
 module StringSet = Set.Make(String);;
 
-let show_debug_print = ref true
+let show_debug_print = ref false
 let debug_printf fmt =
   if !show_debug_print
   then printf fmt
@@ -159,16 +159,18 @@ let bind (tyvarname : string) (t : 'a typ) : 'a typ subst =
 let ty_err t1 t2 loc reasons = TypeMismatch(loc, t1, t2, reasons);;
 
 let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason list) : 'a typ subst =
-    match t1 with
+    debug_printf "\nUnify for: %s %s \n" (string_of_typ t1) (string_of_typ t2);
+    let reasons = [] in
+    (match t1 with
     | TyVar(varname, pos) -> [(varname, t2)]
     | TyCon(conname, pos) ->
         (match t2 with
-        | TyCon(ty2, pos) -> if conname = ty2 then [] else (debug_printf "teehee"; raise (TypeMismatch(pos, t1, t2, reasons)))
+        | TyCon(ty2, pos1) -> if conname = ty2 then [] else raise (TypeMismatch(pos1, t1, t2, reasons))
         | TyVar(varname, pos) -> [(varname, t1)]
         | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
     | TyArr(l1, ty1, pos) ->
         (match t2 with
-        | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (TypeMismatch(pos, t1, t2, reasons)) else
+        | TyArr(l2, ty2, pos) -> if ((List.length l1) != (List.length l2)) then raise (TypeMismatch(pos, t1, t2, reasons) ) else
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2)) @
             (unify ty1 ty2 pos reasons)
         | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
@@ -183,7 +185,7 @@ let rec unify (t1 : 'a typ) (t2 : 'a typ) (loc : sourcespan) (reasons : reason l
         | TyTup(l2, pos) ->
             (List.flatten (List.map2 (fun ele1 ele2 -> unify ele1 ele2 loc reasons) l1 l2))
         | _ -> raise (TypeMismatch(pos, t1, t2, reasons)))
-    | TyBlank(pos) -> raise (TypeMismatch(pos, t1, t2, reasons))
+    | TyBlank(pos) -> raise (TypeMismatch(pos, t1, t2, reasons)))
 
 let gensym =
   let count = ref 0 in
@@ -233,8 +235,8 @@ and rep_lookup name lst =
 let instantiate (s: 'a scheme) : 'a typ =
     match s with
     | SForall(inp_lst, op_typ, pos) ->
-            let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", dummy_span))])) [] inp_lst in
-            let op_typ = replace_in_type inp_lst_typ (unblank op_typ) in
+            let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", pos))])) [] inp_lst in
+            let op_typ = replace_in_type inp_lst_typ op_typ in
             debug_printf "\ninit to: %s\n" (string_of_typ op_typ);
             op_typ
 ;;
@@ -242,9 +244,9 @@ let instantiate (s: 'a scheme) : 'a typ =
 let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
     (* collect all the free type variables in the type of the function body *)
     (* subtract away any type variables that appear free in the type environment *)
-    let (arg_typ_lst, fun_bod) = 
+    let (arg_typ_lst, fun_bod, loc) = 
         (match t with
-        | TyArr(arg_typ_lst, bod_typ, loc) -> (arg_typ_lst, bod_typ)
+        | TyArr(arg_typ_lst, bod_typ, loc) -> (arg_typ_lst, bod_typ, loc)
         | _ -> raise (InternalCompilerError "Fn type not type Arr o.O")) in
     let _ = List.iter
         (fun t -> debug_printf "arg_typ: %s\n" (string_of_typ t)) arg_typ_lst in
@@ -256,7 +258,7 @@ let generalize (e : 'a typ envt) (t : 'a typ) : 'a scheme =
     print_set ftv_t;
     print_set ftv_e;
     let leftover_free_vars = StringSet.elements(StringSet.union arg_typ_lst (StringSet.diff (ftv_type t) (ftv_env e))) in
-    SForall(leftover_free_vars, t, dummy_span)
+    SForall(leftover_free_vars, t, loc)
 ;;
 
 let opname op =
