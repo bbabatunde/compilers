@@ -597,10 +597,9 @@ let well_formed_tests = [
 
  let curr_tests_egg_eater = [
 
-    t "lambda1" "let x = 10 in
-                    let y = 12 in
-                          let f = (lambda(z): x + y + z) in
-                              f(5)" "" "27";
+    t "lambda1" "def foo(w, x, y, z):
+                  (lambda(a): a + x + z)\n
+                foo(1,2,3,4)(5)" "" "27";
  ]
 
 let suite =

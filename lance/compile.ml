@@ -704,8 +704,10 @@ and freeVars_cexpr env e : string list =  match e with
   | CLambda(args, body, _) -> freeVars_aexpr (args@env) body
 and freeVars_imm env e : string list = match e with 
   | ImmId(str,_) -> if contains str env  then [] else [str]
-  | _-> []      
+  | _-> []    
 ;;
+
+
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
   let stack_offset = 4*((count_vars body)+1) in
@@ -998,8 +1000,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
          )*)
 
         let fname = compile_imm imm_name env in
-        let args = List.map  (fun e -> IPush(compile_imm e env))  imm_args in
-           [
+        let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env))))  imm_args in
+         [ILineComment("calling functions")]@
+         [
                 IMov(Reg(ECX),fname);
                 IAnd(Reg(ECX), HexConst(0x7));
                 ICmp(Reg(ECX), HexConst(0x5));
@@ -1010,7 +1013,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
                 ICmp(Reg(EAX), Const(List.length imm_args));
                 IJne(Label("error_wrong_arity"))
          ] @ args @ [
-                IPush(Reg(EAX));
+                IPush(Sized(DWORD_PTR,Reg(EAX)));
                 ICall(RegOffset(4, EAX));
                 IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
          ]
@@ -1067,53 +1070,70 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
   | CLambda(args,body,tag) ->  
          let inner_lambda_label = sprintf "inner_lambda_%s" (string_of_int tag) in
          let inner_lambda_end_label = sprintf "inner_lambda_end_%s" (string_of_int tag) in
-         let free = freeVars_aexpr args body in
+         let free = freeVars_aexpr args body  in
+         
          let moveClosureVarToStack (idx: int) : instruction list = 
-              [IMov(RegOffset(~-4 * idx, EBP), RegOffset(12 + (4*idx), ECX))] in 
+              [
+               IMov(Reg(EAX), RegOffset(12 + (4*idx), ECX));
+               IMov(RegOffset(~-4 * (idx + 1), EBP), Reg(EAX))
+               ] in 
+
+
          let moveClosureVarToStacklist = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) free) in 
          let inner_lambda_prologue =  [
              ILabel(inner_lambda_label);
-             IPush(Reg(EBP));
+             IPush(Sized(DWORD_PTR,Reg(EBP)));
              IMov(Reg(EBP),Reg(ESP));
              IMov(Reg(ECX), RegOffset(8, EBP));
              ISub(Reg(ECX), Const(0x5));
 
 
          ] @  moveClosureVarToStacklist in 
-         let stackLocFreeVar = List.flatten (List.mapi (fun i a ->  [RegOffset(~-4 * i, EBP)]) free)  in 
-         let moveClosureVarToStacklistEnv = List.flatten (List.map2 (fun  str addr -> [(str, addr)] ) free stackLocFreeVar) in 
+         let stackLocFreeVar = List.flatten (List.mapi (fun i a ->  [RegOffset(~-4 * i, EBP)]) (args@free))  in 
+
+         let moveClosureVarToStacklistEnv = List.flatten (List.map2 (fun  str addr -> [(str, addr)] ) (args@free) stackLocFreeVar) in 
          let newenv = env@moveClosureVarToStacklistEnv in 
+
          let compile_body = compile_aexpr body (List.length free) newenv num_args is_tail in
+                                              List.map (fun e -> debug_printf "%s" e) free;
+
          let inner_lambda_epilogue =  [ 
                 IMov(Reg(ESP), Reg(EBP));
-                IPop(Reg(EBP));
+                IPop(Sized(DWORD_PTR, Reg(EBP)));
                 IRet;
           ] in
 
-         let lambda_section = inner_lambda_prologue @ compile_body @ inner_lambda_epilogue in 
-
+         let lambda_section = inner_lambda_prologue @
+                              [ILineComment("function_body_start")]@
+                               compile_body @
+                                [ILineComment("function_body_end")]@
+                                inner_lambda_epilogue in 
          let freeValAddr = List.flatten (List.map (fun x -> [find env x]) free) in
 
-         let move_free = List.flatten ( List.mapi (fun  i addr ->  [IMov(RegOffset(12 + 4*i, ESI), addr)] )  freeValAddr) in 
+         let move_free = List.flatten ( List.mapi (fun  i addr -> 
+                                               [
+                                                IMov(Reg(EAX), addr);
+                                                 IMov(RegOffset(12 + 4*i, ESI), Reg(EAX))
+                                               ] )  freeValAddr) in 
 
          let inner_lambda_end = 
             [
               ILabel(inner_lambda_end_label);
-              IMov(RegOffset(0, ESI), Const(List.length args));
-              IMov(RegOffset(4, ESI), LabelContents(inner_lambda_label));
-              IMov(RegOffset(8, ESI), Const(List.length free))
+              IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length args)));
+              IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Label(inner_lambda_label)));
+              IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length free)))
             ]
             @ move_free @ 
             [
               IMov(Reg(EAX), Reg(ESI)); 
-              IAdd(Reg(ESI), HexConst(0x5));
-              IAdd(Reg(ESI), Const(List.length move_free + 12));
+              IAdd(Reg(EAX), HexConst(0x5));
+              (*IAdd(Reg(ESI), Const(List.length move_free + 12));*)
               IAdd(Reg(ESI), Const(7));
               IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
             ]
 
           in
-          [IJmp(Label(inner_lambda_label))] @ lambda_section  @ inner_lambda_end
+          [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ inner_lambda_end
 
 
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
