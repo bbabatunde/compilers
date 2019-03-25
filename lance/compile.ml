@@ -331,7 +331,10 @@ let anf (p : tag program) : unit aprogram =
        let (cond_imm, cond_setup) = helpI cond in
        (ImmId(tmp, ()), cond_setup @ [BLet(tmp, CIf(cond_imm, helpA _then, helpA _else, ()))])
     | EApp(funname, args, tag) ->
-       raise (NotYetImplemented("Revise this case"))
+       let (name_imm, name_setup) = helpI funname in
+       let tmp = sprintf "app_%d" tag in
+       let (new_args, new_setup) = List.split (List.map helpI args) in
+       (ImmId(tmp, ()), name_setup @ (List.concat new_setup) @ [BLet(tmp, CApp(name_imm, new_args, ()))])
     | ELet([], body, _) -> helpI body
     | ELet((BBlank(_, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpI exp in (* MUST BE helpI, to avoid any missing final steps *)
