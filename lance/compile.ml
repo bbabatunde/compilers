@@ -667,7 +667,10 @@ let desugarPre (p : sourcespan program) : sourcespan program =
 ;;
 
 
-
+let rec contains x ids =
+  match ids with
+    | [] -> false
+    | elt::xs -> (x = elt) || (contains x xs)
 
 let rec freeVars_aexpr env e : string list =
   match e with
@@ -686,8 +689,9 @@ and freeVars_cexpr env e : string list =  match e with
   | CSetItem(tuple, index, newval, _) ->  (freeVars_imm env tuple) @ (freeVars_imm env newval)
   | CLambda(args, body, _) -> freeVars_aexpr (args@env) body
 and freeVars_imm env e : string list = match e with 
-  | ImmId(str,_) -> if List.mem str env  then [] else [str]
+  | ImmId(str,_) -> if contains str env  then [] else [str]
   | _-> []      
+;;
 
 let rec compile_fun (fun_name : string) body args env is_entry_point : instruction list =
   let stack_offset = 4*((count_vars body)+1) in
@@ -1251,7 +1255,7 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   |> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
-  |> (add_phase renamed rename_and_tag)
+  (*|> (add_phase renamed rename_and_tag)*)
   |> (add_phase anfed (fun p -> atag (anf p)))
   |> (add_phase result compile_prog)
 ;;
