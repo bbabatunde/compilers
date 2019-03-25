@@ -1009,7 +1009,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
                 IJne(Label("error_not_closure"));
 
                 IMov(Reg(EAX), fname);
-                ISub(Reg(EAX), HexConst(0x5));
+                (*ISub(Reg(EAX), HexConst(0x5));*)
                 ICmp(Reg(EAX), Const(List.length imm_args));
                 IJne(Label("error_wrong_arity"))
          ] @ args @ [

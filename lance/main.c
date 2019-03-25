@@ -3,7 +3,7 @@
 #include <string.h>
 
 extern int our_code_starts_here(int *HEAP) asm("our_code_starts_here");
-extern void error(int err_code) asm("error");
+extern void error(int errCode, int val)  asm("error");
 extern int print(int val) asm("print");
 extern int printRaw(int val) asm("print_raw");
 extern int printStack(int val, int* esp, int* ebp, int args) asm("print_stack");
@@ -26,6 +26,8 @@ const int ERR_GET_LOW_INDEX  = 7;
 const int ERR_GET_HIGH_INDEX = 8;
 const int ERR_INDEX_NOT_NUM  = 9;
 
+const int error_not_closure = 10;
+const int error_wrong_arity  = 11;
 
 int printRaw(int val) {
   printf("%#010x ==> %d\n", val, val);
@@ -104,8 +106,8 @@ int printStack(int val, int* esp, int* ebp, int args) {
   return val;
 }
 
-void error(int i) {
-  switch (i) {
+void error(int errCode, int val) {
+  switch (errCode) {
   case ERR_COMP_NOT_NUM:
     fprintf(stderr, "Error: comparison expected a number\n");
     break;
@@ -133,10 +135,18 @@ void error(int i) {
   case ERR_INDEX_NOT_NUM:
     fprintf(stderr, "Error: get expected numer for index\n");
     break;
+
+  case error_not_closure:
+    fprintf(stderr, "Error: error not closure\n");
+   break;
+  case error_wrong_arity:
+      fprintf(stderr, "Error: wrong aritty %d\n", val);
+   break;
+
   default:
-    fprintf(stderr, "Error: Unknown error code: %d\n", i);
+    fprintf(stderr, "Error: Unknown error code: %d\n", val);
   }
-  exit(i);
+  exit(errCode);
 }
 
 int main(int argc, char** argv) {
