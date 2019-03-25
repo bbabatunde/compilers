@@ -11,6 +11,14 @@ open Errors
 type 'a envt = (string * 'a) list
 
 let skip_typechecking = ref false
+let show_debug_print = ref true
+
+let debug_printf fmt =
+    if !show_debug_print
+    then printf fmt
+    else ifprintf stdout fmt
+;;
+
 
 let rec is_anf (e : 'a expr) : bool =
   match e with
@@ -369,7 +377,9 @@ let anf (p : tag program) : unit aprogram =
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)
   in
-  helpP p
+  let anfP = helpP p in
+  debug_printf "%s" (string_of_program p);
+  anfP
 ;;
 
 
@@ -553,7 +563,10 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc) 
         | ENumber _ | EBool _ | ENil _ | EId _ -> e ) in
     match p with
-    | Program(tydecls, [], body, t) -> Program(tydecls, [], helpE body, t)
+    | Program(tydecls, [], body, t) -> 
+            let new_p = Program(tydecls, [], helpE body, t) in
+            debug_printf "%s" (string_of_program new_p);
+            new_p
     | _ -> raise (InternalCompilerError("Program function definitons not desugared into body :/"))
 ;;
 
@@ -663,6 +676,7 @@ let desugarPre (p : sourcespan program) : sourcespan program =
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
           let new_body = (makeSeq new_decls (helpE body) t) in
           let new_p = Program(tydecls, [], new_body, t) in
+          debug_printf "%s" (string_of_program new_p);
           new_p
 ;;
 
@@ -718,7 +732,8 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
     @ postlude_asm;
 
 
-and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = match e with
+and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = 
+  match e with 
   | ALet(name, bind, body, _)  -> 
   let prelude = (compile_cexpr bind (si + 1) env num_args false) in
   let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
