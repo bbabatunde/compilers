@@ -1,0 +1,10 @@
+2019-03-25T01:12:34+00:00 baba#01 I: Start test suite:0:lambda1.
+2019-03-25T01:12:34+00:00 baba#01 E: Test suite:0:lambda1 has failed.
+2019-03-25T01:12:34+00:00 baba#01 E: expected: 27
+2019-03-25T01:12:34+00:00 baba#01 E: 
+2019-03-25T01:12:34+00:00 baba#01 E: but got: Error: Failure("Unexpected compile error: Errors.InternalCompilerError(\"Name z_22 not found\")")
+2019-03-25T01:12:34+00:00 baba#01 E:  in test suite:0:lambda1.
+2019-03-25T01:12:34+00:00 baba#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-25T01:12:34+00:00 baba#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-25T01:12:34+00:00 baba#01 E: 
+2019-03-25T01:12:34+00:00 baba#01 I: End test suite:0:lambda1.
