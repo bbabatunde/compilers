@@ -310,9 +310,16 @@ let anf (p : tag program) : unit aprogram =
     | ELambda(binds, body, _) ->
         (CLambda(bindsToStrings binds, helpA body, ()), [])
     | ELetRec(bindings, body, tag) ->
-        raise (InternalCompilerError (sprintf "Desugaring must take care of ELetRecs!! Tag:%d" tag))
+        (* Construct BLetRec bindings *)
+        let bindingnames = bindingsToStrings bindings in
+        let (bindingnc_ans, bindingnc_setups) = List.split (List.map (fun e -> let (_, e, _) = e in helpC e) bindings) in
+        (* Get body setup *)
+        let (body_ans, body_setup) = helpC body in
+        let bncs = List.fold_left2 (fun a e1 e2 -> (e1, e2) :: a) [] bindingnames bindingnc_ans in
+        (* Add contrusted setups, body*)
+        (body_ans, (List.concat bindingnc_setups) @ [BLetRec(bncs)] @ body_setup)
+    | ELetRec([], body, _) -> helpC body
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
-
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
     match e with
     | ENumber(n, _) -> (ImmNum(n, ()), [])
@@ -619,7 +626,7 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
     | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-    | ELetRec(bindl, e, loc) -> ELambda(bindingsToBinds bindl, helpE e, loc)
+    | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> 
         let tmp_name = gensym "desugar_lambda" in
         let new_bindl = replaceTups tmp_name bindl 0 in
