@@ -309,8 +309,8 @@ let anf (p : tag program) : unit aprogram =
         (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | ELambda(binds, body, _) ->
         (CLambda(bindsToStrings binds, helpA body, ()), [])
-    | ELetRec(bindings, body, _) ->
-        (CLambda(bindingsToStrings bindings, helpA body, ()), [])
+    | ELetRec(bindings, body, tag) ->
+        raise (InternalCompilerError (sprintf "Desugaring must take care of ELetRecs!! Tag:%d" tag))
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
@@ -390,7 +390,8 @@ let anf (p : tag program) : unit aprogram =
       ans_setup (ACExpr ans)
   in
   let anfP = helpP p in
-  debug_printf "%s" (string_of_program p);
+  debug_printf "BEFORE ANF: %s" (string_of_program p);
+  debug_printf "AFTER ANF: %s" (string_of_aprogram anfP);
   anfP
 ;;
 
@@ -553,6 +554,14 @@ let rec bindsToBindings bl =
         | BName(n, _, l) -> (first, EId(n, l), l)::(bindsToBindings rest)
         | _ -> raise (InternalCompilerError("Binds to bindings conversion is only for Bname.")))
     | [] -> []
+;;
+
+let rec bindingsToBinds bl =
+    match bl with
+    | (b, _, _)::rest ->
+         b :: (bindingsToBinds rest)
+    | [] -> []
+;;
 
 let desugarPost (p : sourcespan program) : sourcespan program =
     let rec helpE e =
@@ -571,15 +580,21 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
         | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-        | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
+        | ELetRec(bindl, e, loc) -> raise (InternalCompilerError("Desugar pre handles let recs?"))
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc) 
         | ENumber _ | EBool _ | ENil _ | EId _ -> e ) in
     match p with
     | Program(tydecls, [], body, t) -> 
             let new_p = Program(tydecls, [], helpE body, t) in
-            debug_printf "%s" (string_of_program new_p);
+            debug_printf "BEFORE DESUGAR_POST: %s\n" (string_of_program p);
+            debug_printf "AFTER DESUGAR_POST: %s\n" (string_of_program new_p);
             new_p
     | _ -> raise (InternalCompilerError("Program function definitons not desugared into body :/"))
+;;
+
+let rec makeBlanks rem pos =
+    if rem = 0 then []
+    else [TyBlank(pos)] @ (makeBlanks (rem - 1) pos)
 ;;
 
 let desugarPre (p : sourcespan program) : sourcespan program =
@@ -604,7 +619,7 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
     | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-    | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
+    | ELetRec(bindl, e, loc) -> ELambda(bindingsToBinds bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> 
         let tmp_name = gensym "desugar_lambda" in
         let new_bindl = replaceTups tmp_name bindl 0 in
@@ -667,28 +682,24 @@ let desugarPre (p : sourcespan program) : sourcespan program =
         let new_body =
             if (List.length new_binds > 0) then helpE(ELet(new_binds, (helpE body), pos))
                 else helpE body in
-        let final_body = ELetRec(bindsToBindings new_args, new_body, pos) in
-        let this_let_binding = [((BName(name, TyArr([], TyBlank(pos), pos), pos)), final_body, pos)] in
-        ELet(this_let_binding, EId(name, pos), pos)
-        (*
-        let (new_args, new_binds) = helpArgs args in
-        let new_body = ELet(new_binds, (helpE body), pos) in
-        DFun(name, new_args, scheme, helpE new_body, pos)
-        Makes a wasted let binding we might want to remove in the future. *)
-  and makeSeq l e t =
+        let final_body = ELambda(new_args, new_body, pos) in
+        let this_let_binding = [((BName(name, TyArr((makeBlanks (List.length args) pos), TyBlank(pos), pos), pos)), final_body, pos)] in
+        this_let_binding
+  and makeLetRec l e t =
       match l with
       | first::rest ->
-            ESeq(first, (makeSeq rest e t), t)
+            ELet(first, (makeLetRec rest e t), t)
       | last::[] ->
-            ESeq(last, e, t)
+            ELet(last, e, t)
       | [] -> e
   in
   match p with
   | Program(tydecls, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
-          let new_body = (makeSeq new_decls (helpE body) t) in
+          let new_body = (makeLetRec new_decls (helpE body) t) in
           let new_p = Program(tydecls, [], new_body, t) in
-          debug_printf "%s" (string_of_program new_p);
+          debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
+          debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
           new_p
 ;;
 
