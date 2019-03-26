@@ -577,7 +577,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
             let e1_desugar = helpE e1 in
             let seq_blank = (BBlank(TyBlank(loc), loc), e1_desugar, loc) in
             ELet([seq_blank], helpE e2, loc)
-        | ELet(bindings, e, loc) -> ELet(bindings, helpE e, loc)
+        | ELet(bindings, e, loc) -> ELet(helpB bindings, helpE e, loc)
         | ETuple(el, loc) -> ETuple(List.map helpE el, loc)
         | ETuple(expr_lst, loc) -> ETuple(List.map helpE expr_lst, loc)
         | EGetItem(eg, i1, i2, loc) -> EGetItem(helpE eg, i1, i2, loc)
@@ -587,9 +587,14 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
         | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-        | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
+        | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc) 
-        | ENumber _ | EBool _ | ENil _ | EId _ -> e ) in
+        | ENumber _ | EBool _ | ENil _ | EId _ -> e )
+    and helpB bindings =
+        match bindings with
+        | [] -> []
+        | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
+    in
     match p with
     | Program(tydecls, [], body, t) -> 
             let new_p = Program(tydecls, [], helpE body, t) in
@@ -626,14 +631,18 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
     | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-    | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
+    | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> 
         let tmp_name = gensym "desugar_lambda" in
         let new_bindl = replaceTups tmp_name bindl 0 in
         let (new_binds, new_bindings) = helpArgs bindl in
         let new_e = if (List.length new_bindings > 0) then ELet(new_bindings, helpE e, loc) else helpE e in
         ELambda(new_bindl, new_e, loc)
-    | ENumber _ | EBool _ | ENil _ | EId _ -> e
+    | ENumber _ | EBool _ | ENil _ | EId _ -> e 
+  and helpB bindings =
+    match bindings with
+    | [] -> []
+    | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
   and expandHelper binds tmp_var ctr len loc =
     match binds with
     | first::rest ->
