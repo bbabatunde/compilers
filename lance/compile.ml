@@ -334,16 +334,14 @@ let anf (p : tag program) : unit aprogram =
        (ImmId(tmp, ()), (List.concat tup_setup) @ [BLet(tmp, CTuple(tup_args, ()))])
        (* Hint: use BLet to bind the result *)
     | EGetItem(e, idx, len, a) ->
-       (*let tmp = sprintf "eget_%d" a in
+        let tmp = sprintf "eget_%d" a in
         let (e_imm, e_setup) = helpI e in
-        (ImmId(tmp, ()), e_setup @ [(tmp, CGetItem(e_imm, idx, ()))])*)
-         raise (NotYetImplemented("Finish this case"))
+        (ImmId(tmp, ()), e_setup @ [BLet(tmp, CGetItem(e_imm, idx, ()))])
     | ESetItem(e, idx, len, newval, a) ->
-        (*let tmp = sprintf "eset_%d" a in
+        let tmp = sprintf "eset_%d" a in
         let (e_imm, e_setup) = helpI e in
         let (new_imm, new_setup) = helpI newval in
-        (ImmId(tmp, ()), e_setup @ new_setup @ [(tmp, CSetItem(e_imm, idx, new_imm, ()))])*)
-        raise (NotYetImplemented("Finish this case"))
+        (ImmId(tmp, ()), e_setup @ new_setup @ [BLet(tmp, CSetItem(e_imm, idx, new_imm, ()))])
     | EPrim1(op, arg, tag) ->
        let tmp = sprintf "unary_%d" tag in
        let (arg_imm, arg_setup) = helpI arg in
