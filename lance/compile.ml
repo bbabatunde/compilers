@@ -49,6 +49,18 @@ let err_LOGIC_NOT_BOOL = 2
 let err_IF_NOT_BOOL    = 3
 let err_OVERFLOW       = 4
 
+let err_COMP_NOT_NUM   = 1
+let err_ARITH_NOT_NUM  = 2
+let err_LOGIC_NOT_BOOL = 3
+let err_IF_NOT_BOOL    = 4
+let err_OVERFLOW       = 5
+let err_GET_NOT_TUPLE  = 6
+let err_GET_LOW_INDEX  = 7
+let err_GET_HIGH_INDEX = 8
+let err_INDEX_NOT_NUM  = 9
+let error_not_closure = 10
+let error_wrong_arity  = 11
+
  let fun_prim = ["input";"print"]
 
 let rec strip_binds arg =
@@ -1010,7 +1022,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
                 IMov(Reg(EAX), fname);
                 ISub(Reg(EAX), HexConst(0x5));
-                ICmp(Reg(EAX), Const(List.length imm_args));
+                ICmp(Sized(DWORD_PTR, RegOffset(0, EAX)), Const(List.length imm_args));
                 IJne(Label("error_wrong_arity"))
          ] @ args @ [
                 IPush(Sized(DWORD_PTR,Reg(EAX)));
@@ -1068,72 +1080,85 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
     ]
 
   | CLambda(args,body,tag) ->  
-         let inner_lambda_label = sprintf "inner_lambda_%s" (string_of_int tag) in
-         let inner_lambda_end_label = sprintf "inner_lambda_end_%s" (string_of_int tag) in
-         let free = freeVars_aexpr args body  in
-         
-         let moveClosureVarToStack (idx: int) : instruction list = 
+        
+
+          (*helper functions *)
+           let moveClosureVarToStack (i: int) : instruction list = 
               [
-               IMov(Reg(EAX), RegOffset(12 + (4*idx), ECX));
-               IMov(RegOffset(~-4 * (idx + 1), EBP), Reg(EAX))
-               ] in 
+               IMov(Reg(EDX), RegOffset(12 + (4*i), ECX));
+               IMov(RegOffset(~-((i + 3) * 4) - 5, EBP), Reg(EDX))
+              ] in    
 
+          (*labels*)
+          let inner_lambda_label = sprintf "inner_lambda_%s" (string_of_int tag) in
+          let inner_lambda_end_label = sprintf "inner_lambda_end_%s" (string_of_int tag) in  
 
-         let moveClosureVarToStacklist = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) free) in 
-         let inner_lambda_prologue =  [
-             ILabel(inner_lambda_label);
-             IPush(Sized(DWORD_PTR,Reg(EBP)));
-             IMov(Reg(EBP),Reg(ESP));
-             IMov(Reg(ECX), RegOffset(8, EBP));
-             ISub(Reg(ECX), Const(0x5));
+          (*create env*)
+          let frees = List.sort compare (freeVars_aexpr args body)  in
+          (*List.map (fun e -> debug_printf "%s]\n" e) frees; *)
+          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 3) * 4) - 5, EBP))] ) frees) in 
+          let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset(word_size * (i+3), EBP))] ) args) in 
 
+          let copy_free_to_stack = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) frees) in 
 
-         ] @  moveClosureVarToStacklist in 
-         let stackLocFreeVar = List.flatten (List.mapi (fun i a ->  [RegOffset(~-4 * i, EBP)]) (args@free))  in 
+          let newEnv =  free_env @ args_env in 
+          (* function compilation start*)
+          let inner_lambda_stack_setup =  [
+               ILabel(inner_lambda_label);
+               IPush(Sized(DWORD_PTR,Reg(EBP)));
+               IMov(Reg(EBP),Reg(ESP));
+               ISub(Reg(ESP),Const(List.length args * word_size));
+               IMov(Reg(ECX), RegOffset(8, EBP))
+           ] @ copy_free_to_stack in  
 
-         let moveClosureVarToStacklistEnv = List.flatten (List.map2 (fun  str addr -> [(str, addr)] ) (args@free) stackLocFreeVar) in 
-         let newenv = env@moveClosureVarToStacklistEnv in 
+          let compileBody = compile_aexpr body (List.length frees + 1) newEnv num_args is_tail in
 
-         let compile_body = compile_aexpr body (List.length free) newenv num_args is_tail in
-                                              List.map (fun e -> debug_printf "%s" e) free;
+          let inner_lambda_epilogue =  [ 
+                  IMov(Reg(ESP), Reg(EBP));
+                  IPop(Sized(DWORD_PTR, Reg(EBP)));
+                  IRet
+            ] in
 
-         let inner_lambda_epilogue =  [ 
-                IMov(Reg(ESP), Reg(EBP));
-                IPop(Sized(DWORD_PTR, Reg(EBP)));
-                IRet;
-          ] in
+          let lambda_section = (inner_lambda_stack_setup @ compileBody @ inner_lambda_epilogue) in 
+           (* function compilation end*)
 
-         let lambda_section = inner_lambda_prologue @
-                              [ILineComment("function_body_start")]@
-                               compile_body @
-                                [ILineComment("function_body_end")]@
-                                inner_lambda_epilogue in 
-         let freeValAddr = List.flatten (List.map (fun x -> [find env x]) free) in
+           (*create closure*)
+          let compile_frees_to_args =  List.flatten (List.map (fun x -> [find env x]) frees) in
+          let move_frees_to_closure = List.flatten (List.mapi (fun i fva -> 
+                                        [
+                                          IMov(Reg(EAX), Sized(DWORD_PTR,fva));
+                                          IMov(RegOffset(12 + (4*i), ESI), Reg(EAX))
+                                        ]
+                                    ) compile_frees_to_args ) in 
 
-         let move_free = List.flatten ( List.mapi (fun  i addr -> 
-                                               [
-                                                IMov(Reg(EAX), addr);
-                                                 IMov(RegOffset(12 + 4*i, ESI), Reg(EAX))
-                                               ] )  freeValAddr) in 
-
-         let inner_lambda_end = 
+          let closure_prologue = 
             [
               ILabel(inner_lambda_end_label);
               IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length args)));
               IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Label(inner_lambda_label)));
-              IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length free)))
+              IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length frees)))
             ]
-            @ move_free @ 
+            @ move_frees_to_closure @ 
             [
               IMov(Reg(EAX), Reg(ESI)); 
               IAdd(Reg(EAX), HexConst(0x5));
-              (*IAdd(Reg(ESI), Const(List.length move_free + 12));*)
+              IAdd(Reg(ESI), Const((List.length frees * word_size) + 12));
               IAdd(Reg(ESI), Const(7));
               IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
             ]
+           (*create closure end*)
 
           in
-          [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ inner_lambda_end
+          [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
+
+
+
+
+
+
+
+
+
 
 
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
@@ -1185,6 +1210,10 @@ let rec compile_decl (d: tag adecl ) : instruction list = match d with
       let local_env = build_env args in (compile_fun fun_name body args local_env false) 
   
 
+
+
+
+
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
@@ -1216,66 +1245,66 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
 
     ILabel("logic_expected_a_boolean");
     IPush(Reg(EAX));
-    IPush(Const(1));
+    IPush(Const(err_LOGIC_NOT_BOOL));
     ICall(Label("error"));
     ILabel("logic_expected_a_boolean_edx");
     IPush(Reg(EDX));
-    IPush(Const(1));
+    IPush(Const(err_LOGIC_NOT_BOOL));
     ICall(Label("error"));
 
     ILabel("error_not_boolean_if");
     IPush(Reg(EAX));
-    IPush(Const(2));
+    IPush(Const(err_IF_NOT_BOOL));
     ICall(Label("error"));
 
     ILabel("arithmetic_expected_a_number");
     IPush(Reg(EAX));
-    IPush(Const(3));
+    IPush(Const(err_ARITH_NOT_NUM));
     ICall(Label("error"));
 
     ILabel("arithmetic_expected_a_number_EDX");
     IPush(Reg(EDX));
-    IPush(Const(3));
+    IPush(Const(err_ARITH_NOT_NUM));
     ICall(Label("error"));
 
     ILabel("comparison_expected_a_number");
     IPush(Reg(EAX));
-    IPush(Const(4));
+    IPush(Const(err_COMP_NOT_NUM));
     ICall(Label("error"));
 
     ILabel("comparison_expected_a_number_EDX");
     IPush(Reg(EDX));
-    IPush(Const(4));
+    IPush(Const(err_COMP_NOT_NUM));
     ICall(Label("error"));
 
     ILabel("overflow");
     IPush(Reg(EAX));
-    IPush(Const(5));
+    IPush(Const(err_OVERFLOW));
     ICall(Label("error"));
 
     ILabel("error_not_tuple");
     IPush(Reg(EAX));
-    IPush(Const(6));
+    IPush(Const(err_GET_NOT_TUPLE));
     ICall(Label("error"));
 
     ILabel("index_too_high");
     IPush(Reg(EDX));
-    IPush(Const(7));
+    IPush(Const(err_GET_HIGH_INDEX));
     ICall(Label("error"));
 
     ILabel("index_too_low");
     IPush(Reg(EAX));
-    IPush(Const(8));
+    IPush(Const(err_GET_LOW_INDEX));
     ICall(Label("error"));
 
     ILabel("error_not_closure");
     IPush(Reg(EAX));
-    IPush(Const(10));
+    IPush(Const(error_not_closure));
     ICall(Label("error"));
 
     ILabel("error_wrong_arity");
     IPush(Reg(EAX));
-    IPush(Const(11));
+    IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
   let fun_def =  List.flatten (List.map compile_decl decls) in

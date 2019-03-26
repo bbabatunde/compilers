@@ -596,9 +596,23 @@ let well_formed_tests = [
   ]
 
  let curr_tests_egg_eater = [
-      t "lamdba1" "let x = 10 in
-                      let f = (lambda(y): x + y) in
-                            f(10)" "" "";
+      t "lamdba1" "let f = (lambda(y): y) in
+                            f(100)" "" "100";
+
+        t "lamdba3" "let f = (lambda(y,x): y +x) in
+                            f(100,100)" "" "200";    
+
+       t "lambda2" "let x = 10 in
+                    let f = (lambda(z): x + z) in
+                    f(10)"  "" "20";
+
+       t "lambda4" "let x = 10 in
+                      let y = 12 in
+                      let f = (lambda(z): x + y + z) in
+                      f(5)"  "" "27";
+       t "lambda5" "let applyToFive = (lambda (it): it(5)) in
+                    let incr = (lambda (x): x + 1) in
+                    applyToFive(incr)" "" "6";
 
  ]
 let suite =
