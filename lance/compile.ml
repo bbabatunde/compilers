@@ -757,8 +757,8 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
   let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
   prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
-  | ALetRec(cexplist, aexp,_) -> []
-  | ASeq(cexp, aexp, _) -> []
+  | ALetRec(cexplist, aexp,_) ->  compile_aexpr aexp (si+1) env num_args is_tail
+  | ASeq(cexp, aexp, _) -> raise (InternalCompilerError("impossible compiler state :/"))
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
@@ -782,9 +782,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         [IMov(Reg(EAX),(compile_imm e env))] @ 
         [
         ITest(Reg(EAX),tag_as_bool);
-        (*IJnz("arithmetic_expected_a_number");*)
+        IJnz(Label("arithmetic_expected_a_number"));
         IAdd(Reg(EAX),Const(2));
-        (*IJo("overflow")*)
+        IJo(Label("overflow"))
        ] 
       |Sub1 -> 
         [IMov(Reg(EAX),(compile_imm e env))] @ 
@@ -1013,8 +1013,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
         let fname = compile_imm imm_name env in
         let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env))))  imm_args in
-         [ILineComment("calling functions")]@
+         
          [
+                ILineComment("calling functions");
                 IMov(Reg(ECX),fname);
                 IAnd(Reg(ECX), HexConst(0x7));
                 ICmp(Reg(ECX), HexConst(0x5));
@@ -1024,7 +1025,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
                 ISub(Reg(EAX), HexConst(0x5));
                 ICmp(Sized(DWORD_PTR, RegOffset(0, EAX)), Const(List.length imm_args));
                 IJne(Label("error_wrong_arity"))
-         ] @ args @ [
+         ] @ args @ 
+         [
                 IPush(Sized(DWORD_PTR,Reg(EAX)));
                 ICall(RegOffset(4, EAX));
                 IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
@@ -1038,9 +1040,12 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
         IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
 
-      let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
-                       IAdd(Reg(EAX), Const(1))] in
-      let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
+      let to_tuple = [ 
+                       IMov(Reg(EAX), Reg(ESI)); 
+                       IAdd(Reg(EAX), Const(1))      
+                      ] in
+      let offset = [
+                    IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
                     IAdd(Reg(ESI), Const(7));
                     IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
                   ] in
@@ -1083,7 +1088,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
         
 
           (*helper functions *)
-           let moveClosureVarToStack (i: int) : instruction list = 
+         let moveClosureVarToStack (i: int) : instruction list = 
               [
                IMov(Reg(EDX), RegOffset(12 + (4*i), ECX));
                IMov(RegOffset(~-((i + 3) * 4) - 5, EBP), Reg(EDX))
@@ -1150,16 +1155,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
 
           in
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
-
-
-
-
-
-
-
-
-
-
 
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
  and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
