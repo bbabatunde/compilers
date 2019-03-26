@@ -587,7 +587,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
         | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
-        | ELetRec(bindl, e, loc) -> raise (InternalCompilerError("Desugar pre handles let recs?"))
+        | ELetRec(bindl, e, loc) -> ELetRec(bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc) 
         | ENumber _ | EBool _ | ENil _ | EId _ -> e ) in
     match p with
