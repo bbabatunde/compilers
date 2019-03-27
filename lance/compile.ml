@@ -365,10 +365,6 @@ let anf (p : tag program) : unit aprogram =
        let (exp_ans, exp_setup) = helpI exp in (* MUST BE helpI, to avoid any missing final steps *)
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ body_setup)
-    | ELambda([], body, tag) ->
-       (* Converting constant functions to be just their bodies. 
-        * Maybe this breaks something, needs testing. *)
-       helpI body
     | ELambda(some, body, tag) -> 
        raise (UnsupportedTagged("Lambda not a constant function.", tag))
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
@@ -415,19 +411,15 @@ let anf (p : tag program) : unit aprogram =
     | EPrim1(op, arg, _) ->  wf_E arg ds env tydecls
     | EPrim2(op, left, right, _) ->  wf_E left ds env tydecls @ wf_E right ds env tydecls
     | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
-    | EApp(funname, appargs, pos) -> 
-       (*if List.mem funname fun_prim then []
-       else
-       begin match find_decl ds funname with
-       |None -> [UnboundFun(funname, pos)]
-       |Some(DFun(name, defargs,_, body, dpos)) -> 
-         let no_appargs = List.length appargs in
-         let no_defargs = List.length defargs  in
-         if no_defargs = no_appargs then [] else
-         [Arity (no_defargs,no_appargs,pos)]
-      end*)
-      raise (NotYetImplemented("Finish this case"))
-
+    | EApp(funname, appargs, pos) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] appargs
+    | ELambda(bindl, e, pos) ->
+            let dups = (check_bind_duplicate (bindsToStrings bindl) pos) in
+            if List.length dups > 0 then dups else (wf_E e ds (add_bindlst_env bindl  env) tydecls)
+    | ELetRec(bindl, e, pos) ->
+            let dups = (check_bind_duplicate (bindingsToStrings bindl) pos) in
+            if List.length dups > 0 then dups else
+                let dups = (check_binding_duplicate bindl ds env tydecls) in
+                if List.length dups > 0 then dups else check_lamb_body bindl @ wf_E e ds env tydecls
     |ELet([], body, pos) -> wf_E body ds env tydecls
     |ELet((bind,expr,exploc)::rest as bindings, body, pos) -> 
      let shadowlist = begin match bind with
@@ -450,6 +442,25 @@ let anf (p : tag program) : unit aprogram =
      else if (index < 0) then wf_E exp ds env tydecls @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env tydecls
      else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
+
+
+and check_binding_duplicate bindl ds env tds=
+ (match bindl with
+    | [] -> []
+    | (_, arg, _)::rest -> (wf_E arg ds env tds) @ (check_binding_duplicate rest ds env tds))
+
+and check_lamb_body bindl =
+    (match bindl with
+    |(BName(n, t, p), e, l)::rest -> (match e with
+        | ELambda _ -> check_lamb_body rest
+        | _ -> [LetRecNonFunction(e, l)])
+    | _ -> raise (InternalCompilerError "Parser broken? Non name in ELetRec binding.")
+    )
+
+and check_bind_duplicate bindl pos =
+ (match bindl with
+        | [] -> []
+        | first::rest -> if List.mem first rest then ([DuplicateArgument(first, pos)] @ check_bind_duplicate rest pos) else check_bind_duplicate rest pos)
 
 and check_bind_list bind_list expr exproc env ds tydecls: exn list = 
   List.fold_left (fun exnlst b -> exnlst @  check_shadowid_tuple b expr exproc env ds tydecls) [] bind_list
@@ -1344,7 +1355,7 @@ let typecheck p =
 (* You may want to desugar once before type-checking, and once afterward *)
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
-  (*|> (add_err_phase well_formed is_well_formed)*)
+  |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared_preTC desugarPre)
   |> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))
   |> (add_phase desugared_postTC desugarPost)

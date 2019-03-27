@@ -17,12 +17,13 @@ exception Unsupported of string * sourcespan
 exception UnsupportedTagged of string * int
 exception InternalCompilerError of string (* Major failure: message to show *)
 exception OccursCheck of string * sourcespan typ * sourcespan
-exception LetRecNonFunction of sourcespan bind * sourcespan (* name binding, where defined *)
+exception LetRecNonFunction of sourcespan expr * sourcespan (* name binding, where defined *)
 exception IndexTooSmall of int  * sourcespan
 exception IndexTooLarge of int * int  * sourcespan
 exception InvalidTyLen of string * sourcespan
 exception CyclicTy of string * sourcespan
 exception DuplicateType of string * sourcespan
+exception DuplicateArgument of string * sourcespan
 
 type reason =
   | InferExp of sourcespan expr
@@ -80,6 +81,8 @@ let print_errors (exns : exn list) : string list =
       | DuplicateFun(x, loc, existing) ->
          sprintf "The function name %s, redefined at <%s>, duplicates one at <%s>"
                  x (string_of_sourcespan loc) (string_of_sourcespan existing)
+      | DuplicateArgument(x, loc) ->
+         sprintf "The argument %s, first defined at <%s>, is redefined" x (string_of_sourcespan loc)
       | Overflow(num, loc) ->
          sprintf "The number literal %d, used at <%s>, is not supported in this language"
                  num (string_of_sourcespan loc)
@@ -98,7 +101,7 @@ let print_errors (exns : exn list) : string list =
             (string_of_sourcespan loc) (string_of_typ expected) (string_of_typ actual)
       | LetRecNonFunction(bind, loc) ->
          sprintf "Binding error at %s: Let-rec expected a name binding to a lambda; got %s"
-           (string_of_sourcespan loc) (string_of_bind bind)
+           (string_of_sourcespan loc) (string_of_expr bind)
       | TypeMismatch(loc, expected, actual, reasons) ->
          let get_tag e = match e with
            | ELet(_, _, t) -> t
