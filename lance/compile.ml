@@ -782,7 +782,21 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
   let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
   prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
   | ACExpr(body) -> compile_cexpr body si env num_args is_tail
-  | ALetRec(cexplist, aexp,_) ->  compile_aexpr aexp (si+1) env num_args is_tail
+  | ALetRec(cexplist, body,_) ->
+      let newEnv  = env@ (List.flatten (List.mapi (fun i (str,_) -> [(str,RegOffset(~-word_size * (si+i), EBP))]) cexplist)) in 
+
+      let compile_bindings =  List.flatten (List.mapi (fun i (_,cexp) ->
+                                  (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail)@
+                                  [ILineComment("move EAX to EBP")]@
+                                  [IMov(RegOffset(~-word_size * (si+i), EBP), Reg(EAX))]) cexplist) in 
+      debug_printf "LENGTH %d\n" (List.length compile_bindings);
+
+      let compile_body =  (compile_aexpr body (si + 1 + (List.length cexplist)) newEnv num_args is_tail) in 
+      debug_printf "AFTer %d\n" (List.length compile_bindings);
+
+        [ILineComment("compile bindings start ")]@compile_bindings@[ILineComment("compile bindings end ")]@compile_body
+
+
   | ASeq(cexp, aexp, _) -> raise (InternalCompilerError("impossible compiler state :/"))
 and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
@@ -1115,8 +1129,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
           (*helper functions *)
          let moveClosureVarToStack (i: int) : instruction list = 
               [
-               IMov(Reg(EDX), RegOffset(12 + (4*i), ECX));
-               IMov(RegOffset(~-((i + 3) * 4) - 5, EBP), Reg(EDX))
+               IMov(Reg(EDX), RegOffset(12 + (word_size*i), ECX));
+               IMov(RegOffset(~-((i + 3) * word_size) - 5, EBP), Reg(EDX))
               ] in    
 
           (*labels*)
@@ -1126,8 +1140,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
           (*create env*)
           let frees = List.sort compare (freeVars_aexpr args body)  in
           (*List.map (fun e -> debug_printf "%s]\n" e) frees; *)
-          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 3) * 4) - 5, EBP))] ) frees) in 
-          let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset(word_size * (i+3), EBP))] ) args) in 
+          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 3) * word_size) - 5, EBP))] ) frees) in 
+          let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset(word_size * (i+3), EBP))] ) (List.rev args)) in 
 
           let copy_free_to_stack = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) frees) in 
 
@@ -1141,7 +1155,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
                IMov(Reg(ECX), RegOffset(8, EBP))
            ] @ copy_free_to_stack in  
 
-          let compileBody = compile_aexpr body (List.length frees + 1) newEnv num_args is_tail in
+          let compileBody = compile_aexpr body (List.length args + 1) newEnv num_args is_tail in
 
           let inner_lambda_epilogue =  [ 
                   IMov(Reg(ESP), Reg(EBP));
@@ -1157,7 +1171,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
           let move_frees_to_closure = List.flatten (List.mapi (fun i fva -> 
                                         [
                                           IMov(Reg(EAX), Sized(DWORD_PTR,fva));
-                                          IMov(RegOffset(12 + (4*i), ESI), Reg(EAX))
+                                          IMov(RegOffset(12 + (word_size*i), ESI), Reg(EAX))
                                         ]
                                     ) compile_frees_to_args ) in 
 
