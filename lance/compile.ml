@@ -717,9 +717,9 @@ let desugarPre (p : sourcespan program) : sourcespan program =
   and makeLetRec l e t =
       match l with
       | first::rest ->
-            ELet(first, (makeLetRec rest e t), t)
+            ELetRec(first, (makeLetRec rest e t), t)
       | last::[] ->
-            ELet(last, e, t)
+            ELetRec(last, e, t)
       | [] -> e
   in
   match p with
