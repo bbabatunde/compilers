@@ -596,12 +596,11 @@ let well_formed_tests = [
   ]
 
  let curr_tests_egg_eater = [
-      (*t "lamdba1" "let f = (lambda(y): y) in
+      t "lamdba1" "let f = (lambda(y): y) in
                             f(100)" "" "100";
 
       t "lamdba3" "let f = (lambda(y,x): y +x) in
                             f(100,100)" "" "200";    
-
       t "lambda2" "let x = 10 in
                     let f = (lambda(a,b,c,d): a + b + c + d) in
                     f(1,2,3,4)"  "" "10";
@@ -610,19 +609,27 @@ let well_formed_tests = [
                       let y = 12 in
                       let f = (lambda(z): x + y + z) in
                       f(5)"  "" "27";
+
+                 
       t "lambda5" "let applyToFive = (lambda (it): it(5)) in
                     let incr = (lambda (x): x + 1) in
                     applyToFive(incr)" "" "6";
 
-      t "lambda6" "def foo(w, x, y, z):
+      t "lambda6" "def foo(a, x, y, z):
                     (lambda (a): a + x + z)
-                      foo(1, 2, 3, 4)(5)" "" "11";*)
+                      foo(1, 2, 3, 4)" "" "11";
 
 
-       t "letrec" "let rec fac = (lambda (n):
-                          if n < 1: 1
+    t "letrec" "let rec fac = (lambda (n):
+                          if n < 2: 1
                           else: n * fac(n - 1))
-                              in fac(4)" "" "2";
+                              in fac(5)" "" "120";
+
+
+  (*
+    t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
+                      and def g(x,y): if (y==0): x else: f(y, x - 1)
+                    f(1,1)" "" "1";*)
 
  ]
 let suite =

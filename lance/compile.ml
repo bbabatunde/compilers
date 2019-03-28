@@ -739,7 +739,7 @@ let rec freeVars_aexpr env e : string list =
   match e with
   | ASeq(cexp, aexp,tag) -> (freeVars_aexpr env aexp) @ (freeVars_cexpr env cexp)
   | ALet(name, cexp, body, tag) -> (freeVars_aexpr (name::env) body) @ (freeVars_cexpr env cexp)
-  | ALetRec(cexplst, aexp, tag) -> (freeVars_aexpr env aexp) 
+  | ALetRec(cexplst, aexp, tag) -> (freeVars_aexpr env aexp) @ List.flatten (List.map (fun (str,cexp) -> freeVars_cexpr env cexp) cexplst)
   | ACExpr(cexp) -> (freeVars_cexpr env cexp)
 and freeVars_cexpr env e : string list =  match e with 
   | CIf(pred, _then, _else, _) ->   (freeVars_imm env pred) @ (freeVars_aexpr env _then) @  (freeVars_aexpr env _else)
@@ -790,15 +790,15 @@ let rec compile_fun (fun_name : string) body args env is_entry_point : instructi
 and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = 
   match e with 
   | ALet(name, bind, body, _)  -> 
-  let prelude = (compile_cexpr bind (si + 1) env num_args false) in
+  let prelude = (compile_cexpr bind (si + 1) env num_args false []) in
   let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
   prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
-  | ACExpr(body) -> compile_cexpr body si env num_args is_tail
+  | ACExpr(body) -> compile_cexpr body si env num_args is_tail []
   | ALetRec(cexplist, body,_) ->
       let newEnv  = env@ (List.flatten (List.mapi (fun i (str,_) -> [(str,RegOffset(~-word_size * (si+i), EBP))]) cexplist)) in 
 
-      let compile_bindings =  List.flatten (List.mapi (fun i (_,cexp) ->
-                                  (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail)@
+      let compile_bindings =  List.flatten (List.mapi (fun i (self,cexp) ->
+                                  (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail [self] )@
                                   [ILineComment("move EAX to EBP")]@
                                   [IMov(RegOffset(~-word_size * (si+i), EBP), Reg(EAX))]) cexplist) in 
       debug_printf "LENGTH %d\n" (List.length compile_bindings);
@@ -810,7 +810,7 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
 
 
   | ASeq(cexp, aexp, _) -> raise (InternalCompilerError("impossible compiler state :/"))
-and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = match e with 
+and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
       let false_label = sprintf "if_false_%s" (string_of_int tag) in
@@ -1078,7 +1078,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
                 IJne(Label("error_wrong_arity"))
          ] @ args @ 
          [
+                IMov(Reg(EAX), fname);
                 IPush(Sized(DWORD_PTR,Reg(EAX)));
+                ISub(Reg(EAX), HexConst(0x5));
                 ICall(RegOffset(4, EAX));
                 IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
          ]
@@ -1141,8 +1143,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
           (*helper functions *)
          let moveClosureVarToStack (i: int) : instruction list = 
               [
-               IMov(Reg(EDX), RegOffset(12 + (word_size*i), ECX));
-               IMov(RegOffset(~-((i + 3) * word_size) - 5, EBP), Reg(EDX))
+               IMov(Reg(EDX), RegOffset(16 + (word_size*i), ECX));
+               IMov(RegOffset(~-((i + 1) * word_size), EBP), Reg(EDX))
               ] in    
 
           (*labels*)
@@ -1150,28 +1152,42 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
           let inner_lambda_end_label = sprintf "inner_lambda_end_%s" (string_of_int tag) in  
 
           (*create env*)
-          let frees = List.sort compare (freeVars_aexpr args body)  in
+          let frees = List.sort compare (freeVars_aexpr (args@self) body)  in
           (*List.map (fun e -> debug_printf "%s]\n" e) frees; *)
-          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 3) * word_size) - 5, EBP))] ) frees) in 
+          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 1) * word_size), EBP))] ) frees) in 
           let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset(word_size * (i+3), EBP))] ) (List.rev args)) in 
 
           let copy_free_to_stack = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) frees) in 
 
-          let newEnv =  free_env @ args_env in 
+          let (self_env, self_setup) = if List.length self = 1 then 
+           ([(  List.hd self,  RegOffset(~-(List.length frees + 1) * word_size , EBP))],
+
+            [
+
+            IMov(Reg(EDX), RegOffset(12, ECX));
+            IMov(RegOffset(~-(List.length frees + 1) * word_size , EBP), Reg(EDX))
+
+            ])   
+          else ([],[]) in 
+
+          let newEnv =  self_env@free_env @ args_env in 
+
           (* function compilation start*)
           let inner_lambda_stack_setup =  [
-               ILabel(inner_lambda_label);
-               IPush(Sized(DWORD_PTR,Reg(EBP)));
+               ILabel (inner_lambda_label);
+               IPush(Sized(DWORD_PTR, Reg(EBP)));
                IMov(Reg(EBP),Reg(ESP));
-               ISub(Reg(ESP),Const(List.length args * word_size));
-               IMov(Reg(ECX), RegOffset(8, EBP))
-           ] @ copy_free_to_stack in  
+               ISub(Reg(ESP),Const((List.length frees + 1) * word_size) );
+               IMov(Reg(ECX), RegOffset(8, EBP));
+               ISub(Reg(ECX), Const(0x5));
 
-          let compileBody = compile_aexpr body (List.length args + 1) newEnv num_args is_tail in
+           ] @self_setup@ copy_free_to_stack in  
+
+          let compileBody = compile_aexpr body (List.length frees + 2) newEnv num_args is_tail in
 
           let inner_lambda_epilogue =  [ 
                   IMov(Reg(ESP), Reg(EBP));
-                  IPop(Sized(DWORD_PTR, Reg(EBP)));
+                  IPop(Reg(EBP));
                   IRet
             ] in
 
@@ -1179,26 +1195,34 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail : instruction list = m
            (* function compilation end*)
 
            (*create closure*)
-          let compile_frees_to_args =  List.flatten (List.map (fun x -> [find env x]) frees) in
+          let free_moves =  List.flatten (List.map (fun x -> [find newEnv x]) frees) in
           let move_frees_to_closure = List.flatten (List.mapi (fun i fva -> 
                                         [
-                                          IMov(Reg(EAX), Sized(DWORD_PTR,fva));
-                                          IMov(RegOffset(12 + (word_size*i), ESI), Reg(EAX))
+                                          IMov(Reg(EAX),fva);
+                                          IMov(RegOffset(16 + (word_size*i), ESI), Reg(EAX))
                                         ]
-                                    ) compile_frees_to_args ) in 
+                                    ) free_moves ) in 
 
           let closure_prologue = 
             [
               ILabel(inner_lambda_end_label);
+
+
               IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length args)));
               IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Label(inner_lambda_label)));
-              IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length frees)))
+              IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length frees)));
+             
+
             ]
             @ move_frees_to_closure @ 
             [
+              IMov(RegOffset(12 ,ESI), Reg(ESI));
+              IAdd(RegOffset(12 ,ESI), Sized(DWORD_PTR, HexConst(0x5)));
+
               IMov(Reg(EAX), Reg(ESI)); 
               IAdd(Reg(EAX), HexConst(0x5));
-              IAdd(Reg(ESI), Const((List.length frees * word_size) + 12));
+              
+              IAdd(Reg(ESI), Const((List.length frees * word_size) + 16));
               IAdd(Reg(ESI), Const(7));
               IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
             ]
@@ -1344,7 +1368,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ICall(Label("error"));
 
     ILabel("error_not_closure");
-    IPush(Reg(EAX));
+    IPush(Reg(ECX));
     IPush(Const(error_not_closure));
     ICall(Label("error"));
 

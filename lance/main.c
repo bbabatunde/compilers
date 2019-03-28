@@ -112,7 +112,7 @@ void error(int errCode, int val) {
     fprintf(stderr, "Error: comparison expected a number\n");
     break;
   case ERR_ARITH_NOT_NUM:
-    fprintf(stderr, "Error: arithmetic expected a number\n");
+    fprintf(stderr, "Error: arithmetic expected a number %010x\n\n", val);
     break;
   case ERR_LOGIC_NOT_BOOL:
     fprintf(stderr, "Error logic expected a boolean\n");
