@@ -454,6 +454,7 @@ and check_lamb_body bindl =
     |(BName(n, t, p), e, l)::rest -> (match e with
         | ELambda _ -> check_lamb_body rest
         | _ -> [LetRecNonFunction(e, l)])
+    | [] -> [] 
     | _ -> raise (InternalCompilerError "Parser broken? Non name in ELetRec binding.")
     )
 
