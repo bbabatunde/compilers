@@ -718,7 +718,7 @@ let desugarPre (p : sourcespan program) : sourcespan program =
   match p with
   | Program(tydecls, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
-          let new_body = ELetRec(List.concat new_decls, (helpE body), t) in
+          let new_body = if List.length new_decls > 0 then ELetRec(List.concat new_decls, (helpE body), t) else helpE body in
           let new_p = Program(tydecls, [], new_body, t) in
           debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
           debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
