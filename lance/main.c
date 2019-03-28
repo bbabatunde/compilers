@@ -137,7 +137,7 @@ void error(int errCode, int val) {
     break;
 
   case error_not_closure:
-    fprintf(stderr, "Error: error not closure\n");
+    fprintf(stderr, "Error: error not function %010x\n\n", val);
    break;
   case error_wrong_arity:
       fprintf(stderr, "Error: wrong aritty %d\n", val);
