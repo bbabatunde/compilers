@@ -413,13 +413,13 @@ let anf (p : tag program) : unit aprogram =
     | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
     | EApp(funname, appargs, pos) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] appargs
     | ELambda(bindl, e, pos) ->
-            let dups = (check_bind_duplicate (bindsToStrings bindl) pos) in
+            let dups = (check_arg_duplicate (bindsToStrings bindl) pos) in
             if List.length dups > 0 then dups else (wf_E e ds (add_bindlst_env bindl  env) tydecls)
     | ELetRec(bindl, e, pos) ->
             let dups = (check_bind_duplicate (bindingsToStrings bindl) pos) in
             if List.length dups > 0 then dups else
                 let dups = (check_binding_duplicate bindl ds env tydecls) in
-                if List.length dups > 0 then dups else check_lamb_body bindl @ wf_E e ds env tydecls
+                if List.length dups > 0 then dups else check_lamb_body bindl @ wf_E e ds (add_bindlst_env (bindingsToBinds bindl) env) tydecls
     |ELet([], body, pos) -> wf_E body ds env tydecls
     |ELet((bind,expr,exploc)::rest as bindings, body, pos) -> 
      let shadowlist = begin match bind with
@@ -443,6 +443,11 @@ let anf (p : tag program) : unit aprogram =
      else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
 
+and bindingsToBinds bl =
+    match bl with
+    | (b, _, _)::rest ->
+         b :: (bindingsToBinds rest)
+    | [] -> []
 
 and check_binding_duplicate bindl ds env tds=
  (match bindl with
@@ -453,15 +458,20 @@ and check_lamb_body bindl =
     (match bindl with
     |(BName(n, t, p), e, l)::rest -> (match e with
         | ELambda _ -> check_lamb_body rest
-        | _ -> [LetRecNonFunction(e, l)])
+        | _ -> [LetRecNonFunction(e, l)] @ check_lamb_body rest)
     | [] -> [] 
     | _ -> raise (InternalCompilerError "Parser broken? Non name in ELetRec binding.")
     )
 
 and check_bind_duplicate bindl pos =
- (match bindl with
+  (match bindl with
         | [] -> []
-        | first::rest -> if List.mem first rest then ([DuplicateArgument(first, pos)] @ check_bind_duplicate rest pos) else check_bind_duplicate rest pos)
+        | first::rest -> if List.mem first rest then ([DuplicateLetRecDecl(first, pos)] @ check_bind_duplicate rest pos) else check_bind_duplicate rest pos)
+
+and check_arg_duplicate bindl pos =
+  (match bindl with
+        | [] -> []
+        | f::r -> if List.mem f r then ([DuplicateArgument(f, pos)] @ check_arg_duplicate r pos) else check_arg_duplicate r pos)
 
 and check_bind_list bind_list expr exproc env ds tydecls: exn list = 
   List.fold_left (fun exnlst b -> exnlst @  check_shadowid_tuple b expr exproc env ds tydecls) [] bind_list
@@ -570,13 +580,6 @@ let rec bindsToBindings bl =
         (match first with
         | BName(n, _, l) -> (first, EId(n, l), l)::(bindsToBindings rest)
         | _ -> raise (InternalCompilerError("Binds to bindings conversion is only for Bname.")))
-    | [] -> []
-;;
-
-let rec bindingsToBinds bl =
-    match bl with
-    | (b, _, _)::rest ->
-         b :: (bindingsToBinds rest)
     | [] -> []
 ;;
 

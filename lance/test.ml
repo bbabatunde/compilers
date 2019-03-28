@@ -625,6 +625,18 @@ let well_formed_tests = [
                               in fac(4)" "" "2";
 
  ]
+
+ let new_well_formed_tests = [
+     (* Right hand not lambda. *)
+     te "invalid_let_rec" "let rec a = 1 in a" "" "Binding error at invalid_let_rec, 1:8-1:9: Let-rec expected a name binding to a lambda; got 1";
+     (* More right hands not lambdas. *)
+     te "invalid_let_rec_2" "let rec a = 1, b = 2 in a + b" "" "Binding error at invalid_let_rec_2, 1:8-1:9: Let-rec expected a name binding to a lambda; got 1\nBinding error at invalid_let_rec_2, 1:15-1:16: Let-rec expected a name binding to a lambda; got 2";
+     (* Binding redeclaration*)
+     te "redeclaration" "let rec a = (lambda(n): 1), a = (lambda(n): 2) in a" "" "The letrec declaration a, first defined at <redeclaration, 1:0-1:51>, is redefined";
+     (* Arg duplicate *)
+     te "duplicate_arg" "let rec a = (lambda(b,c,b): 1) in a(1,2,3)" "" "The argument b, first defined at <duplicate_arg, 1:11-1:30>, is redefined";
+ ]
+
 let suite =
 "suite">:::
  (*well_formed_tests @
@@ -636,9 +648,8 @@ let suite =
  fun_tests @
  curr_tests @
  prim2_test @*)
-
+ new_well_formed_tests @
   (*inference_tests @*)
- curr_tests_egg_eater @ 
  []
 ;;
 
