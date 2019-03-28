@@ -24,6 +24,7 @@ exception InvalidTyLen of string * sourcespan
 exception CyclicTy of string * sourcespan
 exception DuplicateType of string * sourcespan
 exception DuplicateArgument of string * sourcespan
+exception DuplicateLetRecDecl of string * sourcespan
 
 type reason =
   | InferExp of sourcespan expr
@@ -83,6 +84,8 @@ let print_errors (exns : exn list) : string list =
                  x (string_of_sourcespan loc) (string_of_sourcespan existing)
       | DuplicateArgument(x, loc) ->
          sprintf "The argument %s, first defined at <%s>, is redefined" x (string_of_sourcespan loc)
+      | DuplicateLetRecDecl(x, loc) ->
+         sprintf "The letrec declaration %s, first defined at <%s>, is redefined" x (string_of_sourcespan loc)
       | Overflow(num, loc) ->
          sprintf "The number literal %d, used at <%s>, is not supported in this language"
                  num (string_of_sourcespan loc)
