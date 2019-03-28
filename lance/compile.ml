@@ -714,18 +714,11 @@ let desugarPre (p : sourcespan program) : sourcespan program =
         let final_body = ELambda(new_args, new_body, pos) in
         let this_let_binding = [((BName(name, TyArr((makeBlanks (List.length args) pos), TyBlank(pos), pos), pos)), final_body, pos)] in
         this_let_binding
-  and makeLetRec l e t =
-      match l with
-      | first::rest ->
-            ELetRec(first, (makeLetRec rest e t), t)
-      | last::[] ->
-            ELetRec(last, e, t)
-      | [] -> e
   in
   match p with
   | Program(tydecls, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
-          let new_body = (makeLetRec new_decls (helpE body) t) in
+          let new_body = ELetRec(List.concat new_decls, (helpE body), t) in
           let new_p = Program(tydecls, [], new_body, t) in
           debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
           debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
