@@ -11,7 +11,7 @@ open Errors
 type 'a envt = (string * 'a) list
 
 let skip_typechecking = ref false
-let show_debug_print = ref true
+let show_debug_print = ref false
 
 let debug_printf fmt =
     if !show_debug_print
@@ -812,7 +812,8 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
         [ILineComment("compile bindings start ")]@compile_bindings@[ILineComment("compile bindings end ")]@compile_body
 
 
-  | ASeq(cexp, aexp, _) -> raise (InternalCompilerError("impossible compiler state :/"))
+  | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail []) @
+                          (compile_aexpr right si env num_args is_tail)
 and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
@@ -1066,7 +1067,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
          )*)
 
         let fname = compile_imm imm_name env in
-        let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env))))  imm_args in
+        let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env))))  (List.rev imm_args) in
          
          [
                 ILineComment("calling functions");
@@ -1096,13 +1097,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
         IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
 
-      let to_tuple = [ 
-                       IMov(Reg(EAX), Reg(ESI)); 
-                       IAdd(Reg(EAX), Const(1))      
-                      ] in
-      let offset = [
-                    IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
-                    IAdd(Reg(ESI), Const(7));
+      let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
+                       IAdd(Reg(EAX), HexConst(0x1))] in
+      let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
+                    IAdd(Reg(ESI), HexConst(0x7));
                     IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
                   ] in
 
@@ -1113,21 +1111,23 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
    [
 
 
-      IMov(Reg(EAX),  compile_imm pair env);
+      
+      IMov(Reg(EAX),  Sized(DWORD_PTR, compile_imm pair env));
       IMov(Reg(ECX), Reg(EAX));
       IAnd(Reg(ECX), HexConst(0x7));
-      ICmp(Reg(ECX), HexConst(0x1));
+      ICmp(Reg(ECX), HexConst(0x001));
       IJne(Label("error_not_tuple"));
       ISub(Reg(EAX),HexConst(0x1));
       IMov(Reg(EDX),Const(index));
       IMov(Reg(ECX),HexConst(0x0));
       ICmp(Reg(EDX),Reg(ECX));
       IJl(Label("index_too_low"));
-      ICmp(Reg(EDX),RegOffset(word_size * 0, EAX));
+      ICmp(Reg(EDX),RegOffset(0, EAX));
       IJge(Label("index_too_high"));
       IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
+
    ]
-  | CSetItem(pair,index,newitem,loc)-> 
+  | CSetItem(pair,index,newitem,_)-> 
     [
      IMov(Reg(EAX), compile_imm pair env);
      IMov(Reg(EDX), compile_imm newitem env);
@@ -1145,10 +1145,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
           (*helper functions *)
          let moveClosureVarToStack (i: int) : instruction list = 
-              [
+          [
                IMov(Reg(EDX), RegOffset(16 + (word_size*i), ECX));
-               IMov(RegOffset(~-((i + 1) * word_size), EBP), Reg(EDX))
-              ] in    
+               IMov(RegOffset(~-word_size * (i + 1), EBP), Reg(EDX))
+          ] in    
 
           (*labels*)
           let inner_lambda_label = sprintf "inner_lambda_%s" (string_of_int tag) in
@@ -1156,24 +1156,24 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
           (*create env*)
           let frees = List.sort compare (freeVars_aexpr (args@self) body)  in
-          (*List.map (fun e -> debug_printf "%s]\n" e) frees; *)
-          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-((i + 1) * word_size), EBP))] ) frees) in 
-          let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset(word_size * (i+3), EBP))] ) (List.rev args)) in 
-
+          (*List.map (fun e -> debug_printf "%s\n" e) frees;*) 
+          let free_env = List.flatten (List.mapi (fun i fv -> [(fv, RegOffset(~-word_size * (i + 1), EBP))] ) frees) in 
+          let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset((i+3) * word_size, EBP))] ) (List.rev args)) in 
+       
           let copy_free_to_stack = List.flatten (List.mapi (fun  i  a -> moveClosureVarToStack i) frees) in 
 
           let (self_env, self_setup) = if List.length self = 1 then 
            ([(  List.hd self,  RegOffset(~-(List.length frees + 1) * word_size , EBP))],
 
             [
-
             IMov(Reg(EDX), RegOffset(12, ECX));
-            IMov(RegOffset(~-(List.length frees + 1) * word_size , EBP), Reg(EDX))
+            IMov(RegOffset(~-(List.length frees + 1) * word_size , EBP), Reg(EDX));
+
 
             ])   
           else ([],[]) in 
 
-          let newEnv =  self_env@free_env @ args_env in 
+          let newEnv =   (args_env@self_env@free_env)  in 
 
           (* function compilation start*)
           let inner_lambda_stack_setup =  [
@@ -1182,7 +1182,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
                IMov(Reg(EBP),Reg(ESP));
                ISub(Reg(ESP),Const((List.length frees + 1) * word_size) );
                IMov(Reg(ECX), RegOffset(8, EBP));
-               ISub(Reg(ECX), Const(0x5));
+               ISub(Reg(ECX), HexConst(0x5));
 
            ] @self_setup@ copy_free_to_stack in  
 
@@ -1198,7 +1198,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
            (* function compilation end*)
 
            (*create closure*)
-          let free_moves =  List.flatten (List.map (fun x -> [find newEnv x]) frees) in
+          let free_moves =  List.flatten (List.map (fun x -> [find env x]) frees) in
           let move_frees_to_closure = List.flatten (List.mapi (fun i fva -> 
                                         [
                                           IMov(Reg(EAX),fva);
@@ -1226,7 +1226,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
               IAdd(Reg(EAX), HexConst(0x5));
               
               IAdd(Reg(ESI), Const((List.length frees * word_size) + 16));
-              IAdd(Reg(ESI), Const(7));
+              IAdd(Reg(ESI), HexConst(0x7));
               IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
             ]
            (*create closure end*)
@@ -1356,7 +1356,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     ICall(Label("error"));
 
     ILabel("error_not_tuple");
-    IPush(Reg(EAX));
+    IPush(Reg(ECX));
     IPush(Const(err_GET_NOT_TUPLE));
     ICall(Label("error"));
 
@@ -1399,7 +1399,7 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared_preTC desugarPre)
-  |> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))
+  (*|> (if !skip_typechecking then no_op_phase else (add_err_phase type_checked typecheck))*)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
   (*|> (add_phase renamed rename_and_tag)*)

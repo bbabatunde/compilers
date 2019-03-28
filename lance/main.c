@@ -124,7 +124,7 @@ void error(int errCode, int val) {
     fprintf(stderr, "Error: Integer overflow\n");
     break;
   case ERR_GET_NOT_TUPLE:
-    fprintf(stderr, "Error: get expected tuple\n");
+    fprintf(stderr, "Error: get expected tuple %010x\n\n", val);
     break;
   case ERR_GET_LOW_INDEX:
     fprintf(stderr, "Error: index too small to get\n");

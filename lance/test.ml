@@ -459,7 +459,7 @@ let well_formed_tests = [
   te "welfrom2" "let three = ((4, (true, 3))) in
                   three[2 of 2]" "" "error index too large: The tuple  at <welfrom2, 2:18-2:31> has a maximun size of 1, was indexed with 2";
 
-  te "welfformnillequal" "(nil : String) == (nil : Int)"   "" "Unsupported Type: String at <welfformnillequal, 1:7-1:13>";
+  te "welfformnillequal" "(nil : String) == (nil : Int)"   "" "Unsupported: String at <welfformnillequal, 1:7-1:13>";
 
   te "wellformederrortypelist"  "type intlist = (Int * intlist)
 
@@ -468,7 +468,7 @@ let well_formed_tests = [
                                   else: 1 + length(l[1 of 2])
 
                                 let mylistlength = (1, (2, (3, nil:Int))) in
-                                  length(mylistlength)" "" "Unsupported Type: boollist at <wellformederrortypelist, 4:49-4:57>";
+                                  length(mylistlength)" "" "Unsupported: boollist at <wellformederrortypelist, 4:49-4:57>";
 
 
     te "wellformederrortypelist2"  "type intlist = (Int * intlist)
@@ -478,7 +478,7 @@ let well_formed_tests = [
                                   else: 1 + length(l[1 of 2])
 
                                 let mylistlength = (1, (2, (3, nil:boollist))) in
-                                  length(mylistlength)" "" "Unsupported Type: boollist at <wellformederrortypelist2, 7:67-7:75>";
+                                  length(mylistlength)" "" "Unsupported: boollist at <wellformederrortypelist2, 7:67-7:75>";
 
 
    te "wellformederrortypelist3"  "type intlist = (Int * intlist)
@@ -502,19 +502,19 @@ let well_formed_tests = [
 
 
      (* Test scoped functions with and. *)
-  t "fnt1" "def f(): g()
+  (*t "fnt1" "def f(): g()
             and def g(): h()
             and def h(): 1
             h();
             g();
-            f()" "" "1";
-  te "fnt2" "def f(): g()
+            f()" "" "1";*)
+  (*te "fnt2" "def f(): g()
              def g(): h()
              and def h(): 1
              h();
              g();
              f()"
-             "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";
+             "" "The function name g, used at <fnt2, 1:9-1:12>, is not in scope";*)
 
   
 ]
@@ -615,19 +615,21 @@ let well_formed_tests = [
                     let incr = (lambda (x): x + 1) in
                     applyToFive(incr)" "" "6";
 
-      t "lambda6" "def foo(a, x, y, z):
-                    (lambda (a): a + x + z)
-                      foo(1, 2, 3, 4)" "" "11";
+      t "lambda6" "def foo(w, x, y, z):
+                    (lambda (a): a + x + y)
+                      foo(1,2,3,4)(4)" "" "9";
 
 
-    t "letrec" "let rec fac = (lambda (n):
-                          if n < 2: 1
-                          else: n * fac(n - 1))
-                              in fac(5)" "" "120";
+      
+      t "letrec" "let rec fac = (lambda (n):
+                            if n < 2: 1
+                            else: n * fac(n - 1))
+                                in fac(5)" "" "120";
 
 
-  (*
-    t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
+    t "lambda7" "let rec a = (lambda(n): b(n)), b = (lambda(n): n) in a(1)" "" "1";
+    
+    (*t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
                       and def g(x,y): if (y==0): x else: f(y, x - 1)
                     f(1,1)" "" "1";*)
 
@@ -646,16 +648,17 @@ let well_formed_tests = [
 
 let suite =
 "suite">:::
- (*well_formed_tests @
+ well_formed_tests @
  sequence_test @
- desugaring_tests @ 
+ desugaring_tests @(*
  if_tests @
  prim2_test @
  tuple_tests @
- fun_tests @
+ (*fun_tests @*)
  curr_tests @
- prim2_test @*)
+ prim2_test @
  new_well_formed_tests @
+ curr_tests_egg_eater @*)
   (*inference_tests @*)
  []
 ;;
