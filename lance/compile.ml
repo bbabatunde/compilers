@@ -366,7 +366,8 @@ let anf (p : tag program) : unit aprogram =
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ body_setup)
     | ELambda(some, body, tag) -> 
-       raise (UnsupportedTagged("Lambda not a constant function.", tag))
+        let tmp = sprintf "lambda_%d" tag in
+        (ImmId(tmp, ()), [BLet(tmp, CLambda(bindsToStrings some, helpA body, ()))])
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
