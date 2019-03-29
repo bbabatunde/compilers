@@ -109,28 +109,28 @@ int printStack(int val, int* esp, int* ebp, int args) {
 void error(int errCode, int val) {
   switch (errCode) {
   case ERR_COMP_NOT_NUM:
-    fprintf(stderr, "Error: comparison expected a number\n");
+    fprintf(stderr, "comparison expected a number, but got %010x\n", val);
     break;
   case ERR_ARITH_NOT_NUM:
-    fprintf(stderr, "Error: arithmetic expected a number %010x\n\n", val);
+    fprintf(stderr, "arithmetic expected a number, but got %010x\n", val);
     break;
   case ERR_LOGIC_NOT_BOOL:
-    fprintf(stderr, "Error logic expected a boolean\n");
+    fprintf(stderr, "logic expected a boolean, but got %d\n", val >> 1);
     break;
   case ERR_IF_NOT_BOOL:
-    fprintf(stderr, "Error: if expected a boolean\n");
+    fprintf(stderr, "if expected a boolean, but got %d\n", val >> 1);
     break;
   case ERR_OVERFLOW:
-    fprintf(stderr, "Error: Integer overflow\n");
+    fprintf(stderr, "overflow value %010x\n", val);
     break;
   case ERR_GET_NOT_TUPLE:
-    fprintf(stderr, "Error: get expected tuple %010x\n\n", val);
+    fprintf(stderr, " expected tuple, but got %010x\n", val);
     break;
   case ERR_GET_LOW_INDEX:
-    fprintf(stderr, "Error: index too small to get\n");
+    fprintf(stderr, "index too small,  got %010x\n", val);
     break;
   case ERR_GET_HIGH_INDEX:
-    fprintf(stderr, "Error: index too large to get\n");
+    fprintf(stderr, "index too large, got %010x\n", val);
     break;
   case ERR_INDEX_NOT_NUM:
     fprintf(stderr, "Error: get expected numer for index\n");

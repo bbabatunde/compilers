@@ -1,0 +1,294 @@
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:0:welfrom1.
+2019-03-29T00:51:21+00:00 baba#01 I: Test suite:0:welfrom1 is successful.
+2019-03-29T00:51:21+00:00 baba#01 I: End test suite:0:welfrom1.
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:2:welfformnillequal.
+2019-03-29T00:51:21+00:00 baba#01 I: Test suite:2:welfformnillequal is successful.
+2019-03-29T00:51:21+00:00 baba#01 I: End test suite:2:welfformnillequal.
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:3:wellformederrortypelist.
+2019-03-29T00:51:21+00:00 baba#01 I: Test suite:3:wellformederrortypelist is successful.
+2019-03-29T00:51:21+00:00 baba#01 I: End test suite:3:wellformederrortypelist.
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:5:wellformederrortypelist3.
+2019-03-29T00:51:21+00:00 baba#01 I: Test suite:5:wellformederrortypelist3 is successful.
+2019-03-29T00:51:21+00:00 baba#01 I: End test suite:5:wellformederrortypelist3.
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:6:wellformederrortypelist4.
+2019-03-29T00:51:21+00:00 baba#01 I: Test suite:6:wellformederrortypelist4 is successful.
+2019-03-29T00:51:21+00:00 baba#01 I: End test suite:6:wellformederrortypelist4.
+2019-03-29T00:51:21+00:00 baba#01 I: Start test suite:8:seq2.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:8:seq2 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:8:seq2.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:10:seq4.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:10:seq4 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:10:seq4.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:12:seq6.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:12:seq6 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:12:seq6.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:13:seq7.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:13:seq7 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:13:seq7.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:15:seq8.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:15:seq8 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:15:seq8.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:17:set2.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:17:set2 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:17:set2.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:19:desugar_fn2.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:19:desugar_fn2 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:19:desugar_fn2.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:22:desugar_fn6.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:22:desugar_fn6 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:22:desugar_fn6.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:23:desugar1.
+2019-03-29T00:51:22+00:00 baba#01 I: Test suite:23:desugar1 is successful.
+2019-03-29T00:51:22+00:00 baba#01 I: End test suite:23:desugar1.
+2019-03-29T00:51:22+00:00 baba#01 I: Start test suite:25:desugar2_1.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:25:desugar2_1 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:25:desugar2_1.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:27:desugar3.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:27:desugar3 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:27:desugar3.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:29:desugar3_3.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:29:desugar3_3 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:29:desugar3_3.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:31:desugar4.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:31:desugar4 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:31:desugar4.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:33:desugar5.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:33:desugar5 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:33:desugar5.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:35:if_2.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:35:if_2 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:35:if_2.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:37:if_5.
+2019-03-29T00:51:23+00:00 baba#01 I: Test suite:37:if_5 is successful.
+2019-03-29T00:51:23+00:00 baba#01 I: End test suite:37:if_5.
+2019-03-29T00:51:23+00:00 baba#01 I: Start test suite:40:printplus1.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:40:printplus1 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:40:printplus1.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:41:sub_1.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:41:sub_1 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:41:sub_1.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:43:subprint2.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:43:subprint2 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:43:subprint2.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:45:subprint4.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:45:subprint4 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:45:subprint4.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:47:times_2.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:47:times_2 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:47:times_2.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:49:timesprint3.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:49:timesprint3 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:49:timesprint3.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:51:timesadd11.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:51:timesadd11 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:51:timesadd11.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:53:and_2.
+2019-03-29T00:51:24+00:00 baba#01 I: Test suite:53:and_2 is successful.
+2019-03-29T00:51:24+00:00 baba#01 I: End test suite:53:and_2.
+2019-03-29T00:51:24+00:00 baba#01 I: Start test suite:55:and_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:55:and_4 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:55:and_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:57:and_6.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:57:and_6 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:57:and_6.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:59:or_2.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:59:or_2 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:59:or_2.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:61:or_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:61:or_4 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:61:or_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:63:greater_1.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:63:greater_1 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:63:greater_1.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:65:greater_3.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:65:greater_3 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:65:greater_3.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:67:greater_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Test suite:67:greater_4 is successful.
+2019-03-29T00:51:25+00:00 baba#01 I: End test suite:67:greater_4.
+2019-03-29T00:51:25+00:00 baba#01 I: Start test suite:69:greateq_1.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:69:greateq_1 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:69:greateq_1.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:72:greateq_6.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:72:greateq_6 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:72:greateq_6.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:73:greateq_4.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:73:greateq_4 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:73:greateq_4.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:76:less2.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:76:less2 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:76:less2.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:78:less6.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:78:less6 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:78:less6.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:80:less5.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:80:less5 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:80:less5.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:82:lesseq_4.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:82:lesseq_4 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:82:lesseq_4.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:84:lesseq_6.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:84:lesseq_6 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:84:lesseq_6.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:86:forty_one_anf.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:86:forty_one_anf is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:86:forty_one_anf.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:87:scope_err1.
+2019-03-29T00:51:26+00:00 baba#01 I: Test suite:87:scope_err1 is successful.
+2019-03-29T00:51:26+00:00 baba#01 I: End test suite:87:scope_err1.
+2019-03-29T00:51:26+00:00 baba#01 I: Start test suite:88:forty_one_run_anf.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:88:forty_one_run_anf is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:88:forty_one_run_anf.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:91:if2.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:91:if2 is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:91:if2.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:93:overflow.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:93:overflow is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:93:overflow.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:94:funcalls1.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:94:funcalls1 is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:94:funcalls1.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:96:tuplepair.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:96:tuplepair is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:96:tuplepair.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:98:tuplepair2.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:98:tuplepair2 is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:98:tuplepair2.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:100:tuplepairinvalid.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:100:tuplepairinvalid is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:100:tuplepairinvalid.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:102:tuplepair5.
+2019-03-29T00:51:27+00:00 baba#01 I: Test suite:102:tuplepair5 is successful.
+2019-03-29T00:51:27+00:00 baba#01 I: End test suite:102:tuplepair5.
+2019-03-29T00:51:27+00:00 baba#01 I: Start test suite:104:equalif.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:104:equalif is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:104:equalif.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:106:plaineq.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:106:plaineq is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:106:plaineq.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:108:tupleeq2.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:108:tupleeq2 is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:108:tupleeq2.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:110:tupleeq4.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:110:tupleeq4 is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:110:tupleeq4.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:112:istuple1.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:112:istuple1 is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:112:istuple1.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:115:istuple6.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:115:istuple6 is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:115:istuple6.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:116:nlet1.
+2019-03-29T00:51:28+00:00 baba#01 I: Test suite:116:nlet1 is successful.
+2019-03-29T00:51:28+00:00 baba#01 I: End test suite:116:nlet1.
+2019-03-29T00:51:28+00:00 baba#01 I: Start test suite:118:nlet3.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:118:nlet3 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:118:nlet3.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:120:nlet5.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:120:nlet5 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:120:nlet5.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:122:nillequal.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:122:nillequal is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:122:nillequal.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:124:lesseq.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:124:lesseq is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:124:lesseq.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:126:plus_1.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:126:plus_1 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:126:plus_1.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:128:printplus1.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:128:printplus1 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:128:printplus1.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:130:sub_2.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:130:sub_2 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:130:sub_2.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:133:subprint4.
+2019-03-29T00:51:29+00:00 baba#01 I: Test suite:133:subprint4 is successful.
+2019-03-29T00:51:29+00:00 baba#01 I: End test suite:133:subprint4.
+2019-03-29T00:51:29+00:00 baba#01 I: Start test suite:134:times_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:134:times_1 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:134:times_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:136:timesprint2.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:136:timesprint2 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:136:timesprint2.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:138:timesprint4.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:138:timesprint4 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:138:timesprint4.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:140:and_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:140:and_1 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:140:and_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:142:and_8.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:142:and_8 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:142:and_8.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:144:and_5.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:144:and_5 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:144:and_5.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:146:or_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:146:or_1 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:146:or_1.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:148:or_3.
+2019-03-29T00:51:30+00:00 baba#01 I: Test suite:148:or_3 is successful.
+2019-03-29T00:51:30+00:00 baba#01 I: End test suite:148:or_3.
+2019-03-29T00:51:30+00:00 baba#01 I: Start test suite:150:or_5.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:150:or_5 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:150:or_5.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:152:greater_2.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:152:greater_2 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:152:greater_2.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:154:greater_6.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:154:greater_6 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:154:greater_6.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:156:greater_5.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:156:greater_5 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:156:greater_5.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:159:greateq_3.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:159:greateq_3 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:159:greateq_3.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:161:greateq_4.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:161:greateq_4 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:161:greateq_4.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:163:less1.
+2019-03-29T00:51:31+00:00 baba#01 I: Test suite:163:less1 is successful.
+2019-03-29T00:51:31+00:00 baba#01 I: End test suite:163:less1.
+2019-03-29T00:51:31+00:00 baba#01 I: Start test suite:164:less2.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:164:less2 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:164:less2.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:166:less6.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:166:less6 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:166:less6.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:168:less5.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:168:less5 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:168:less5.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:170:lesseq_4.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:170:lesseq_4 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:170:lesseq_4.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:172:lesseq_6.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:172:lesseq_6 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:172:lesseq_6.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:174:invalid_let_rec.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:174:invalid_let_rec is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:174:invalid_let_rec.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:175:invalid_let_rec_2.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:175:invalid_let_rec_2 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:175:invalid_let_rec_2.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:176:redeclaration.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:176:redeclaration is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:176:redeclaration.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:177:duplicate_arg.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:177:duplicate_arg is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:177:duplicate_arg.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:178:lamdba1.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:178:lamdba1 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:178:lamdba1.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:180:lambda2.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:180:lambda2 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:180:lambda2.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:182:lambda5.
+2019-03-29T00:51:32+00:00 baba#01 I: Test suite:182:lambda5 is successful.
+2019-03-29T00:51:32+00:00 baba#01 I: End test suite:182:lambda5.
+2019-03-29T00:51:32+00:00 baba#01 I: Start test suite:184:letrec.
+2019-03-29T00:51:33+00:00 baba#01 I: Test suite:184:letrec is successful.
+2019-03-29T00:51:33+00:00 baba#01 I: End test suite:184:letrec.
+2019-03-29T00:51:33+00:00 baba#01 I: Start test suite:185:lambda7.
+2019-03-29T00:51:33+00:00 baba#01 I: Test suite:185:lambda7 is successful.
+2019-03-29T00:51:33+00:00 baba#01 I: End test suite:185:lambda7.
