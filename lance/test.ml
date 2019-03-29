@@ -644,6 +644,15 @@ let well_formed_tests = [
      te "duplicate_arg" "let rec a = (lambda(b,c,b): 1) in a(1,2,3)" "" "The argument b, first defined at <duplicate_arg, 1:11-1:30>, is redefined";
  ]
 
+ let more_lambda_tests = [
+     (* Return a lambda*)
+     t "lambda9" "let a = (lambda(x): (lambda(x): x)) in a(0)(1)" "" "1";
+     (* return another lambda*)
+     t "lambda10" "let a = (lambda(x): if x: (lambda(y): 1) else: (lambda(y): 0)) in a(true)(0)" "" "1";
+     (*Pass a lambda*)
+     t "lambda11" "let a = (lambda(x): x(1)) in a((lambda(y): y))" "" "";
+]
+
 let suite =
 "suite">:::
  (*well_formed_tests @
