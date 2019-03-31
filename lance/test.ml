@@ -660,6 +660,15 @@ let failing_tests = [
                       and def g(x,y): if (y==0): x else: f(y, x - 1)
                     f(1,1)" "" "1";
     ]
+ let more_lambda_tests = [
+     (* Return a lambda*)
+     t "lambda9" "let a = (lambda(x): (lambda(x): x)) in a(0)(1)" "" "1";
+     (* return another lambda*)
+     t "lambda10" "let a = (lambda(x): if x: (lambda(y): 1) else: (lambda(y): 0)) in a(true)(0)" "" "1";
+     (*Pass a lambda*)
+     t "lambda11" "let a = (lambda(x): x(1)) in a((lambda(y): y))" "" "";
+]
+
 let suite =
 "suite">:::
  well_formed_tests @
