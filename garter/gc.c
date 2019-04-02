@@ -67,6 +67,7 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
      }
   }
 
+  // no-op for now
   return heap_top;
 }
 
