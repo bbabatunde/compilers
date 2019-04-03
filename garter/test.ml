@@ -64,6 +64,7 @@ let oom = [
   tgc "oomgc4" (4 + builtins_size) "(3, 4)" "" "(3, 4)";
   tgcerr "oomgc5" (3 + builtins_size) "(3, 4, 5, 6, 7, 8, 9)" "" "Allocation";
 
+
 ]
 
 let gc = [
@@ -132,16 +133,15 @@ let new_gc_tests = [
    
 ]
 
-
 let failing_tests = [
 
-     tgcerr "gctest7" 3 "(1, (3, (4, 5)))" "" "Out of memory";
+     tgcerr "gctest7" 6 "(1, (3, (4, 5)))" "" "Out of memory";
 
 ]
 
 let suite =
 "suite">:::
- pair_tests @ oom @ gc
+ pair_tests @ oom @ gc @ failing_tests
 
 
 

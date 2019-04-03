@@ -56,7 +56,11 @@ void printHelpGC(FILE *out, int val) {
     fprintf(out, ")");
     // Unmark this tuple: restore its length
     *(addr) = len; // length is encoded
+  }else if((val & FW_PTR_MASK_GC) == FW_PTR){
+      fprintf(out, "forwarding to %p", (int*)(val - FW_PTR));    
   }
+   
+
   else {
     fprintf(out, "Unknown value: %#010x", val);
   }
@@ -202,7 +206,7 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
     The new location within to_start at which to allocate new data
  */
 int* gc(int* bottom_frame, int* top_frame, int* top_stack, int* from_start, int* from_end, int* to_start) {
-  for (int* cur_word = top_stack+1 /* maybe need a +1 here? */; cur_word <= top_stack; cur_word++) {
+  for (int* cur_word = top_stack+1 ; cur_word <= top_stack; cur_word++) {
     to_start = copy_if_needed(cur_word, to_start);
   }
   if (top_frame < bottom_frame)
