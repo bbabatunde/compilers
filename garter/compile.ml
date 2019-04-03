@@ -427,27 +427,6 @@ let rename_and_tag (p : tag program) : tag program =
 ;;
 
 (* TYPE INFERENCE CODE FROM EGG EATER. *)
-let rec replace_in_type rep_lst t =
-    match t with
-    | TyCon _ -> t
-    | TyVar(name, pos) ->
-        let replacement = rep_lookup name rep_lst in
-        if (String.equal replacement "") then t
-        else TyVar(replacement, pos)
-    | TyArr(lst, typ, pos) ->
-        TyArr((List.map (fun e -> replace_in_type rep_lst e) lst), (replace_in_type rep_lst typ), pos)
-    | TyApp(typ, lst, pos) ->
-        TyApp((replace_in_type rep_lst typ), (List.map (fun e -> replace_in_type rep_lst e) lst), pos)
-    | TyTup(lst, pos) ->
-        TyTup((List.map (fun e -> replace_in_type rep_lst e) lst), pos)
-    | TyBlank(_) -> raise (InternalCompilerError "Unblank broken? o.O")
-and rep_lookup name lst =
-    match lst with
-    | [] -> ""
-    | (old_name, TyVar(new_name, _))::rest ->
-        if old_name = name then new_name else rep_lookup name rest
-    | _ -> raise (InternalCompilerError "Weird call to replace in type, should not have no tyvar pairs.")
-;;
 
 let gensym =
   let count = ref 0 in
@@ -455,15 +434,6 @@ let gensym =
     count := !count + 1;
     !count
   in fun str -> sprintf "%s_%d" str (next ())
-;;
-
-let instantiate (s: 'a scheme) : 'a typ =
-    match s with
-    | SForall(inp_lst, op_typ, pos) ->
-            let inp_lst_typ = List.fold_left (fun acc ele -> (acc @ [(ele, TyVar(gensym "init", pos))])) [] inp_lst in
-            let op_typ = replace_in_type inp_lst_typ op_typ in
-            debug_printf "\ninit to: %s\n" (string_of_typ op_typ);
-            op_typ
 ;;
 
 (* END OF EGG EATER TYPE INFERENCE CODE*)
@@ -477,7 +447,7 @@ let defn_to_letrec (p : 'a program) : 'a program =
     let decl_to_binding d =
       match d with
       | DFun(name, args, scheme, body, tag) ->
-         (BName(name, instantiate scheme, tag), ELambda(args, body, tag), tag) in
+         (BName(name, TyBlank(tag), tag), ELambda(args, body, tag), tag) in
     ELetRec(List.map decl_to_binding decls, body, tag) in
   match p with
   | Program(tydecls, declgroups, body, tag) ->
