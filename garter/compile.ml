@@ -551,20 +551,12 @@ type 'a anf_bind =
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
 
+
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
     match p with
-    | Program(_, decls, body, _) -> AProgram(List.concat(List.map helpG decls), helpA body, ())
-  and helpG (g : tag decl list) : unit adecl list =
-    List.map helpD g
-  and helpD (d : tag decl) : unit adecl =
-    match d with
-    | DFun(name, args, ret, body, _) ->
-       let args = List.map (fun a ->
-                      match a with
-                      | BName(a, _, _) -> a
-                      | _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away"))) args in
-       ADFun(name, args, helpA body, ())
+    | Program(_, [], body, _) -> AProgram([], helpA body, ())
+    | Program(_, decls, body, _) -> raise (InternalCompilerError("DFuns are supposed to be desugared to let recs :/"))
   and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
     match e with
     | EAnnot(e, _, _) -> helpC e
@@ -589,47 +581,34 @@ let anf (p : tag program) : unit aprogram =
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
     | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
        raise (InternalCompilerError("Tuple bindings should have been desugared away"))
-    | EApp(funname, args, _) ->
-       let (fun_ans, fun_setup) = helpI funname in
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (CApp(fun_ans, new_args, ()), fun_setup @ List.concat new_setup)
-
-    | ESeq(e1, e2, _) ->
-       let (e1_ans, e1_setup) = helpC e1 in
-       let (e2_ans, e2_setup) = helpC e2 in
-       (e2_ans, e1_setup @ [BSeq e1_ans] @ e2_setup)
-
-    | ETuple(args, _) ->
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (CTuple(new_args, ()), List.concat new_setup)
-    | EGetItem(tup, idx, len, _) ->
-       let (tup_imm, tup_setup) = helpI tup in
-       (CGetItem(tup_imm, idx, ()), tup_setup)
-    | ESetItem(tup, idx, len, newval, _) ->
-       let (tup_imm, tup_setup) = helpI tup in
-       let (new_imm, new_setup) = helpI newval in
-       (CSetItem(tup_imm, idx, new_imm, ()), tup_setup @ new_setup)
-         
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
+    | EApp(funname, args, tag) ->
+        let (name_imm, name_setup) = helpI funname in
+        let (args_imm, args_setup) = List.split (List.map helpI args) in
+        (CApp(name_imm, args_imm, ()), name_setup @ (List.concat args_setup))
+    | ETuple(expr_list, _) ->
+        let (tup_args, tup_setup) = List.split (List.map helpI expr_list) in
+        (CTuple(tup_args, ()), List.concat tup_setup)
+    | EGetItem(e, idx, len, a) ->
+        let (e_imm, e_setup) = helpI e in
+        (CGetItem(e_imm, idx, ()), e_setup)
+    | ESetItem(e, idx, len, newval, a) ->
+        let (e_imm, e_setup) = helpI e in
+        let (new_imm, new_setup) = helpI newval in
+        (CSetItem(e_imm, idx, new_imm, ()), e_setup @ new_setup)
     | ELambda(binds, body, _) ->
-       let args = List.map (fun a ->
-                      match a with
-                      | BName(a, _, _) -> a
-                      | BBlank(_, _) -> gensym "blank"
-                      | BTuple _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away")))
-                    binds in
-       (CLambda(args, helpA body, ()), [])
-    | ELetRec(binds, body, _) ->
-       let name_of b =
-         match b with
-         | BName(name, _, _) -> name
-         | _ -> raise (InternalCompilerError "Other bindings should be desugared or rejected") in
-       let (names, new_binds_setup) = List.split (List.map (fun (b, rhs, _) -> (name_of b, helpC rhs)) binds) in
-       let (new_binds, new_setup) = List.split new_binds_setup in
-       let (body_ans, body_setup) = helpC body in
-       (body_ans, (BLetRec (List.combine names new_binds)) :: body_setup)
-
+        (CLambda(bindsToStrings binds, helpA body, ()), [])
+    | ELetRec(bindings, body, tag) ->
+        (* Construct BLetRec bindings *)
+        let bindingnames = bindingsToStrings bindings in
+        let (bindingnc_ans, bindingnc_setups) = List.split (List.map (fun e -> let (_, e, _) = e in helpC e) bindings) in
+        (* Get body setup *)
+        let (body_ans, body_setup) = helpC body in
+        let bncs = List.fold_left2 (fun a e1 e2 -> (e1, e2) :: a) [] bindingnames bindingnc_ans in
+        (* Add contrusted setups, body*)
+        (body_ans, (List.concat bindingnc_setups) @ [BLetRec(bncs)] @ body_setup)
+    | ELetRec([], body, _) -> helpC body
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
-
   and helpI (e : tag expr) : (unit immexpr * unit anf_bind list) =
     match e with
     | ENumber(n, _) -> (ImmNum(n, ()), [])
@@ -637,27 +616,21 @@ let anf (p : tag program) : unit aprogram =
     | EId(name, _) -> (ImmId(name, ()), [])
     | ENil _ -> (ImmNil(), [])
     | EAnnot(e, _, _) -> helpI e
-
-    | ESeq(e1, e2, _) ->
-       let (e1_imm, e1_setup) = helpI e1 in
-       let (e2_imm, e2_setup) = helpI e2 in
-       (e2_imm, e1_setup @ e2_setup)
-
-
+    | ESeq(_, _, tag) -> raise (InternalCompilerError (sprintf "Desugaring must take care of sequences!! Tag:%d" tag))
     | ETuple(args, tag) ->
        let tmp = sprintf "tup_%d" tag in
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (ImmId(tmp, ()), (List.concat new_setup) @ [BLet(tmp, CTuple(new_args, ()))])
-    | EGetItem(tup, idx, len, tag) ->
-       let tmp = sprintf "get_%d" tag in
-       let (tup_imm, tup_setup) = helpI tup in
-       (ImmId(tmp, ()), tup_setup @ [BLet(tmp, CGetItem(tup_imm, idx, ()))])
-    | ESetItem(tup, idx, len, newval, tag) ->
-       let tmp = sprintf "set_%d" tag in
-       let (tup_imm, tup_setup) = helpI tup in
-       let (new_imm, new_setup) = helpI newval in
-       (ImmId(tmp, ()), tup_setup @ new_setup @ [BLet(tmp, CSetItem(tup_imm, idx, new_imm,()))])
-
+       let (tup_args, tup_setup) = List.split (List.map helpI args) in
+       (ImmId(tmp, ()), (List.concat tup_setup) @ [BLet(tmp, CTuple(tup_args, ()))])
+       (* Hint: use BLet to bind the result *)
+    | EGetItem(e, idx, len, a) ->
+        let tmp = sprintf "eget_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        (ImmId(tmp, ()), e_setup @ [BLet(tmp, CGetItem(e_imm, idx, ()))])
+    | ESetItem(e, idx, len, newval, a) ->
+        let tmp = sprintf "eset_%d" a in
+        let (e_imm, e_setup) = helpI e in
+        let (new_imm, new_setup) = helpI newval in
+        (ImmId(tmp, ()), e_setup @ new_setup @ [BLet(tmp, CSetItem(e_imm, idx, new_imm, ()))])
     | EPrim1(op, arg, tag) ->
        let tmp = sprintf "unary_%d" tag in
        let (arg_imm, arg_setup) = helpI arg in
@@ -672,58 +645,46 @@ let anf (p : tag program) : unit aprogram =
        let (cond_imm, cond_setup) = helpI cond in
        (ImmId(tmp, ()), cond_setup @ [BLet(tmp, CIf(cond_imm, helpA _then, helpA _else, ()))])
     | EApp(funname, args, tag) ->
+       let (name_imm, name_setup) = helpI funname in
        let tmp = sprintf "app_%d" tag in
-       let (fun_ans, fun_setup) = helpI funname in
        let (new_args, new_setup) = List.split (List.map helpI args) in
-       (ImmId(tmp, ()), fun_setup @ (List.concat new_setup) @ [BLet(tmp, CApp(fun_ans, new_args, ()))])
+       (ImmId(tmp, ()), name_setup @ (List.concat new_setup) @ [BLet(tmp, CApp(name_imm, new_args, ()))])
     | ELet([], body, _) -> helpI body
     | ELet((BBlank(_, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpI exp in (* MUST BE helpI, to avoid any missing final steps *)
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ body_setup)
-    | ELambda(binds, body, tag) ->
-       let tmp = sprintf "lam_%d" tag in
-       let args = List.map (fun a ->
-                      match a with
-                      | BName(a, _, _) -> a
-                      | BBlank(_, _) -> gensym "blank"
-                      | BTuple _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away")))
-                    binds in
-       (ImmId(tmp, ()), [BLet(tmp, CLambda(args, helpA body, ()))])
+    | ELambda(some, body, tag) -> 
+        let tmp = sprintf "lambda_%d" tag in
+        (ImmId(tmp, ()), [BLet(tmp, CLambda(bindsToStrings some, helpA body, ()))])
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
     | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
-       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
-    | ELetRec(binds, body, tag) ->
-       let tmp = sprintf "lam_%d" tag in
-       let name_of b =
-         match b with
-         | BName(name, _, _) -> name
-         | _ -> raise (InternalCompilerError "Other bindings should be desugared or rejected") in
-       let (names, new_binds_setup) = List.split (List.map (fun (b, rhs, _) -> (name_of b, helpC rhs)) binds) in
-       let (new_binds, new_setup) = List.split new_binds_setup in
-       let (body_ans, body_setup) = helpC body in
-       (ImmId(tmp, ()), (List.concat new_setup)
-                        @ [BLetRec (List.combine names new_binds)]
-                        @ body_setup
-                        @ [BLet(tmp, body_ans)])
+       raise (InternalCompilerError (sprintf "Desugaring must handle this!! Tag:%d" pos))
+    | ELetRec(binds, body, tag) -> raise (UnsupportedTagged("Function definiton can't be immediate.", tag))
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
       (fun bind body ->
+        (* Here's where the anf_bind datatype becomes most useful:
+             BSeq binds get dropped, and turned into ASeq aexprs.
+             BLet binds get wrapped back into ALet aexprs.
+             BLetRec binds get wrapped back into ALetRec aexprs.
+           Syntactically it looks like we're just replacing Bwhatever with Awhatever,
+           but that's exactly the information needed to know which aexpr to build. *)
         match bind with
         | BSeq(exp) -> ASeq(exp, body, ())
         | BLet(name, exp) -> ALet(name, exp, body, ())
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)
   in
-  helpP p
+  let anfP = helpP p in
+  debug_printf "BEFORE ANF: %s" (string_of_program p);
+  debug_printf "AFTER ANF: %s" (string_of_aprogram anfP);
+  anfP
 ;;
-
-
-
 
 let free_vars_E (e : 'a aexpr) rec_binds : string list =
   let rec helpA (bound : string list) (e : 'a aexpr) : string list =
@@ -1344,28 +1305,9 @@ and replace_args exprs env =
 
   @ _replace_with_saved_args exprs 1
 
-let build_env (vars: string list) : (string * arg) list =
-  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
-    match vars with
-    | vname::tail -> 
-        let offset = 8+4*(List.length parsed) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in 
-        (_build_env tail (parsed @ this_res)
-        )
-    | _ -> ([], parsed)
-  in let (_, result) = _build_env vars [] in
-    result
-let rec compile_decl (d: tag adecl ) : instruction list = match d with
-  | ADFun(fun_name, args, body, tag) -> 
-      let local_env = build_env args in (compile_fun fun_name body args local_env false) 
-  
-
-
-
-
-
 let compile_prog (anfed : tag aprogram) : string = match anfed with
-  | AProgram(decls,body,_)  -> 
+  | AProgram (ADFun (_, _, _, _)::_, _, _) -> raise (InternalCompilerError("Weird AProgram, seems to have decls, desugar broken?"))
+  | AProgram([], body, _)  ->
   let prelude =
  " 
   section .text
@@ -1373,11 +1315,17 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   extern error
   extern print
   extern input
+  extern try_gc
+  extern naive_print_heap
+  extern HEAP
+  extern HEAP_END
+  extern STACK_BOTTOM
   global our_code_starts_here" in
   let count = word_size *  count_vars body in
   let heap_start = [
+      IInstrComment(IMov(LabelContents("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
       ILineComment("heap start");
-      IMov(Reg(ESI),RegOffset(4,ESP));
+      IMov(Reg(ESI),RegOffset(8,ESP));
       IAdd(Reg(ESI),Const(7));
       IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
 
@@ -1457,9 +1405,8 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  let fun_def =  List.flatten (List.map compile_decl decls) in
   let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
+  let as_assembly_string = (to_asm ([ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
