@@ -741,10 +741,6 @@ and free_scheme_tyvars (args, typ) =
 ;;
 
 
-
-
-
-  
 let reserve size tag =
   let ok = sprintf "$memcheck_%d" tag in
   [
@@ -1116,7 +1112,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
                 IMov(Reg(EAX), fname);
                 ISub(Reg(EAX), HexConst(0x5));
-                ICmp(Sized(DWORD_PTR, RegOffset(0, EAX)), Const(List.length imm_args));
+                ICmp(Sized(DWORD_PTR, RegOffset(0, EAX)), Const((List.length imm_args) lsl 1));
                 IJne(Label("error_wrong_arity"))
          ] @ args @ 
          [
@@ -1128,8 +1124,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
          ]
 
 
-  | CTuple(lst,_)-> 
-      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))] in
+  | CTuple(lst,tag)-> 
+      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const((List.length lst) lsl 1) ))] in
       let args = List.map (fun e ->  compile_imm e env) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
@@ -1137,12 +1133,15 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
                        IAdd(Reg(EAX), HexConst(0x1))] in
+
+      let reserve_instr = reserve (((List.length lst) + 1)  * word_size) tag in 
+
       let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
                     IAdd(Reg(ESI), HexConst(0x7));
                     IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
                   ] in
 
-       size @  instr @ to_tuple @ offset
+       reserve_instr @ size @  instr @ to_tuple @ offset
      
 
   | CGetItem(pair,index,_)-> 
@@ -1156,7 +1155,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
       ICmp(Reg(ECX), HexConst(0x001));
       IJne(Label("error_not_tuple"));
       ISub(Reg(EAX),HexConst(0x1));
-      IMov(Reg(EDX),Const(index));
+      IMov(Reg(EDX),Const(index lsl 1 ));
       IMov(Reg(ECX),HexConst(0x0));
       ICmp(Reg(EDX),Reg(ECX));
       IJl(Label("index_too_low"));
@@ -1243,13 +1242,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
                                           IMov(RegOffset(16 + (word_size*i), ESI), Reg(EAX))
                                         ]
                                     ) free_moves ) in 
-
+          let reserve_instr = reserve ((List.length move_frees_to_closure) + 16) tag in 
           let closure_prologue = 
             [
               ILabel(inner_lambda_end_label);
 
 
-              IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length args)));
+              IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const((List.length args) lsl 1)  ));
               IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Label(inner_lambda_label)));
               IMov(RegOffset(8, ESI), Sized(DWORD_PTR, Const(List.length frees)));
              
@@ -1270,7 +1269,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
            (*create closure end*)
 
           in
-          [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
+          [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ reserve_instr @ closure_prologue
 
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
  and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
@@ -1309,12 +1308,11 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram (ADFun (_, _, _, _)::_, _, _) -> raise (InternalCompilerError("Weird AProgram, seems to have decls, desugar broken?"))
   | AProgram([], body, _)  ->
   let prelude =
- " 
-  section .text
-  extern equal 
+ "section .text
   extern error
   extern print
-  extern input
+  extern print_stack
+  extern equal
   extern try_gc
   extern naive_print_heap
   extern HEAP
@@ -1325,7 +1323,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   let heap_start = [
       IInstrComment(IMov(LabelContents("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
       ILineComment("heap start");
-      IMov(Reg(ESI),RegOffset(8,ESP));
+      IMov(Reg(ESI),RegOffset(4,ESP));
       IAdd(Reg(ESI),Const(7));
       IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
 

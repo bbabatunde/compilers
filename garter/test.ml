@@ -43,7 +43,7 @@ let pair_tests = [
             begin
               t[1 of 2 := nil : intlist];
               t
-            end" "" "(4)";
+            end" "" "(4, nil)";
   t "tup3" "type intlist = (Int * intlist)
             let t : intlist = (4, (5, nil : intlist)) in
             begin
@@ -58,11 +58,12 @@ let pair_tests = [
 ]
 
 let oom = [
-  tgcerr "oomgc1" (7 + builtins_size) "(1, (3, 4))" "" "Out of memory";
+  tgcerr "oomgc1" (2 + builtins_size) "(1, (3, 4))" "" "Allocation error: needed 3 words, but the heap is only 2 words";
   tgc "oomgc2" (8 + builtins_size) "(1, (3, 4))" "" "(1, (3, 4))";
-  tvgc "oomgc3" (8 + builtins_size) "(1, (3, 4))" "" "(1, (3, 4))";
+  tgc "oomgc3" (8 + builtins_size) "(1, (3, 4))" "" "(1, (3, 4))";
   tgc "oomgc4" (4 + builtins_size) "(3, 4)" "" "(3, 4)";
   tgcerr "oomgc5" (3 + builtins_size) "(3, 4, 5, 6, 7, 8, 9)" "" "Allocation";
+
 ]
 
 let gc = [
@@ -76,12 +77,21 @@ let gc = [
        end"
       ""
       "(1, 2)";
+
+  tgc "gctest2" 10 "(1, 2)" "" "(1, 2)";
+
 ]
 
 
+let failing_tests = [
+
+     tgcerr "gctest7" 3 "(1, (3, (4, 5)))" "" "Out of memory";
+
+]
+
 let suite =
 "suite">:::
- pair_tests @ oom @ []
+ pair_tests @ oom @ gc
 
 
 

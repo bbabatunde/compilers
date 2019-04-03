@@ -5,14 +5,16 @@ const int NUM_TAG_MASK_GC     = 0x00000001;
 const int BOOL_TAG_MASK_GC    = 0x00000007;
 const int TUPLE_TAG_MASK_GC   = 0x00000007;
 const int CLOSURE_TAG_MASK_GC = 0x00000007;
+const int FW_PTR_MASK_GC      = 0x00000007;
+
 const int NUM_TAG_GC          = 0x00000000;
-const int BOOL_TAG_GC        = 0x00000007;
+const int BOOL_TAG_GC         = 0x00000007;
 const int TUPLE_TAG_GC        = 0x00000001;
 const int CLOSURE_TAG_GC      = 0x00000005;
+const int FW_PTR              = 0x00000008;           
 const int BOOL_TRUE_GC        = 0xFFFFFFFF;
 const int BOOL_FALSE_GC       = 0x7FFFFFFF;
 const int NIL_GC              = ((int)NULL | TUPLE_TAG_GC);
-
 
 
 int tupleCounterGC = 0;
@@ -120,30 +122,22 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
   } else if ((garter_val & TUPLE_TAG_MASK_GC) == TUPLE_TAG_GC){
 
      int* heap_thing_addr = (int*)(garter_val - TUPLE_TAG_GC);
-
-     if((*(heap_thing_addr) & TUPLE_TAG_MASK_GC) == TUPLE_TAG_GC){
-        garter_val_addr =  (int*)(*(heap_thing_addr) - TUPLE_TAG_GC);
-          return heap_top;
-     }else if((*(heap_thing_addr) & TUPLE_TAG_MASK_GC) == TUPLE_TAG_GC){
-        garter_val_addr=  (int*)(*(heap_thing_addr)- TUPLE_TAG_GC);
-        return heap_top;
-     } 
-
      int size = heap_thing_addr[0];
      int i;
      //1.Copy the full contents of heap_thing to heap_top.
      for(i = 0; i < size; i++){
         heap_top[i]= garter_val_addr[i];
-
      }
      //2.Update the value at garter_val_addr with the value of heap_top.
-     garter_val_addr = heap_top;
+     garter_val_addr = heap_top + TUPLE_TAG_GC;
 
+      heap_top[0] = heap_top[0] + NUM_TAG_MASK_GC;
       //create forwarding pointer
-       int* fwd_ptr = heap_top || TUPLE_TAG_GC;
+       int* fwd_ptr = heap_top  + FW_PTR;
 
       //3.Replace the value at heap_thing_addr (i.e., the location referred to by garter_val) with a forwarding pointer to heap_top
        heap_thing_addr = fwd_ptr;
+
        int * curr_heap_top = heap_top;
 
 
@@ -157,14 +151,6 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
   }else if  ((garter_val & CLOSURE_TAG_MASK_GC) == CLOSURE_TAG_GC){
      int* heap_thing_addr = (int*)(garter_val - CLOSURE_TAG_GC);
 
-     if((*(heap_thing_addr) & CLOSURE_TAG_MASK_GC) == CLOSURE_TAG_GC){
-        garter_val_addr =  (int*)(*(heap_thing_addr) - CLOSURE_TAG_GC);
-        return heap_top;
-     }else if((*(heap_thing_addr) & TUPLE_TAG_MASK_GC) == TUPLE_TAG_GC){
-        garter_val_addr =  (int*)(*(heap_thing_addr) - TUPLE_TAG_GC);
-        return heap_top;
-     } 
-
      int vals_no = heap_thing_addr[2];
      int size = 3 + vals_no;
      int i;
@@ -172,23 +158,30 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
 
      //1.Copy the full contents of heap_thing to heap_top.
      for(i = 0; i < size; i++){
-        heap_top[i]= garter_val_addr[i];
+        heap_top[i] = heap_thing_addr[i];
 
      }
      //2.Update the value at garter_val_addr with the value of heap_top.
-     garter_val_addr = heap_top;
-
+    int* curr_heap_top = heap_top;
+    garter_val_addr = heap_top + CLOSURE_TAG_GC;
     //create forwarding pointer
-    int* fwd_ptr = heap_top ||  CLOSURE_TAG_GC;
+    int* fwd_ptr = heap_top + FW_PTR;
     //3.Replace the value at heap_thing_addr (i.e., the location referred to by garter_val) with a forwarding pointer to heap_top
      heap_thing_addr = fwd_ptr;
-
-      int* curr_heap_top = heap_top;
       //4.Increment heap_top as needed to record the allocation.
       heap_top += size;
-       for(i = 0; i < size; i++){
+     for(i = 0; i < size; i++){
           heap_top = copy_if_needed((curr_heap_top+i), heap_top);
      }
+  }else if ((garter_val & FW_PTR_MASK_GC) == FW_PTR){
+           int * temp = (int*)(garter_val - FW_PTR);
+
+           if(temp[0] & 0x1){
+               temp[0] = temp[0] << 1;
+               garter_val_addr = temp + TUPLE_TAG_GC;
+           }else{
+                garter_val_addr = temp + CLOSURE_TAG_GC;
+           }
   }
 
   // no-op for now
@@ -209,7 +202,7 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top) {
     The new location within to_start at which to allocate new data
  */
 int* gc(int* bottom_frame, int* top_frame, int* top_stack, int* from_start, int* from_end, int* to_start) {
-  for (int* cur_word = top_stack /* maybe need a +1 here? */; cur_word <= top_stack; cur_word++) {
+  for (int* cur_word = top_stack+1 /* maybe need a +1 here? */; cur_word <= top_stack; cur_word++) {
     to_start = copy_if_needed(cur_word, to_start);
   }
   if (top_frame < bottom_frame)

@@ -20,7 +20,7 @@ test: *.ml parser.mly lexer.mll
 	$(BUILD) -no-hygiene -package $(PKGS) test.native
 	mv test.native test
 
-output/%.run: output/%.o main.c  gc.o 
+output/%.run: output/%.o main.c gc.o
 	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
 
 output/%.o: output/%.s
@@ -30,8 +30,8 @@ output/%.o: output/%.s
 output/%.s: input/%.garter main
 	./main $< > $@
 
-gc.o: gc.c gc.h 
-	clang gc.c -m32 -c -g -o gc.o
+gc.o: gc.c gc.h
+	gcc gc.c -m32 -c -g -o gc.o
 
 clean:
 	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o
