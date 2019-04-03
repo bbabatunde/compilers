@@ -1401,7 +1401,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   let heap_start = [
       IInstrComment(IMov(LabelContents("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
       ILineComment("heap start");
-      IMov(Reg(ESI),RegOffset(8,ESP));
+      IMov(Reg(ESI),RegOffset(4, ESP));
       IAdd(Reg(ESI),Const(7));
       IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
 
