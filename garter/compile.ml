@@ -1305,26 +1305,6 @@ and replace_args exprs env =
 
   @ _replace_with_saved_args exprs 1
 
-let build_env (vars: string list) : (string * arg) list =
-  let rec _build_env (vars: string list) (parsed: (string * arg) list) : (string list * (string * arg) list) = 
-    match vars with
-    | vname::tail -> 
-        let offset = 8+4*(List.length parsed) in
-        let this_res = [(vname, RegOffset(offset, EBP))] in 
-        (_build_env tail (parsed @ this_res)
-        )
-    | _ -> ([], parsed)
-  in let (_, result) = _build_env vars [] in
-    result
-let rec compile_decl (d: tag adecl ) : instruction list = match d with
-  | ADFun(fun_name, args, body, tag) -> 
-      let local_env = build_env args in (compile_fun fun_name body args local_env false) 
-  
-
-
-
-
-
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
@@ -1418,9 +1398,8 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  let fun_def =  List.flatten (List.map compile_decl decls) in
   let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm (fun_def @ [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
+  let as_assembly_string = (to_asm ([ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
