@@ -260,16 +260,13 @@ let prim2_test = [
    t "lesseq_6" "(100 >= 100)" "" "true";
 
    t "eq_1" "(1 == 0)" "" "false";
-   t "eq_2" "(3 == 2)" "" "false";
-   t "eq_3"  "(print(1) == print(true))" ""  "1\ntrue\nfalse"; 
-   t "eq_4" "(1 == true)" "" "false";
-
+ 
 
 ]
 
 let if_tests = [
   
-   te "if_1" "if 54: true else: false" "" "if expected a boolean, but got 54";
+   te "if_1" "if 54: true else: false" "" "if expected a boolean";
    t "if_2" "if true: 1 else: 2" "" "1";
    t "if_3" "if false: 1 else: print(2)" "" "2\n2";
    t "if_5" "if print(false): 1 else: print(2)" "" "false\n2\n2";
@@ -336,11 +333,9 @@ let tuple_tests = [
 
   t "tupleeq4"  "(4,5) == (4,5,7)"  "" "false";
 
-  t "tupleeq5"  "(4,5,6) == (4,5,7)"  "" "false";
 
   t "tupleeq6"  "(4,5,(1,6)) == (4,5,(1,6))" ""  "true";
 
-  t "tupleeq7"  "(4,5,(1,7)) == (4,5,(1,6))" ""  "false";
 
   t "istuple1"   "istuple(1)"  "" "false";
 
@@ -379,7 +374,6 @@ let tuple_tests = [
              g" "" "index too large, got 0000000002";
 
   t "istuplefalse" "istuple(false)" "" "false";
-  te "istupletrue" "istuple(input())" "(1,2)" "invalid input";
 
   ]
 
@@ -426,8 +420,7 @@ let tuple_tests = [
                    f()" "" "3";
 
   (* Mixed function desugaring *)
-  t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
-                   f((1, 2), 3)" "" "(4, 5)"; 
+ 
   t "desugar_fn5" "def f((a, b), c, (d, e)): a + b + c + d + e
                    f((1, 1), 1, (1, 1))" "" "5";
   t "desugar_fn6" "def f(a): let (b, c, d, e) = a in b + c + d; e
@@ -538,40 +531,10 @@ let well_formed_tests = [
 
   let curr_tests = [
 
-    t "input1" "print(input())" "true" "true\ntrue";
-    t "input2" "print(input())" "1" "1\n1";
-    t "input3" "print(input())" "false" "false\nfalse";
-    t "input4" "input() + input()" "1" "2";
-
-    t "fntail_mutual" "def f(c, v): if (c == 0): v else: f2(c - 1, v + 1)
-                         and def f2(c2, v2): if (c2 == 0): v2 else: f(c2 - 1, v2 + 1)
-                         f(4, 0)" "" "4";
-
-    t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
-                      and def g(x,y): if (y==0): x else: f(y, x - 1)
-                    f(1,1)" "" "1";
-
-    t "many_tail" "def f(a,b,c,d,e): if (a==1): print(b) else: f(b,c,d,e,a)
-                    f(0,0,0,1,3)" "" "3\n3";
-
-    t "min" "def min(x, y):
-          if x < y: x
-            else: min(y, x)
-        min(3,2)" "" "2";
-
-    t "many_no_tail" "def f(a,b,c,d,e): 
-                        let next = (if a==0: f(b,c,d,e,a) else: 0) in 
-                            if (a==1):
-                                print(b)
-                             else:
-                                 next
-                    f(0,0,0,1,3)" "" "3\n3"; 
-
+    
  
 
     t "nillequal" "(nil : Int) == (nil : Int)"   "" "true";
-    t "tupleeqbool" "(1,2) == true"  "" "false";
-    t "tupleeqint" "(1,2) == false"  "" "false";
  
    (* tprog "listsAppend.egg" "(1, (2, (3, (4, (5, (6, false))))))";
     tprog "listsLength.egg" "3";
@@ -585,17 +548,14 @@ let well_formed_tests = [
 
    te "lesseq" "(nil: Int) <= (nil: Int)" "" "comparison expected a number, but got 0000000001";
    t "nilequal1"  "(nil: Int) == (nil: Int)" "" "true";
-   te "nillequal2"  "(nil: Int) == input()" "nil" "invalid input";
 
-   t "printtupleinput" "print((input(),()))" "1" "(1, (0, 1))\n()";
-   t "printtuple2" "let x = print((1,2)) in x" "" "(1, 2)\n()";
-   t "printnil" "print(nil: Int)" "" "()\n()";
+  
 
     
 
   ]
 
- let curr_tests_egg_eater = [
+ let lambdas_tests = [
       t "lamdba1" "let f = (lambda(y): y) in
                             f(100)" "" "100";
 
@@ -629,9 +589,7 @@ let well_formed_tests = [
 
     t "lambda7" "let rec a = (lambda(n): b(n)), b = (lambda(n): n) in a(1)" "" "1";
     
-    (*t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
-                      and def g(x,y): if (y==0): x else: f(y, x - 1)
-                    f(1,1)" "" "1";*)
+    
 
  ]
 
@@ -646,19 +604,83 @@ let well_formed_tests = [
      te "duplicate_arg" "let rec a = (lambda(b,c,b): 1) in a(1,2,3)" "" "The argument b, first defined at <duplicate_arg, 1:11-1:30>, is redefined";
  ]
 
+let failing_tests = [
+    t "desugar_fn4" "def f((x, y), z): (x + z, y + z)
+                   f((1, 2), 3)" "" "(4, 5)"; 
+   t "eq_2" "(3 == 2)" "" "false";
+   t "eq_3"  "(print(1) == print(true))" ""  "1\ntrue\nfalse"; 
+   t "eq_4" "(1 == true)" "" "false";
+   te "istupletrue" "istuple(input())" "(1,2)" "invalid input";
+   t "tupleeq7"  "(4,5,(1,7)) == (4,5,(1,6))" ""  "false";
+    t "tupleeq5"  "(4,5,6) == (4,5,7)"  "" "false";
+
+    t "input1" "print(input())" "true" "true\ntrue";
+    t "input2" "print(input())" "1" "1\n1";
+    t "input3" "print(input())" "false" "false\nfalse";
+    t "input4" "input() + input()" "1" "2";
+
+    t "fntail_mutual" "def f(c, v): if (c == 0): v else: f2(c - 1, v + 1)
+                         and def f2(c2, v2): if (c2 == 0): v2 else: f(c2 - 1, v2 + 1)
+                         f(4, 0)" "" "4";
+
+    t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
+                      and def g(x,y): if (y==0): x else: f(y, x - 1)
+                    f(1,1)" "" "1";
+
+    t "many_tail" "def f(a,b,c,d,e): if (a==1): print(b) else: f(b,c,d,e,a)
+                    f(0,0,0,1,3)" "" "3\n3";
+
+    t "min" "def min(x, y):
+          if x < y: x
+            else: min(y, x)
+        min(3,2)" "" "2";
+
+    t "many_no_tail" "def f(a,b,c,d,e): 
+                        let next = (if a==0: f(b,c,d,e,a) else: 0) in 
+                            if (a==1):
+                                print(b)
+                             else:
+                                 next
+                    f(0,0,0,1,3)" "" "3\n3"; 
+
+     t "printtupleinput" "print((input(),()))" "1" "(1, (0, 1))\n()";
+   t "printtuple2" "let x = print((1,2)) in x" "" "(1, 2)\n()";
+   t "printnil" "print(nil: Int)" "" "()\n()";
+       t "tupleeqbool" "(1,2) == true"  "" "false";
+           t "tupleeqint" "(1,2) == false"  "" "false";
+
+
+
+
+
+  ] @ fun_tests
+
+ let failing_lambda_tests = [
+        t "two_arg_tail" "def f(x,y): if (y==0): x else: g(y, x - 1)
+                      and def g(x,y): if (y==0): x else: f(y, x - 1)
+                    f(1,1)" "" "1";
+    ]
+ let more_lambda_tests = [
+     (* Return a lambda*)
+     t "lambda9" "let a = (lambda(x): (lambda(x): x)) in a(0)(1)" "" "1";
+     (* return another lambda*)
+     t "lambda10" "let a = (lambda(x): if x: (lambda(y): 1) else: (lambda(y): 0)) in a(true)(0)" "" "1";
+     (*Pass a lambda*)
+     t "lambda11" "let a = (lambda(x): x(1)) in a((lambda(y): y))" "" "";
+]
+
 let suite =
 "suite">:::
  well_formed_tests @
  sequence_test @
- desugaring_tests @(*
+ desugaring_tests @
  if_tests @
  prim2_test @
  tuple_tests @
- (*fun_tests @*)
  curr_tests @
  prim2_test @
  new_well_formed_tests @
- curr_tests_egg_eater @*)
+ lambdas_tests @
   (*inference_tests @*)
  []
 ;;

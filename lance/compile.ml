@@ -366,7 +366,8 @@ let anf (p : tag program) : unit aprogram =
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ body_setup)
     | ELambda(some, body, tag) -> 
-       raise (UnsupportedTagged("Lambda not a constant function.", tag))
+        let tmp = sprintf "lambda_%d" tag in
+        (ImmId(tmp, ()), [BLet(tmp, CLambda(bindsToStrings some, helpA body, ()))])
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
@@ -714,18 +715,11 @@ let desugarPre (p : sourcespan program) : sourcespan program =
         let final_body = ELambda(new_args, new_body, pos) in
         let this_let_binding = [((BName(name, TyArr((makeBlanks (List.length args) pos), TyBlank(pos), pos), pos)), final_body, pos)] in
         this_let_binding
-  and makeLetRec l e t =
-      match l with
-      | first::rest ->
-            ELet(first, (makeLetRec rest e t), t)
-      | last::[] ->
-            ELet(last, e, t)
-      | [] -> e
   in
   match p with
   | Program(tydecls, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
-          let new_body = (makeLetRec new_decls (helpE body) t) in
+          let new_body = if List.length new_decls > 0 then ELetRec(List.concat new_decls, (helpE body), t) else helpE body in
           let new_p = Program(tydecls, [], new_body, t) in
           debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
           debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
@@ -804,10 +798,8 @@ and compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (
                                   (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail [self] )@
                                   [ILineComment("move EAX to EBP")]@
                                   [IMov(RegOffset(~-word_size * (si+i), EBP), Reg(EAX))]) cexplist) in 
-      debug_printf "LENGTH %d\n" (List.length compile_bindings);
 
       let compile_body =  (compile_aexpr body (si + 1 + (List.length cexplist)) newEnv num_args is_tail) in 
-      debug_printf "AFTer %d\n" (List.length compile_bindings);
 
         [ILineComment("compile bindings start ")]@compile_bindings@[ILineComment("compile bindings end ")]@compile_body
 
@@ -894,6 +886,15 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
 
       |PrintStack -> failwith "print stack"
+      |Print -> 
+        [
+          IMov(Reg(EAX),(compile_imm e env))] @ 
+        [
+         IPush(Reg(EAX));
+         ICall(Label("print"));
+         IAdd(Reg(ESP),Const(4))
+         ]
+
     end
 
   | CPrim2(op, left, right, tag) -> 
@@ -1184,7 +1185,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
                IMov(Reg(ECX), RegOffset(8, EBP));
                ISub(Reg(ECX), HexConst(0x5));
 
-           ] @self_setup@ copy_free_to_stack in  
+           ] @self_setup@copy_free_to_stack in  
 
           let compileBody = compile_aexpr body (List.length frees + 2) newEnv num_args is_tail in
 

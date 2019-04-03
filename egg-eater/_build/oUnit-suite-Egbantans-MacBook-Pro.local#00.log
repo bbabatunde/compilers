@@ -1,0 +1,1714 @@
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Runner: processes
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Chooser: simple
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration suite_name = "suite"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration cache_filename = "/Users/egbantanbabatunde/compilers/egg-eater/_build/oUnit-$(suite_name).cache"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration osx = "false"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration display = "true"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration results_style_1_X = "false"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration verbose = "false"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration health_check_interval = "1."
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration testdata_dir = "none"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration chooser = "simple"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_html_dir = "none"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration processes_kill_period = "5."
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration runner = "processes"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration shards = "2"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration processes_grace_period = "5."
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration log_encoding = "utf-8"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_junit_file = "none"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_file = "/Users/egbantanbabatunde/compilers/egg-eater/_build/oUnit-$(suite_name)-$(shard_id).log"
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Using 2 workers maximum.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Starting worker number Egbantans-MacBook-Pro.local#01.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#01 started.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Starting worker number Egbantans-MacBook-Pro.local#02.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#02 started.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:welfrom2, suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:welfrom2, suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:1:welfrom2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:welfrom2, suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:0:welfrom1 has failed.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: error index too small: The tuple  at <welfrom1, 2:18-2:32>  was accessed with an index of -1
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error:  error index too small: The tuple  at <welfrom1, 2:18-2:32>  was accessed with an index of -1
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:welfrom2, suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:welfrom2, suite:0:welfrom1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:2:welfformnillequal, suite:1:welfrom2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:1:welfrom2 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:2:welfformnillequal.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:2:welfformnillequal, suite:1:welfrom2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:1:welfrom2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:2:welfformnillequal, suite:1:welfrom2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:wellformederrortypelist, suite:2:welfformnillequal.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:2:welfformnillequal is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:wellformederrortypelist, suite:2:welfformnillequal.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:2:welfformnillequal.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:wellformederrortypelist, suite:2:welfformnillequal.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:4:wellformederrortypelist2, suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:4:wellformederrortypelist2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:4:wellformederrortypelist2, suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:3:wellformederrortypelist is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:4:wellformederrortypelist2, suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:4:wellformederrortypelist2 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:4:wellformederrortypelist2, suite:3:wellformederrortypelist.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:4:wellformederrortypelist2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:wellformederrortypelist3, suite:4:wellformederrortypelist2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:6:wellformederrortypelist4, suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:6:wellformederrortypelist4.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:6:wellformederrortypelist4, suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:5:wellformederrortypelist3 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:6:wellformederrortypelist4, suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:6:wellformederrortypelist4, suite:5:wellformederrortypelist3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:6:wellformederrortypelist4 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:fnt1, suite:6:wellformederrortypelist4.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:6:wellformederrortypelist4.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:fnt1, suite:6:wellformederrortypelist4.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:fnt2, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:8:fnt2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:fnt2, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:8:fnt2 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:fnt2, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:8:fnt2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:fnt2, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:if_1, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:if_1, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:7:fnt1 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:if_1, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:if_1, suite:7:fnt1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:10:if_2, suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:10:if_2, suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:9:if_1 has failed.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: if expected a boolean, but got 54
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 2: if expected a boolean, but got 54
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:10:if_2, suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:10:if_2, suite:9:if_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:if_3, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:11:if_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:if_3, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:11:if_3 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:if_3, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:11:if_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:if_3, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:12:if_5, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:12:if_5, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:10:if_2 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:12:if_5, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:12:if_5, suite:10:if_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:13:plus_1, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:13:plus_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:13:plus_1, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:13:plus_1 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:13:plus_1, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:13:plus_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:13:plus_1, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:14:plus_3, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:14:plus_3, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:12:if_5 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:14:plus_3, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:14:plus_3, suite:12:if_5.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:15:printplus1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:15:printplus1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:15:printplus1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:15:printplus1 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:15:printplus1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:15:printplus1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:15:printplus1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:16:sub_1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:16:sub_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:16:sub_1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:14:plus_3 is successful.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:16:sub_1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:16:sub_1, suite:14:plus_3.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:17:sub_2, suite:16:sub_1.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:17:sub_2.
+2019-03-28T21:48:43+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:17:sub_2, suite:16:sub_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:16:sub_1 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:17:sub_2, suite:16:sub_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:16:sub_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:17:sub_2, suite:16:sub_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:18:subprint2, suite:17:sub_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:18:subprint2, suite:17:sub_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:17:sub_2 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:18:subprint2, suite:17:sub_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:17:sub_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:18:subprint2, suite:17:sub_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:19:subprint3, suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:19:subprint3, suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:18:subprint2 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:19:subprint3, suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:19:subprint3, suite:18:subprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:20:subprint4, suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:20:subprint4, suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:19:subprint3 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:20:subprint4, suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:20:subprint4, suite:19:subprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:21:times_1, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:21:times_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:21:times_1, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:21:times_1 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:21:times_1, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:21:times_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:21:times_1, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:22:times_2, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:22:times_2, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:20:subprint4 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:22:times_2, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:22:times_2, suite:20:subprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:23:timesprint2, suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:23:timesprint2, suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:22:times_2 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:23:timesprint2, suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:23:timesprint2, suite:22:times_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:24:timesprint3, suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:24:timesprint3, suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:23:timesprint2 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:24:timesprint3, suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:24:timesprint3, suite:23:timesprint2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:25:timesprint4, suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:25:timesprint4, suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:24:timesprint3 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:25:timesprint4, suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:25:timesprint4, suite:24:timesprint3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:26:timesadd11, suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:26:timesadd11, suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:25:timesprint4 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:26:timesadd11, suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:26:timesadd11, suite:25:timesprint4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:27:and_1, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:27:and_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:27:and_1, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:27:and_1 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:27:and_1, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:27:and_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:27:and_1, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:28:and_2, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:28:and_2, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:26:timesadd11 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:28:and_2, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:28:and_2, suite:26:timesadd11.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:29:and_8, suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:29:and_8, suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:28:and_2 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:29:and_8, suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:29:and_8, suite:28:and_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:30:and_4, suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:30:and_4, suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:29:and_8 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:30:and_4, suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:30:and_4, suite:29:and_8.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:31:and_5, suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:31:and_5, suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:30:and_4 has failed.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:31:and_5, suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:31:and_5, suite:30:and_4.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:32:and_6, suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:32:and_6, suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:31:and_5 has failed.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:32:and_6, suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:32:and_6, suite:31:and_5.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:33:or_1, suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:33:or_1, suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:32:and_6 has failed.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:33:or_1, suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:33:or_1, suite:32:and_6.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:34:or_2, suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:34:or_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:34:or_2, suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:33:or_1 is successful.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:34:or_2, suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:34:or_2, suite:33:or_1.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:35:or_3, suite:34:or_2.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:35:or_3.
+2019-03-28T21:48:44+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:35:or_3, suite:34:or_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:34:or_2 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:35:or_3, suite:34:or_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:34:or_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:35:or_3, suite:34:or_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:36:or_4, suite:35:or_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:36:or_4, suite:35:or_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:35:or_3 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:36:or_4, suite:35:or_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:35:or_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:36:or_4, suite:35:or_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:37:or_5, suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:37:or_5, suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:36:or_4 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:37:or_5, suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:37:or_5, suite:36:or_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:38:greater_1, suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:38:greater_1, suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:37:or_5 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:38:greater_1, suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:38:greater_1, suite:37:or_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:39:greater_2, suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:39:greater_2, suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:38:greater_1 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:39:greater_2, suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:39:greater_2, suite:38:greater_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:40:greater_3, suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:40:greater_3, suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:39:greater_2 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:40:greater_3, suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:40:greater_3, suite:39:greater_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:41:greater_6, suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:41:greater_6, suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:40:greater_3 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:41:greater_6, suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:41:greater_6, suite:40:greater_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:42:greater_4, suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:42:greater_4, suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:41:greater_6 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:42:greater_4, suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:42:greater_4, suite:41:greater_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:43:greater_5, suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:43:greater_5, suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:42:greater_4 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:43:greater_5, suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:43:greater_5, suite:42:greater_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:44:greateq_1, suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:44:greateq_1, suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:43:greater_5 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:44:greateq_1, suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:44:greateq_1, suite:43:greater_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:45:greateq_2, suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:45:greateq_2, suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:44:greateq_1 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:45:greateq_2, suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:45:greateq_2, suite:44:greateq_1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:46:greateq_3, suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:46:greateq_3, suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:45:greateq_2 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:46:greateq_3, suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:46:greateq_3, suite:45:greateq_2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:47:greateq_6, suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:47:greateq_6, suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:46:greateq_3 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:47:greateq_6, suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:47:greateq_6, suite:46:greateq_3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:48:greateq_4, suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:48:greateq_4, suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:47:greateq_6 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:48:greateq_4, suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:48:greateq_4, suite:47:greateq_6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:49:greateq_5, suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:49:greateq_5, suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:48:greateq_4 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:49:greateq_5, suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:49:greateq_5, suite:48:greateq_4.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:50:less1, suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:50:less1, suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:49:greateq_5 has failed.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:50:less1, suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:50:less1, suite:49:greateq_5.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:51:less2, suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:51:less2, suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:50:less1 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:51:less2, suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:51:less2, suite:50:less1.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:52:less3, suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:52:less3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:52:less3, suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:51:less2 is successful.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:52:less3, suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:52:less3, suite:51:less2.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:53:less6, suite:52:less3.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:53:less6.
+2019-03-28T21:48:45+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:53:less6, suite:52:less3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:52:less3 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:53:less6, suite:52:less3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:52:less3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:53:less6, suite:52:less3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:54:less4, suite:53:less6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:54:less4, suite:53:less6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:53:less6 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:54:less4, suite:53:less6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:53:less6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:54:less4, suite:53:less6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:55:less5, suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:55:less5, suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:54:less4 has failed.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:55:less5, suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:55:less5, suite:54:less4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:56:lesseq_1, suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:56:lesseq_1, suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:55:less5 has failed.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:56:lesseq_1, suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:56:lesseq_1, suite:55:less5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:57:lesseq_4, suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:57:lesseq_4, suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:56:lesseq_1 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:57:lesseq_4, suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:57:lesseq_4, suite:56:lesseq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:58:lesseq_5, suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:58:lesseq_5, suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:57:lesseq_4 has failed.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:58:lesseq_5, suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:58:lesseq_5, suite:57:lesseq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:59:lesseq_6, suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:59:lesseq_6, suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:58:lesseq_5 has failed.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:59:lesseq_6, suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:59:lesseq_6, suite:58:lesseq_5.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:60:eq_1, suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:60:eq_1, suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:59:lesseq_6 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:60:eq_1, suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:60:eq_1, suite:59:lesseq_6.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:61:eq_2, suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:61:eq_2, suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:60:eq_1 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:61:eq_2, suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:61:eq_2, suite:60:eq_1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:62:eq_3, suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:62:eq_3, suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:61:eq_2 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:62:eq_3, suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:62:eq_3, suite:61:eq_2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:63:eq_4, suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:63:eq_4, suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:62:eq_3 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:63:eq_4, suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:63:eq_4, suite:62:eq_3.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:64:forty_one_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:64:forty_one_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:64:forty_one_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:64:forty_one_anf is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:64:forty_one_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:64:forty_one_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:64:forty_one_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:65:scope_err1, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:65:scope_err1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:65:scope_err1, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:65:scope_err1 has failed.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: shadows one defined
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: The identifier x, defined at <scope_err1, 1:4-1:12>, shadows one defined at <scope_err1, 1:44-1:52>
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: The identifier x, redefined at <scope_err1, 1:4-1:12>, duplicates one at <scope_err1, 1:44-1:52>
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:65:scope_err1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:65:scope_err1, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:65:scope_err1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:65:scope_err1, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:66:forty_one_run_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:66:forty_one_run_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:63:eq_4 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:66:forty_one_run_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:66:forty_one_run_anf, suite:63:eq_4.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:67:forty_one, suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:67:forty_one, suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:66:forty_one_run_anf is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:67:forty_one, suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:67:forty_one, suite:66:forty_one_run_anf.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:68:test1, suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:68:test1, suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:67:forty_one is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:68:test1, suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:68:test1, suite:67:forty_one.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:69:if1, suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:69:if1, suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:68:test1 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:69:if1, suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:69:if1, suite:68:test1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:70:if2, suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:70:if2, suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:69:if1 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:70:if2, suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:70:if2, suite:69:if1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:71:prim, suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:71:prim, suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:70:if2 is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:71:prim, suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:71:prim, suite:70:if2.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:72:overflow, suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:72:overflow.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:72:overflow, suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:71:prim is successful.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:72:overflow, suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:72:overflow, suite:71:prim.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:73:funcalls1, suite:72:overflow.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:73:funcalls1.
+2019-03-28T21:48:46+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:73:funcalls1, suite:72:overflow.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:72:overflow has failed.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: overflow
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 5: overflow value 0080000000
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:72:overflow.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:73:funcalls1, suite:72:overflow.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:72:overflow.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:73:funcalls1, suite:72:overflow.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:74:funcalls, suite:73:funcalls1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:74:funcalls, suite:73:funcalls1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:73:funcalls1 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:74:funcalls, suite:73:funcalls1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:73:funcalls1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:74:funcalls, suite:73:funcalls1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:75:tuplepair, suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:75:tuplepair, suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:74:funcalls is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:75:tuplepair, suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:75:tuplepair, suite:74:funcalls.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:76:tuplepair1, suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:76:tuplepair1, suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:75:tuplepair is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:76:tuplepair1, suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:76:tuplepair1, suite:75:tuplepair.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:77:tuplepair2, suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:77:tuplepair2, suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:76:tuplepair1 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:77:tuplepair2, suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:77:tuplepair2, suite:76:tuplepair1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:78:tuplepair4, suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:78:tuplepair4, suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:77:tuplepair2 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:78:tuplepair4, suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:78:tuplepair4, suite:77:tuplepair2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:79:tuplepairinvalid, suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:79:tuplepairinvalid, suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:78:tuplepair4 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:79:tuplepairinvalid, suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:79:tuplepairinvalid, suite:78:tuplepair4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:80:tuplepair3, suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:80:tuplepair3, suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:79:tuplepairinvalid has failed.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: expected tuple, but got 0000000004
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: Error 6:  expected tuple, but got 0000000004
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:80:tuplepair3, suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:80:tuplepair3, suite:79:tuplepairinvalid.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:81:tuplepair5, suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:81:tuplepair5, suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:80:tuplepair3 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:81:tuplepair5, suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:81:tuplepair5, suite:80:tuplepair3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:82:printtuple, suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:82:printtuple, suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:81:tuplepair5 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:82:printtuple, suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:82:printtuple, suite:81:tuplepair5.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:83:equalif, suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:83:equalif, suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:82:printtuple is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:83:equalif, suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:83:equalif, suite:82:printtuple.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:84:and, suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:84:and, suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:83:equalif is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:84:and, suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:84:and, suite:83:equalif.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:85:plaineq, suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:85:plaineq, suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:84:and is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:85:plaineq, suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:85:plaineq, suite:84:and.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:86:tupleeq1, suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:86:tupleeq1, suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:85:plaineq is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:86:tupleeq1, suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:86:tupleeq1, suite:85:plaineq.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:87:tupleeq2, suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:87:tupleeq2, suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:86:tupleeq1 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:87:tupleeq2, suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:87:tupleeq2, suite:86:tupleeq1.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:88:tupleeq3, suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:88:tupleeq3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:88:tupleeq3, suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:87:tupleeq2 is successful.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:88:tupleeq3, suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:88:tupleeq3, suite:87:tupleeq2.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:89:tupleeq4, suite:88:tupleeq3.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:89:tupleeq4.
+2019-03-28T21:48:47+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:89:tupleeq4, suite:88:tupleeq3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:88:tupleeq3 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:89:tupleeq4, suite:88:tupleeq3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:88:tupleeq3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:89:tupleeq4, suite:88:tupleeq3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:90:tupleeq5, suite:89:tupleeq4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:90:tupleeq5, suite:89:tupleeq4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:89:tupleeq4 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:90:tupleeq5, suite:89:tupleeq4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:89:tupleeq4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:90:tupleeq5, suite:89:tupleeq4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:91:tupleeq6, suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:91:tupleeq6, suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:90:tupleeq5 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:91:tupleeq6, suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:91:tupleeq6, suite:90:tupleeq5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:92:tupleeq7, suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:92:tupleeq7, suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:91:tupleeq6 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:92:tupleeq7, suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:92:tupleeq7, suite:91:tupleeq6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:93:istuple1, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:93:istuple1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:93:istuple1, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:93:istuple1 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:93:istuple1, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:93:istuple1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:93:istuple1, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:94:istuple2, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:94:istuple2, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:92:tupleeq7 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:94:istuple2, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:94:istuple2, suite:92:tupleeq7.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:95:istuple3, suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:95:istuple3, suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:94:istuple2 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:95:istuple3, suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:95:istuple3, suite:94:istuple2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:96:istuple6, suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:96:istuple6, suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:95:istuple3 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:96:istuple6, suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:96:istuple6, suite:95:istuple3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:97:nlet1, suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:97:nlet1, suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:96:istuple6 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:97:nlet1, suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:97:nlet1, suite:96:istuple6.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:98:nlet2, suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:98:nlet2, suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:97:nlet1 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:98:nlet2, suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:98:nlet2, suite:97:nlet1.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:99:nlet3, suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:99:nlet3, suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:98:nlet2 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:99:nlet3, suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:99:nlet3, suite:98:nlet2.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:100:nlet4, suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:100:nlet4, suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:99:nlet3 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:100:nlet4, suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:100:nlet4, suite:99:nlet3.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:101:nlet5, suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:101:nlet5, suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:100:nlet4 is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:101:nlet5, suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:101:nlet5, suite:100:nlet4.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:102:istuplefalse, suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:102:istuplefalse, suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:101:nlet5 has failed.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: index too large, got 0000000002
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 7: index too large, got 0000000002
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:102:istuplefalse, suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:102:istuplefalse, suite:101:nlet5.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:103:istupletrue, suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:103:istupletrue, suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:102:istuplefalse is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:103:istupletrue, suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:103:istupletrue, suite:102:istuplefalse.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:104:func_dual_call, suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:104:func_dual_call, suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:103:istupletrue has failed.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: invalid input
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E:  but got: Error: Error 10: invalid input
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:104:func_dual_call, suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:104:func_dual_call, suite:103:istupletrue.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:105:fntail_mutual, suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:105:fntail_mutual, suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:104:func_dual_call is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:105:fntail_mutual, suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:105:fntail_mutual, suite:104:func_dual_call.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:106:two_arg_tail, suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:106:two_arg_tail.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:106:two_arg_tail, suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:105:fntail_mutual is successful.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:106:two_arg_tail, suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:106:two_arg_tail, suite:105:fntail_mutual.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:107:many_tail, suite:106:two_arg_tail.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:107:many_tail.
+2019-03-28T21:48:48+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:107:many_tail, suite:106:two_arg_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:106:two_arg_tail is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:107:many_tail, suite:106:two_arg_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:106:two_arg_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:107:many_tail, suite:106:two_arg_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:108:min, suite:107:many_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:108:min, suite:107:many_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:107:many_tail is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:108:min, suite:107:many_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:107:many_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:108:min, suite:107:many_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:109:many_no_tail, suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:109:many_no_tail, suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:108:min is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:109:many_no_tail, suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:109:many_no_tail, suite:108:min.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:110:tail1, suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:110:tail1, suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:109:many_no_tail is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:110:tail1, suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:110:tail1, suite:109:many_no_tail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:111:tail0, suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:111:tail0, suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:110:tail1 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:111:tail0, suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:111:tail0, suite:110:tail1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:112:multiple_unused_function, suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:112:multiple_unused_function, suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:111:tail0 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:112:multiple_unused_function, suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:112:multiple_unused_function, suite:111:tail0.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:113:fall_through_functions, suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:113:fall_through_functions, suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:112:multiple_unused_function is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:113:fall_through_functions, suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:113:fall_through_functions, suite:112:multiple_unused_function.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:114:function_redefiniton, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:114:function_redefiniton.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:114:function_redefiniton, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:114:function_redefiniton has failed.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: The function name f0, redefined at <function_redefiniton, 2:9-2:20>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: but got: Error: The function name f0, redefined at <function_redefiniton, 2:9-2:20>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: The function name f0, redefined at <function_redefiniton, 1:0-1:11>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:114:function_redefiniton.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:114:function_redefiniton, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:114:function_redefiniton.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:114:function_redefiniton, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:115:nottail, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:115:nottail, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:113:fall_through_functions is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:115:nottail, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:115:nottail, suite:113:fall_through_functions.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:116:foo, suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:116:foo, suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:115:nottail is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:116:foo, suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:116:foo, suite:115:nottail.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:117:func, suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:117:func, suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:116:foo is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:117:func, suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:117:func, suite:116:foo.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:118:func2, suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:118:func2, suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:117:func is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:118:func2, suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:118:func2, suite:117:func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:119:func3, suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:119:func3, suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:118:func2 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:119:func3, suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:119:func3, suite:118:func2.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:120:funcs1, suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:120:funcs1, suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:119:func3 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:120:funcs1, suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:120:funcs1, suite:119:func3.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:121:func_rec, suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:121:func_rec, suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:120:funcs1 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:121:func_rec, suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:121:func_rec, suite:120:funcs1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:122:func_fib, suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:122:func_fib, suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:121:func_rec is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:122:func_fib, suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:122:func_fib, suite:121:func_rec.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:123:var_func_arity_e, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:123:var_func_arity_e.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:123:var_func_arity_e, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:123:var_func_arity_e is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:123:var_func_arity_e, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:123:var_func_arity_e.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:123:var_func_arity_e, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:124:var_func, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:124:var_func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:124:var_func, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:124:var_func is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:124:var_func, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:124:var_func.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:124:var_func, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:125:bad_order_1, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:125:bad_order_1, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:122:func_fib is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:125:bad_order_1, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:125:bad_order_1, suite:122:func_fib.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:126:fn_base, suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:126:fn_base.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:126:fn_base, suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:125:bad_order_1 is successful.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:126:fn_base, suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:126:fn_base, suite:125:bad_order_1.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:127:two_fns, suite:126:fn_base.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:127:two_fns.
+2019-03-28T21:48:49+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:127:two_fns, suite:126:fn_base.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:126:fn_base is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:127:two_fns, suite:126:fn_base.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:126:fn_base.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:127:two_fns, suite:126:fn_base.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:128:arity, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:128:arity.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:128:arity, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:128:arity is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:128:arity, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:128:arity.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:128:arity, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:129:arity_nest2, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:129:arity_nest2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:129:arity_nest2, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:129:arity_nest2 is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:129:arity_nest2, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:129:arity_nest2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:129:arity_nest2, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:130:unbound_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:130:unbound_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:130:unbound_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:130:unbound_fun is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:130:unbound_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:130:unbound_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:130:unbound_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:131:duplicate_id_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:131:duplicate_id_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:131:duplicate_id_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:131:duplicate_id_fun is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:131:duplicate_id_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:131:duplicate_id_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:131:duplicate_id_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:132:duplicate_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:132:duplicate_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:132:duplicate_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:132:duplicate_fun has failed.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: The function name f, redefined at <duplicate_fun, 2:24-2:37>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: The function name f, redefined at <duplicate_fun, 1:0-1:13>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: The function name f, redefined at <duplicate_fun, 2:24-2:37>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:132:duplicate_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:132:duplicate_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:132:duplicate_fun.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:132:duplicate_fun, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:133:multi_error, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:133:multi_error.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:133:multi_error, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:133:multi_error has failed.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: The identifier y, used at <multi_error, 1:13-1:14>, is not in scope
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: The identifier x, redefined at <multi_error, 1:6-1:7>, duplicates one at <multi_error, 1:6-1:7>
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: The function called at <multi_error, 2:23-2:27> expected an arity of 2, but received 1 arguments
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:133:multi_error.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:133:multi_error, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:133:multi_error.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:133:multi_error, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:134:input1, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:134:input1, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:127:two_fns is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:134:input1, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:134:input1, suite:127:two_fns.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:135:input2, suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:135:input2, suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:134:input1 is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:135:input2, suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:135:input2, suite:134:input1.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:136:input3, suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:136:input3, suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:135:input2 is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:136:input3, suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:136:input3, suite:135:input2.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:137:input4, suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:137:input4, suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:136:input3 is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:137:input4, suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:137:input4, suite:136:input3.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:138:fntail_mutual, suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:138:fntail_mutual, suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:137:input4 is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:138:fntail_mutual, suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:138:fntail_mutual, suite:137:input4.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:139:two_arg_tail, suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:139:two_arg_tail, suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:138:fntail_mutual is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:139:two_arg_tail, suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:139:two_arg_tail, suite:138:fntail_mutual.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:140:many_tail, suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:140:many_tail, suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:139:two_arg_tail is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:140:many_tail, suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:140:many_tail, suite:139:two_arg_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:141:min, suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:141:min, suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:140:many_tail is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:141:min, suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:141:min, suite:140:many_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:142:many_no_tail, suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:142:many_no_tail, suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:141:min is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:142:many_no_tail, suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:142:many_no_tail, suite:141:min.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:143:nillequal, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:143:nillequal.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:143:nillequal, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:143:nillequal is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:143:nillequal, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:143:nillequal.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:143:nillequal, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:144:tupleeqbool, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:144:tupleeqbool, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:142:many_no_tail is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:144:tupleeqbool, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:144:tupleeqbool, suite:142:many_no_tail.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:145:tupleeqint, suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:145:tupleeqint, suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:144:tupleeqbool is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:145:tupleeqint, suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:145:tupleeqint, suite:144:tupleeqbool.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:146:listsAppend.egg, suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:146:listsAppend.egg, suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:145:tupleeqint is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:146:listsAppend.egg, suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:146:listsAppend.egg, suite:145:tupleeqint.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:147:listsLength.egg, suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:147:listsLength.egg, suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:146:listsAppend.egg is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:147:listsLength.egg, suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:147:listsLength.egg, suite:146:listsAppend.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:148:listsSum.egg, suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:148:listsSum.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:148:listsSum.egg, suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:147:listsLength.egg is successful.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:148:listsSum.egg, suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:148:listsSum.egg, suite:147:listsLength.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:149:listsReverse.egg, suite:148:listsSum.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:149:listsReverse.egg.
+2019-03-28T21:48:50+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:149:listsReverse.egg, suite:148:listsSum.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:148:listsSum.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:149:listsReverse.egg, suite:148:listsSum.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:148:listsSum.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:149:listsReverse.egg, suite:148:listsSum.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:150:typelist.egg, suite:149:listsReverse.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:150:typelist.egg, suite:149:listsReverse.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:149:listsReverse.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:150:typelist.egg, suite:149:listsReverse.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:149:listsReverse.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:150:typelist.egg, suite:149:listsReverse.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:151:niladd, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:151:niladd.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:151:niladd, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:151:niladd has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: arithmetic expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 3: arithmetic expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:151:niladd.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:151:niladd, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:151:niladd.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:151:niladd, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:152:lesseq, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:152:lesseq, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:150:typelist.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:152:lesseq, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:152:lesseq, suite:150:typelist.egg.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:153:nilequal1, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:153:nilequal1.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:153:nilequal1, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:153:nilequal1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:153:nilequal1, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:153:nilequal1.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:153:nilequal1, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:154:nillequal2, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:154:nillequal2, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Test suite:152:lesseq has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: expected: Error: comparison expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: but got: Error: Error 4: comparison expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E:  in test suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:154:nillequal2, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:154:nillequal2, suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:155:printtupleinput, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:155:printtupleinput.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:155:printtupleinput, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:155:printtupleinput is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:155:printtupleinput, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:155:printtupleinput.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:155:printtupleinput, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:156:printtuple2, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:156:printtuple2, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E: Test suite:154:nillequal2 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E: expected: Error: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E:  but got: Error: Error 10: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E:  in test suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:156:printtuple2, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:156:printtuple2, suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:157:printnil.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:157:printnil is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:157:printnil.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:157:printnil, suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:156:printtuple2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:156:printtuple2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: 0 tests running: .
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#02 has ended.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#01 has ended.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Used 2 worker during test execution.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Run 76 tests with shard Egbantans-MacBook-Pro.local#02.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Run 82 tests with shard Egbantans-MacBook-Pro.local#01.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: ==============
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Summary:
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:156:printtuple2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:157:printnil is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:154:nillequal2 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  but got: Error: Error 10: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:154:nillequal2.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:155:printtupleinput is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:152:lesseq has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:152:lesseq.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:153:nilequal1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:150:typelist.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:151:niladd has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: arithmetic expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 3: arithmetic expected a number, but got 0000000001
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:151:niladd.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:149:listsReverse.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:148:listsSum.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:147:listsLength.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:146:listsAppend.egg is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:145:tupleeqint is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:144:tupleeqbool is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:142:many_no_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:143:nillequal is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:141:min is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:140:many_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:139:two_arg_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:138:fntail_mutual is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:137:input4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:136:input3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:135:input2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:134:input1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:127:two_fns is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:133:multi_error has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: The identifier y, used at <multi_error, 1:13-1:14>, is not in scope
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The identifier x, redefined at <multi_error, 1:6-1:7>, duplicates one at <multi_error, 1:6-1:7>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The function called at <multi_error, 2:23-2:27> expected an arity of 2, but received 1 arguments
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:133:multi_error.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:132:duplicate_fun has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: The function name f, redefined at <duplicate_fun, 2:24-2:37>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The function name f, redefined at <duplicate_fun, 1:0-1:13>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The function name f, redefined at <duplicate_fun, 2:24-2:37>, duplicates one at <duplicate_fun, 1:0-1:13>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:132:duplicate_fun.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:131:duplicate_id_fun is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:130:unbound_fun is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:129:arity_nest2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:128:arity is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:126:fn_base is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:125:bad_order_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:122:func_fib is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:124:var_func is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:123:var_func_arity_e is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:121:func_rec is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:120:funcs1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:119:func3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:118:func2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:117:func is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:116:foo is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:115:nottail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:113:fall_through_functions is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:114:function_redefiniton has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: The function name f0, redefined at <function_redefiniton, 2:9-2:20>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: The function name f0, redefined at <function_redefiniton, 2:9-2:20>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The function name f0, redefined at <function_redefiniton, 1:0-1:11>, duplicates one at <function_redefiniton, 1:0-1:11>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:114:function_redefiniton.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:112:multiple_unused_function is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:111:tail0 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:110:tail1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:109:many_no_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:108:min is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:107:many_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:106:two_arg_tail is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:105:fntail_mutual is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:104:func_dual_call is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:103:istupletrue has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  but got: Error: Error 10: invalid input
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:103:istupletrue.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:102:istuplefalse is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:101:nlet5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: index too large, got 0000000002
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 7: index too large, got 0000000002
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:101:nlet5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:100:nlet4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:99:nlet3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:98:nlet2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:97:nlet1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:96:istuple6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:95:istuple3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:94:istuple2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:92:tupleeq7 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:93:istuple1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:91:tupleeq6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:90:tupleeq5 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:89:tupleeq4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:88:tupleeq3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:87:tupleeq2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:86:tupleeq1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:85:plaineq is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:84:and is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:83:equalif is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:82:printtuple is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:81:tuplepair5 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:80:tuplepair3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:79:tuplepairinvalid has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: expected tuple, but got 0000000004
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 6:  expected tuple, but got 0000000004
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:79:tuplepairinvalid.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:78:tuplepair4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:77:tuplepair2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:76:tuplepair1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:75:tuplepair is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:74:funcalls is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:73:funcalls1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:72:overflow has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: overflow
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 5: overflow value 0080000000
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:72:overflow.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:71:prim is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:70:if2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:69:if1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:68:test1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:67:forty_one is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:66:forty_one_run_anf is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:63:eq_4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:65:scope_err1 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: shadows one defined
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: The identifier x, defined at <scope_err1, 1:4-1:12>, shadows one defined at <scope_err1, 1:44-1:52>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: The identifier x, redefined at <scope_err1, 1:4-1:12>, duplicates one at <scope_err1, 1:44-1:52>
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:65:scope_err1.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:64:forty_one_anf is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:62:eq_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:61:eq_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:60:eq_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:59:lesseq_6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:58:lesseq_5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:58:lesseq_5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:57:lesseq_4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:57:lesseq_4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:56:lesseq_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:55:less5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:55:less5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:54:less4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:54:less4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:53:less6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:52:less3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:51:less2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:50:less1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:49:greateq_5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:49:greateq_5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:48:greateq_4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:48:greateq_4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:47:greateq_6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:46:greateq_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:45:greateq_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:44:greateq_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:43:greater_5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 007fffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:43:greater_5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:42:greater_4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 4: comparison expected a number, but got 00ffffffff
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:42:greater_4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:41:greater_6 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:40:greater_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:39:greater_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:38:greater_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:37:or_5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:37:or_5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:36:or_4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:36:or_4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:35:or_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:34:or_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:33:or_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:32:and_6 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:32:and_6.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:31:and_5 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:31:and_5.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:30:and_4 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 1: logic expected a boolean, but got 1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:30:and_4.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:29:and_8 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:28:and_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:26:timesadd11 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:27:and_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:25:timesprint4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:24:timesprint3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:23:timesprint2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:22:times_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:20:subprint4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:21:times_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:19:subprint3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:18:subprint2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:17:sub_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:16:sub_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:14:plus_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:15:printplus1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:12:if_5 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:13:plus_1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:10:if_2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:11:if_3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:9:if_1 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: if expected a boolean, but got 54
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error: Error 2: if expected a boolean, but got 54
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:9:if_1.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:7:fnt1 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:8:fnt2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:6:wellformederrortypelist4 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:5:wellformederrortypelist3 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:4:wellformederrortypelist2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:3:wellformederrortypelist is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:2:welfformnillequal is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:1:welfrom2 is successful.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Test suite:0:welfrom1 has failed.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: expected: Error: error index too small: The tuple  at <welfrom1, 2:18-2:32>  was accessed with an index of -1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: but got: Error:  error index too small: The tuple  at <welfrom1, 2:18-2:32>  was accessed with an index of -1
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E:  in test suite:0:welfrom1.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Raised at file "src/oUnitAssert.ml", line 45, characters 2-27
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: Called from file "src/oUnitRunner.ml", line 46, characters 13-26
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 E: 
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Ran: 158 tests in: 8.25 seconds.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Cases: 158.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Tried: 158.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Errors: 0.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Failures: 26.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Skip: 0.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Todo: 0.
+2019-03-28T21:48:51+00:00 Egbantans-MacBook-Pro.local#00 I: Timeout: 0.

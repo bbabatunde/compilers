@@ -1,0 +1,12 @@
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:1:lamdba3.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:1:lamdba3 is successful.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:1:lamdba3.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:3:lambda4.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:3:lambda4 is successful.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:3:lambda4.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:4:lambda5.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:4:lambda5 is successful.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:4:lambda5.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:6:letrec.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:6:letrec is successful.
+2019-03-29T00:44:40+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:6:letrec.
