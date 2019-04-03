@@ -4,8 +4,6 @@ open Assembly
 open Errors
 open Pretty
 open Phases
-open TypeCheck
-open Inference
        
 type 'a envt = (string * 'a) list
 module StringSet = Set.Make(String);;
