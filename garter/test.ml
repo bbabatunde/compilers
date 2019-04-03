@@ -82,6 +82,56 @@ let gc = [
 
 ]
 
+let new_gc_tests = [
+    (* The only interesting test cases are sequences. *)
+    tgcerr "oom1" 9 "(1, 2)" "" "Out of memory";
+    tgcerr "oom2" 10 "(1, 2, 3, 4)" "" "Out of memory";
+
+    tgc "seq1" 10 "let a = (1, 2) in 
+                    a[1 of 2 := 0];
+                    a" "" "(1, 0)";
+    tgc "seq2" 10 "let a = (1, 2) in
+                   a[1 of 2 := 1];
+                   a[0 of 2 := 2];
+                   a[0 of 2 := 3];
+                    a" "" "(3, 1)";
+    tgc "seq3" 20 "let f = (lambda(n): (1, 1, 1)) in
+                   f(1);
+                   f(2);
+                   f(3);" "" "(1, 1, 1)";
+    tgc "selfsend" 25 "let f = (lambda(x): 1) in
+                        f(f(f(f(f(1)))))" "" "";
+    tgc "multiplesend" 20 "let f = (lambda(x): x) in
+                            let g = (lambda(x): f(x)) in
+                            f(g(f(1)))"  "" "1";
+
+    tgc "recursive" 10 "let f = (lambda(x): if x == 0: x else: f(x - 1)) in f(2)" "" "0";
+    tgc "morerecursion" 20 "let f = (lambda(x): if x == 0: x else: f(x - 1)) in f(4)" "" "0";
+
+    tgc "seq_rec" 10 "let f = (lambda(x): if x == 0: x else: f(x - 1)) 
+                        in 
+                        f(2);
+                        f(0);
+                        f(1);
+                        f(2);
+                        f(1)" "" "0";
+
+    tgc "more_seq_rec" 20 "let f = (lambda(x): if x == 0: x else: f(x - 1)) 
+                        in 
+                        f(1);
+                        f(2);
+                        f(4);
+                        f(4);
+                        f(1)" "" "0";
+
+    tgcerr "oomnow" 20 "let f = (lambda(x): if x == 0: x else: f(x - 1)) 
+                        in f(100)" "" "Out of memory";
+
+    tgcerr "oomagain" 10 "let f = (lambda(x, y, z): 0) in f(1, 2, 3)" "" "Out of memory";
+
+   
+]
+
 
 let failing_tests = [
 
