@@ -112,7 +112,7 @@ void printHelp(FILE *out, int val) {
     /*   fprintf(out, "DANGLING POINTER %p", addr); */
     /*   return; */
     /* } */
-    // Mark this tuple: save its length locally, then mark it
+    // Mark this tuple: save its length locally, then unmark it
     int len = addr[0]; // length is encoded
     if (len & 0x1) { // actually, it's a forwarding pointer
       fprintf(out, "forwarding to %p", (int*)(len - 1));
