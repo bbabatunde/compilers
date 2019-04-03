@@ -157,6 +157,15 @@ let rec bindsToStrings binds =
     | [] -> []
 ;;
 
+let rec bindingsToStrings1 binds =
+    match binds with
+     | first::rest ->
+             (match first with
+             | BName(n, _, _) -> n :: (bindsToStrings1 rest)
+             | _ -> (bindsToStrings1 rest))
+     | [] -> []
+;;
+
 let rec bindingsToStrings binds =
     match binds with
     | (first, _, _)::rest ->
@@ -213,7 +222,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
     | EIf(cond, _then, _else, _) -> wf_E cond ds env tydecls @ wf_E _then ds env tydecls @ wf_E _else ds env tydecls
     | EApp(funname, appargs, pos) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] appargs
     | ELambda(bindl, e, pos) ->
-            let dups = (check_arg_duplicate (bindsToStrings bindl) pos) in
+            let dups = (check_arg_duplicate (bindsToStrings1 bindl) pos) in
             if List.length dups > 0 then dups else (wf_E e ds (add_bindlst_env bindl  env) tydecls)
     | ELetRec(bindl, e, pos) ->
             let dups = (check_bind_duplicate (bindingsToStrings bindl) pos) in
@@ -1136,9 +1145,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
         IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
 
       let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
-                       IAdd(Reg(EAX), HexConst(0x1))] in
+                       IAdd(Reg(EAX), Const(0x1))] in
       let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
-                    IAdd(Reg(ESI), HexConst(0x7));
+                    IAdd(Reg(ESI), Const(0x7));
                     IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
                   ] in
 
