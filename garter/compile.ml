@@ -1306,7 +1306,8 @@ and replace_args exprs env =
   @ _replace_with_saved_args exprs 1
 
 let compile_prog (anfed : tag aprogram) : string = match anfed with
-  | AProgram(decls,body,_)  -> 
+  | AProgram (ADFun (_, _, _, _)::_, _, _) -> raise (InternalCompilerError("Weird AProgram, seems to have decls, desugar broken?"))
+  | AProgram([], body, _)  ->
   let prelude =
  " 
   section .text
@@ -1314,11 +1315,17 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   extern error
   extern print
   extern input
+  extern try_gc
+  extern naive_print_heap
+  extern HEAP
+  extern HEAP_END
+  extern STACK_BOTTOM
   global our_code_starts_here" in
   let count = word_size *  count_vars body in
   let heap_start = [
+      IInstrComment(IMov(LabelContents("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
       ILineComment("heap start");
-      IMov(Reg(ESI),RegOffset(4,ESP));
+      IMov(Reg(ESI),RegOffset(8,ESP));
       IAdd(Reg(ESI),Const(7));
       IAnd(Reg(ESI),HexConst(0xFFFFFFF8))] in 
 
