@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include "gc.h"
+
 
 
 const int NUM_TAG_MASK     = 0x00000001;
@@ -11,6 +13,53 @@ const int TUPLE_TAG        = 0x00000001;
 const int CLOSURE_TAG      = 0x00000005;
 const int BOOL_TRUE        = 0xFFFFFFFF;
 const int BOOL_FALSE       = 0x7FFFFFFF;
+const int NIL              = ((int)NULL | TUPLE_TAG);
+
+
+int tupleCounter = 0;
+void printHelp(FILE *out, int val) {
+  if (val == NIL) {
+    fprintf(out, "nil");
+  }
+  else if((val & NUM_TAG_MASK) == NUM_TAG) {
+    fprintf(out, "%d", val >> 1);
+  }
+  else if(val == BOOL_TRUE) {
+    fprintf(out, "true");
+  }
+  else if(val == BOOL_FALSE) {
+    fprintf(out, "false");
+  }
+  else if ((val & CLOSURE_TAG_MASK) == CLOSURE_TAG) {
+    int* addr = (int*)(val - CLOSURE_TAG);
+    fprintf(out, "[%p - 5] ==> <function arity %d, closed %d, fn-ptr %p>",
+            (int*)val, addr[0] / 2, addr[1] / 2, (int*)addr[2]);
+  }
+  else if ((val & TUPLE_TAG_MASK) == TUPLE_TAG) {
+    int* addr = (int*)(val - 1);
+    if ((*addr & 0x80000000) != 0) {
+      fprintf(out, "<cyclic tuple %d>", (int)(*addr & 0x7FFFFFFF));
+      return;
+    }
+
+    if (len & 0x1) { // actually, it's a forwarding pointer
+      fprintf(out, "forwarding to %p", (int*)(len - 1));
+      return;
+
+    *(addr) = 0x80000000 | (++tupleCounter);
+    fprintf(out, "(");
+    for (int i = 1; i <= len / 2; i++) {
+      if (i > 1) fprintf(out, ", ");
+      printHelp(out, addr[i]);
+    }
+    fprintf(out, ")");
+    // Unmark this tuple: restore its length
+    *(addr) = len; // length is encoded
+  }
+  else {
+    fprintf(out, "Unknown value: %#010x", val);
+  }
+}
 
 void naive_print_heap(int* heap, int size) {
   for(int i = 0; i < size; i += 1) {
@@ -34,8 +83,8 @@ void smarter_print_heap(int* from_start, int* from_end, int* to_start, int* to_e
 
 
   printf("printing to space begins\n");
-  for(to_val = to_start; from_val < to_end; from_val++){
-      printHelp(stdout, *(to_end));
+  for(to_val = to_start; from_val < to_end; to_start++){
+      printHelp(stdout, *(to_val));
        printf("\n");
   }
   printf("printing to space ends\n");
