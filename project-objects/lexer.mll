@@ -34,6 +34,7 @@ rule token = parse
   | "class" { CLASS }
   | "fields" { FIELDS }
   | "methods" { METHODS }
+  | "new" { NEW }
   | "print" { PRINT }
   | "printStack" { PRINTSTACK }
   | "nil" { NIL }

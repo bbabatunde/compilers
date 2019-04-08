@@ -7,7 +7,7 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 
 %token <int> NUM
 %token <string> ID TYID
-%token DEF ANDDEF CLASS FIELDS METHODS ADD1 SUB1 LPARENSPACE LPARENNOSPACE RPAREN LBRACK RBRACK LBRACE RBRACE LET IN OF EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON EOF PRINT PRINTSTACK TRUE FALSE ISBOOL ISNUM EQEQ LESSSPACE LESSNOSPACE GREATER LESSEQ GREATEREQ AND OR NOT THINARROW COLONEQ SEMI NIL TYPE LAMBDA BEGIN END REC UNDERSCORE
+%token DEF ANDDEF CLASS FIELDS METHODS NEW ADD1 SUB1 LPARENSPACE LPARENNOSPACE RPAREN LBRACK RBRACK LBRACE RBRACE LET IN OF EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON EOF PRINT PRINTSTACK TRUE FALSE ISBOOL ISNUM EQEQ LESSSPACE LESSNOSPACE GREATER LESSEQ GREATEREQ AND OR NOT THINARROW COLONEQ SEMI NIL TYPE LAMBDA BEGIN END REC UNDERSCORE
 
 %right SEMI
 %left COLON
@@ -44,6 +44,16 @@ namebindings :
   | namebind EQUAL expr { [($1, $3, full_span())] }
   | namebind EQUAL expr COMMA namebindings { ($1, $3, tok_span(1, 3))::$5 }
 
+namebindings_consts :
+  // just id?
+  // | id
+  | namebind EQUAL const { [($1, $3, full_span())] }
+  | namebind EQUAL const COMMA namebindings_consts { ($1, $3, tok_span(1, 3))::$5 }
+
+namebindings_lambs :
+  | namebind EQUAL lambda_expr { [($1, $3, full_span())]  }
+  | namebind EQUAL lambda_expr COMMA namebindings_lambs { ($1, $3, tok_span(1, 3))::$5 }
+
 expr :
   | LET bindings IN expr { ELet($2, $4, full_span()) }
   | LET REC namebindings IN expr { ELetRec($3, $5, full_span()) }
@@ -56,12 +66,7 @@ exprs :
   | expr { [$1] }
   | expr COMMA exprs { $1::$3 }
 
-simple_expr :
-  // Primops
-  | prim1 LPARENNOSPACE expr RPAREN { EPrim1($1, $3, full_span()) }
-  // Parentheses
-  | LPARENSPACE expr RPAREN { $2 }
-  | LPARENNOSPACE expr RPAREN { $2 }
+lambda_expr :
   // Lambdas
   | LPARENNOSPACE LAMBDA LPARENNOSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENNOSPACE LAMBDA LPARENSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
@@ -69,9 +74,19 @@ simple_expr :
   | LPARENSPACE LAMBDA LPARENNOSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENSPACE LAMBDA LPARENSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENSPACE LAMBDA COLON expr RPAREN { ELambda([], $4, full_span()) }
+
+
+simple_expr :
+  // Primops
+  | prim1 LPARENNOSPACE expr RPAREN { EPrim1($1, $3, full_span()) }
+  // Parentheses
+  | LPARENSPACE expr RPAREN { $2 }
+  | LPARENNOSPACE expr RPAREN { $2 }
   // Function calls
   | binop_expr LPARENNOSPACE exprs RPAREN { EApp($1, $3, full_span()) }
   | binop_expr LPARENNOSPACE RPAREN { EApp($1, [], full_span()) }
+  // Lambdas
+  | lambda_expr { $1 }
   // Simple cases
   | const { $1 }
   | LPARENNOSPACE expr COLON typ RPAREN { EAnnot($2, $4, full_span()) }
@@ -123,6 +138,11 @@ decl :
       let arg_types = List.map bind_to_typ $4 in
       let typ_pos = tok_span(3, 7) in
       DFun($2, $4, SForall([], TyArr(arg_types, $7, typ_pos), typ_pos), $9, full_span())
+    }
+
+classdecl :
+  | CLASS ID COLON FIELDS namebindings_consts METHODS namebindings_lambs END
+    {
     }
 
 tyids :
@@ -185,7 +205,7 @@ tydecls :
   | tydecl tydecls { $1 :: $2 }
 
 program :
-  | tydecls decls expr COLON typ EOF { Program($1, $2, EAnnot($3, $5, tok_span(3, 5)), full_span()) }
-  | tydecls decls expr EOF { Program($1, $2, $3, full_span()) }
+  | tydecls classdecl decls expr COLON typ EOF { Program($1, $2, EAnnot($3, $5, tok_span(3, 5)), full_span()) }
+  | tydecls classdecl decls expr EOF { Program($1, $2, $3, full_span()) }
 
 %%
