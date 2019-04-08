@@ -31,6 +31,9 @@ rule token = parse
   | ":" { COLON }
   | "def" { DEF }
   | "and" { ANDDEF }
+  | "class" { CLASS }
+  | "fields" { FIELDS }
+  | "methods" { METHODS }
   | "print" { PRINT }
   | "printStack" { PRINTSTACK }
   | "nil" { NIL }
