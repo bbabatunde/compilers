@@ -162,7 +162,7 @@ let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * 
 
 ;;
 
-
+(*
 let rename_and_tag (p : tag program) : tag program =
   let rec rename env p =
     match p with
@@ -225,8 +225,7 @@ let rename_and_tag (p : tag program) : tag program =
        ELambda(binds', body', tag)
   in (rename [] p)
 ;;
-
-
+*)
 
 (* IMPLEMENT EVERYTHING BELOW *)
 
@@ -260,8 +259,8 @@ let rec bindingsToStrings binds =
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
     match p with
-    | Program(_, [], body, _) -> AProgram([], helpA body, ())
-    | Program(_, decls, body, _) -> raise (InternalCompilerError("DFuns are supposed to be desugared to let recs :/"))
+    | Program(_, [], classes, body, _) -> AProgram([], [], helpA body, ())
+    | Program(_, decls, _, _, _) -> raise (InternalCompilerError("DFuns are supposed to be desugared to let recs :/"))
   and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
     match e with
     | EAnnot(e, _, _) -> helpC e
@@ -492,7 +491,7 @@ and add_bindlst_env blst env =
 
   in
   match p with
-  | Program(tydecls, decls, body, _) ->
+  | Program(tydecls, classes, decls, body, _) ->
      let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls)  [] tydecls in
      if output = [] then Ok(p) else Error(output)
 
@@ -518,8 +517,8 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
     in
     match p with
-    | Program(tydecls, [], body, t) -> 
-            let new_p = Program(tydecls, [], helpE body, t) in
+    | Program(tydecls, [], classes, body, t) -> 
+            let new_p = Program(tydecls, [], classes, helpE body, t) in
             debug_printf "BEFORE DESUGAR_POST: %s\n" (string_of_program p);
             debug_printf "AFTER DESUGAR_POST: %s\n" (string_of_program new_p);
             new_p
@@ -557,10 +556,10 @@ let desugarPre (p : sourcespan program) : sourcespan program =
         this_let_binding
   in
   match p with
-  | Program(tydecls, decls, body, t) ->
+  | Program(tydecls, classes, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
           let new_body = if List.length new_decls > 0 then ELetRec(List.concat new_decls, (helpE body), t) else helpE body in
-          let new_p = Program(tydecls, [], new_body, t) in
+          let new_p = Program(tydecls, classes, [], new_body, t) in
           debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
           debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
           new_p
@@ -1059,7 +1058,7 @@ let rec compile_decl (d: tag adecl ) : instruction list = match d with
 
 
 let compile_prog (anfed : tag aprogram) : string = match anfed with
-  | AProgram(decls,body,_)  -> 
+  | AProgram(decls, classes, body, _)  -> 
   let prelude =
  " 
   section .text

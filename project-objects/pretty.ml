@@ -143,7 +143,7 @@ let string_of_tydecl (td : 'a tydecl) : string =
 
 let string_of_program_with (print_a : 'a -> string) (p : 'a program) : string =
   match p with
-  | Program(tydecls, decls, body, a) ->
+  | Program(tydecls, classes, decls, body, a) ->
      let help group =
        ExtString.String.join "\nand " (List.map (string_of_decl_with print_a) group) in
      (ExtString.String.join "\n\n" (List.map (string_of_tydecl_with print_a) tydecls)) ^ "\n" ^
@@ -201,7 +201,7 @@ and string_of_immexpr_with (print_a : 'a -> string) (i : 'a immexpr) : string =
   | ImmId(x, a) -> x ^ (print_a a)
 and string_of_aprogram_with (print_a : 'a -> string) (p : 'a aprogram) : string =
   match p with
-  | AProgram(decls, body, a) ->
+  | AProgram(decls, classes, body, a) ->
      (ExtString.String.join "\n" (List.map (string_of_adecl_with print_a) decls)) ^ "\n"
      ^ (string_of_aexpr_with 1000 print_a body) ^ "\n" ^ (print_a a)
 and string_of_adecl_with (print_a : 'a -> string) (d : 'a adecl) : string =
@@ -402,7 +402,7 @@ let format_tydecl (fmt : Format.formatter) (print_a : 'a -> string) (td : 'a tyd
 ;;
 let format_program (fmt : Format.formatter) (print_a : 'a -> string) (p : 'a program) : unit =
   match p with
-  | Program(tydecls, decls, body, a) ->
+  | Program(tydecls, classes, decls, body, a) ->
      print_list fmt (fun fmt -> format_tydecl fmt print_a) tydecls (fun fmt -> pp_print_break fmt 1 0);
      print_list fmt (fun fmt -> format_declgroup fmt print_a) decls (fun fmt -> pp_print_break fmt 1 0);
      pp_print_break fmt 1 0;

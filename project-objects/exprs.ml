@@ -58,15 +58,20 @@ and 'a expr =
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
+  | EObject of string * 'a
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
 
 type 'a tydecl =
   | TyDecl of string * 'a typ list * 'a
-                                                            
+
+type 'a classdecl =
+  | DClass of string * 'a binding list * 'a binding list * 'a
+  (* classname, fields, methods, tag*)
+
 type 'a program =
-  | Program of 'a tydecl list * 'a decl list list * 'a expr * 'a
+  | Program of 'a tydecl list * 'a classdecl list  * 'a decl list list * 'a expr * 'a
 
 type 'a immexpr = (* immediate expressions *)
   | ImmNum of int * 'a
@@ -87,9 +92,11 @@ and 'a aexpr = (* anf expressions *)
   | ACExpr of 'a cexpr
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
+and 'a aclass =
+  | AClass of string * (string * 'a cexpr) list * (string * 'a cexpr) list * 'a
 
 and 'a aprogram =
-  | AProgram of 'a adecl list * 'a aexpr * 'a
+  | AProgram of 'a adecl list * 'a aclass list * 'a aexpr * 'a
 ;;
                                              
 let rec bind_to_typ bind =
@@ -185,14 +192,27 @@ and map_tag_TD (f : 'a -> 'b) td =
   | TyDecl(name, args, a) ->
      let tag_a = f a in
      TyDecl(name, List.map (map_tag_T f) args, tag_a)
+and map_tag_C (f : 'a -> 'b) c =
+  match c with
+  | DClass(name, fields, methods, a) ->
+     let tag_a = f a in
+    let tag_binding (b, e, t) =
+       let tag_bind = f t in
+       let tag_b = map_tag_B f b in
+       let tag_e = map_tag_E f e in
+       (tag_b, tag_e, tag_bind) in
+     let tag_fields = List.map tag_binding fields in
+     let tag_methods = List.map tag_binding methods in
+     DClass(name, tag_fields, tag_methods, tag_a)
 and map_tag_P (f : 'a -> 'b) p =
   match p with
-  | Program(tydecls, declgroups, body, a) ->
+  | Program(tydecls, classdecls, declgroups, body, a) ->
      let tag_a = f a in
      let tag_tydecls = List.map (map_tag_TD f) tydecls in
+     let tag_classes = List.map (map_tag_C f) classdecls in
      let tag_decls = List.map (fun group -> List.map (map_tag_D f) group) declgroups in
      let tag_body = map_tag_E f body in
-     Program(tag_tydecls, tag_decls, tag_body, tag_a)
+     Program(tag_tydecls, tag_classes, tag_decls, tag_body, tag_a)
 
 let tag (p : 'a program) : tag program =
   let next = ref 0 in
@@ -219,8 +239,8 @@ let prog_and_tag (p : 'a program) : ('a * tag) program =
            
 let rec untagP (p : 'a program) : unit program =
   match p with
-  | Program(tydecls, decls, body, _) ->
-     Program(List.map untagTD tydecls, List.map (fun group -> List.map untagD group) decls, untagE body, ())
+  | Program(tydecls, classes, decls, body, _) ->
+     Program(List.map untagTD tydecls, List.map untagC classes, List.map (fun group -> List.map untagD group) decls, untagE body, ())
 and untagE e =
   match e with
   | ESeq(e1, e2, _) -> ESeq(untagE e1, untagE e2, ())
@@ -264,6 +284,10 @@ and untagD d =
 and untagTD td =
   match td with
   | TyDecl(name, args, _) -> TyDecl(name, List.map untagT args, ())
+and untagC c =
+  match c with
+  | DClass(name, fields, methods, _) ->
+     DClass(name, List.map (fun (b, e, _) -> (untagB b, untagE e, ())) fields, List.map (fun (b, e, _) -> (untagB b, untagE e, ())) methods, ())
 ;;
 
 let atag (p : 'a aprogram) : tag aprogram =
@@ -312,8 +336,13 @@ let atag (p : 'a aprogram) : tag aprogram =
     | ADFun(name, args, body, _) ->
        let fun_tag = tag() in
        ADFun(name, args, helpA body, fun_tag)
+  and helpClass c =
+    match c with
+    | AClass(name, fields, methods, _) ->
+        let class_tag = tag() in
+        AClass(name, List.map (fun (x, c) -> (x, helpC c)) fields, List.map (fun (x, c) -> (x, helpC c)) methods, class_tag)
   and helpP p =
     match p with
-    | AProgram(decls, body, _) ->
-       AProgram(List.map helpD decls, helpA body, 0)
+    | AProgram(decls, classes, body, _) ->
+       AProgram(List.map helpD decls, List.map helpClass classes, helpA body, 0)
   in helpP p

@@ -44,16 +44,6 @@ namebindings :
   | namebind EQUAL expr { [($1, $3, full_span())] }
   | namebind EQUAL expr COMMA namebindings { ($1, $3, tok_span(1, 3))::$5 }
 
-namebindings_consts :
-  // just id?
-  // | id
-  | namebind EQUAL const { [($1, $3, full_span())] }
-  | namebind EQUAL const COMMA namebindings_consts { ($1, $3, tok_span(1, 3))::$5 }
-
-namebindings_lambs :
-  | namebind EQUAL lambda_expr { [($1, $3, full_span())]  }
-  | namebind EQUAL lambda_expr COMMA namebindings_lambs { ($1, $3, tok_span(1, 3))::$5 }
-
 expr :
   | LET bindings IN expr { ELet($2, $4, full_span()) }
   | LET REC namebindings IN expr { ELetRec($3, $5, full_span()) }
@@ -61,6 +51,7 @@ expr :
   | BEGIN expr END { $2 }
   | binop_expr SEMI expr { ESeq($1, $3, full_span()) }
   | binop_expr %prec SEMI { $1 }
+  | NEW ID { EObject($2, full_span()) }
 
 exprs :
   | expr { [$1] }
@@ -140,10 +131,24 @@ decl :
       DFun($2, $4, SForall([], TyArr(arg_types, $7, typ_pos), typ_pos), $9, full_span())
     }
 
+namebindings_consts :
+  // just id?
+  // | id
+  | namebind EQUAL const { [($1, $3, full_span())] }
+  | namebind EQUAL const COMMA namebindings_consts { ($1, $3, tok_span(1, 3))::$5 }
+
+namebindings_lambs :
+  | namebind EQUAL lambda_expr { [($1, $3, full_span())]  }
+  | namebind EQUAL lambda_expr COMMA namebindings_lambs { ($1, $3, tok_span(1, 3))::$5 }
+
+
+classdecls :
+  | { [] }
+  | classdecl { [$1] }
+  | classdecl COMMA classdecls { $1::$3 }
+
 classdecl :
-  | CLASS ID COLON FIELDS namebindings_consts METHODS namebindings_lambs END
-    {
-    }
+  | CLASS ID COLON FIELDS namebindings_consts METHODS namebindings_lambs END { DClass($2, $5, $7, full_span()) }
 
 tyids :
   | { [] }
@@ -205,7 +210,7 @@ tydecls :
   | tydecl tydecls { $1 :: $2 }
 
 program :
-  | tydecls classdecl decls expr COLON typ EOF { Program($1, $2, EAnnot($3, $5, tok_span(3, 5)), full_span()) }
-  | tydecls classdecl decls expr EOF { Program($1, $2, $3, full_span()) }
+  | tydecls classdecls decls expr COLON typ EOF { Program($1, $2, $3, EAnnot($4, $6, tok_span(4, 6)), full_span()) }
+  | tydecls classdecls decls expr EOF { Program($1, $2, $3, $4, full_span()) }
 
 %%
