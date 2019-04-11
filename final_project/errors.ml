@@ -14,10 +14,17 @@ exception Overflow of int * sourcespan (* value, where used *)
 exception Arity of int * int * sourcespan (* intended arity, actual arity, where called *)
 exception NotYetImplemented of string (* TODO: Message to show *)
 exception Unsupported of string * sourcespan
+exception UnsupportedTagged of string * int
 exception InternalCompilerError of string (* Major failure: message to show *)
 exception OccursCheck of string * sourcespan typ * sourcespan
-exception LetRecNonFunction of sourcespan bind * sourcespan (* name binding, where defined *)
-
+exception LetRecNonFunction of sourcespan expr * sourcespan (* name binding, where defined *)
+exception IndexTooSmall of int  * sourcespan
+exception IndexTooLarge of int * int  * sourcespan
+exception InvalidTyLen of string * sourcespan
+exception CyclicTy of string * sourcespan
+exception DuplicateType of string * sourcespan
+exception DuplicateArgument of string * sourcespan
+exception DuplicateLetRecDecl of string * sourcespan
 
 type reason =
   | InferExp of sourcespan expr
@@ -38,10 +45,24 @@ let print_errors (exns : exn list) : string list =
   List.map (fun e ->
       match e with
       | ParseError msg -> msg
+       | DuplicateType (msg, loc) ->
+         sprintf "Duplicate type: %s at <%s>" msg (string_of_sourcespan loc)
+      | CyclicTy (msg, loc) ->
+         sprintf "type declaration is cyclic: %s at <%s>" msg (string_of_sourcespan loc)
+      | InvalidTyLen (msg, loc) ->
+         sprintf "type declaration length is invalid: %s at <%s>" msg (string_of_sourcespan loc)
+      |IndexTooLarge(expected, actual, loc) ->
+          sprintf "error index too large: The tuple  at <%s> has a maximun size of %d, was indexed with %d"
+                 (string_of_sourcespan loc) (expected - 1) actual
+      |IndexTooSmall(index, loc) ->
+        sprintf " error index too small: The tuple  at <%s>  was accessed with an index of %d"
+                 (string_of_sourcespan loc) index
       | NotYetImplemented msg ->
          "Not yet implemented: " ^ msg
       | Unsupported(msg, loc) ->
          sprintf "Unsupported: %s at <%s>" msg (string_of_sourcespan loc)
+      | UnsupportedTagged(msg, tag) ->
+         sprintf "Unsupported: %s, tag: %d" msg tag
       | InternalCompilerError msg ->
          "Internal Compiler Error: " ^ msg
       | OccursCheck(tyvar, t, loc) ->
@@ -61,6 +82,10 @@ let print_errors (exns : exn list) : string list =
       | DuplicateFun(x, loc, existing) ->
          sprintf "The function name %s, redefined at <%s>, duplicates one at <%s>"
                  x (string_of_sourcespan loc) (string_of_sourcespan existing)
+      | DuplicateArgument(x, loc) ->
+         sprintf "The argument %s, first defined at <%s>, is redefined" x (string_of_sourcespan loc)
+      | DuplicateLetRecDecl(x, loc) ->
+         sprintf "The letrec declaration %s, first defined at <%s>, is redefined" x (string_of_sourcespan loc)
       | Overflow(num, loc) ->
          sprintf "The number literal %d, used at <%s>, is not supported in this language"
                  num (string_of_sourcespan loc)
@@ -79,7 +104,7 @@ let print_errors (exns : exn list) : string list =
             (string_of_sourcespan loc) (string_of_typ expected) (string_of_typ actual)
       | LetRecNonFunction(bind, loc) ->
          sprintf "Binding error at %s: Let-rec expected a name binding to a lambda; got %s"
-           (string_of_sourcespan loc) (string_of_bind bind)
+           (string_of_sourcespan loc) (string_of_expr bind)
       | TypeMismatch(loc, expected, actual, reasons) ->
          let get_tag e = match e with
            | ELet(_, _, t) -> t

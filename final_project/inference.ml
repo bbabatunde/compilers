@@ -39,7 +39,7 @@ let any2any = SForall(["X"], TyArr([tyVarX], tyVarX, dummy_span), dummy_span)
 (* create more type synonyms here, if you need to *)
 let initial_env : sourcespan scheme envt =
   List.fold_left (fun env (name, typ) -> StringMap.add name typ env) StringMap.empty [
-      raise (NotYetImplemented "Create an initial function environment here")
+      raise (NotYetImplemented "Create n initial function environment here")
   ]
 
 let rec find_pos (ls : 'a envt) x pos : 'a =

@@ -30,7 +30,8 @@ let tfvs name program expected = name>::
     assert_equal (List.sort c vars) (List.sort c expected) ~printer:str_list_print)
 ;;
 
-let builtins_size = 4 * (List.length initial_env)
+let builtins_size = 4 
+
 
 let pair_tests = [
   t "tup1" "let t = (4, (5, 6)) in
@@ -81,8 +82,7 @@ let gc = [
 
 let suite =
 "suite">:::
- pair_tests @ oom @ gc
-
+[]
 
 
 let () =

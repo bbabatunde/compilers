@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include "gc.h"
 
+typedef unsigned long int ulong;
+typedef unsigned short int ushort;
+typedef unsigned int uint;
+
+
 extern int our_code_starts_here(int* HEAP) asm("our_code_starts_here");
 extern void error() asm("error");
 extern int print(int val) asm("print");
@@ -11,6 +16,8 @@ extern int* try_gc(int* alloc_ptr, int amount_needed, int* first_frame, int* sta
 extern int* HEAP_END asm("HEAP_END");
 extern int* HEAP asm("HEAP");
 extern int* STACK_BOTTOM asm("STACK_BOTTOM");
+
+
 
 const int NUM_TAG_MASK     = 0x00000001;
 const int BOOL_TAG_MASK    = 0x00000007;
@@ -49,6 +56,7 @@ int* FROM_S;
 int* FROM_E;
 int* TO_S;
 int* TO_E;
+
 
 int equal(int val1, int val2) {
   if (val1 == val2) { return BOOL_TRUE; }
@@ -112,7 +120,7 @@ void printHelp(FILE *out, int val) {
     /*   fprintf(out, "DANGLING POINTER %p", addr); */
     /*   return; */
     /* } */
-    // Mark this tuple: save its length locally, then mark it
+    // Mark this tuple: save its length locally, then unmark it
     int len = addr[0]; // length is encoded
     if (len & 0x1) { // actually, it's a forwarding pointer
       fprintf(out, "forwarding to %p", (int*)(len - 1));
@@ -143,6 +151,7 @@ int print(int val) {
   return val;
 }
 
+/*
 int g_PrintStack(int val, int* esp, int* ebp, int args) {
   printf("ESP: %p\t==>  ", esp); fflush(stdout);
   printHelp(stdout, *esp); fflush(stdout);
@@ -177,7 +186,7 @@ int g_PrintStack(int val, int* esp, int* ebp, int args) {
   }
   return val;
 }
-
+*/
 
 
 void error(int i, int val) {
@@ -234,7 +243,7 @@ void error(int i, int val) {
   printHelp(stderr, val);
   fprintf(stderr, "\n");
   fflush(stderr);
-  naive_print_heap(HEAP, HEAP_END);
+  naive_print_heap(HEAP, HEAP_SIZE);
   fflush(stdout);
   exit(i);
 }
