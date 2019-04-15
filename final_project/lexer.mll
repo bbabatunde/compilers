@@ -31,13 +31,16 @@ rule token = parse
   | ":" { COLON }
   | "def" { DEF }
   | "and" { ANDDEF }
+  | "class" { CLASS }
+  | "fields" { FIELDS }
+  | "methods" { METHODS }
+  | "new" { NEW }
   | "print" { PRINT }
   | "printStack" { PRINTSTACK }
   | "nil" { NIL }
   | "type" { TYPE }
   | "true" { TRUE }
   | "false" { FALSE }
-  | "istuple" { ISTUPLE }
   | "isbool" { ISBOOL }
   | "isnum" { ISNUM }
   | "add1" { ADD1 }

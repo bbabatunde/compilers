@@ -11,7 +11,6 @@ type prim1 =
   | PrintB
   | IsBool
   | IsNum
-  | IsTuple
   | Not
   | PrintStack
 
@@ -36,7 +35,6 @@ type 'a typ =
   | TyVar of string * 'a
   | TyArr of 'a typ list * 'a typ * 'a
   | TyApp of 'a typ * 'a typ list * 'a
-  | TyTup of 'a typ list * 'a
 
 type 'a scheme =
   | SForall of string list * 'a typ * 'a
@@ -44,15 +42,11 @@ type 'a scheme =
 and 'a bind =
   | BBlank of 'a typ * 'a
   | BName of string * 'a typ * 'a
-  | BTuple of 'a bind list * 'a
 
 and 'a binding = ('a bind * 'a expr * 'a)
                                
 and 'a expr =
   | ESeq of 'a expr * 'a expr * 'a
-  | ETuple of 'a expr list * 'a
-  | EGetItem of 'a expr * int * int * 'a
-  | ESetItem of 'a expr * int * int * 'a expr * 'a
   | ELet of 'a binding list * 'a expr * 'a
   | ELetRec of 'a binding list * 'a expr * 'a
   | EPrim1 of prim1 * 'a expr * 'a
@@ -93,9 +87,6 @@ and 'a cexpr = (* compound expressions *)
   | CPrim2 of prim2 * 'a immexpr * 'a immexpr * 'a
   | CApp of 'a immexpr * 'a immexpr list * 'a
   | CImmExpr of 'a immexpr (* for when you just need an immediate value *)
-  | CTuple of 'a immexpr list * 'a
-  | CGetItem of 'a immexpr * int * 'a
-  | CSetItem of 'a immexpr * int * 'a immexpr * 'a
   | CLambda of string list * 'a aexpr * 'a
   | CMethodCall of 'a immexpr * string * 'a immexpr list * string * 'a  
   | CSetField of 'a immexpr * string * 'a immexpr * string * 'a                                            
@@ -107,8 +98,8 @@ and 'a aexpr = (* anf expressions *)
   | AObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
-  | AClass of string * 'a binding list * 'a adecl list * 'a
-  | AClassE  of string * 'a binding list * 'a adecl list * string *  'a
+  | AClass of string * (string * 'a cexpr) list * 'a adecl list * 'a
+  | AClassE  of string * (string * 'a cexpr) list * 'a adecl list * string *  'a
 and 'a aprogram =
   | AProgram of 'a adecl list * 'a aexpr * 'a
 ;;
@@ -117,16 +108,12 @@ let rec bind_to_typ bind =
   match bind with
   | BBlank(t, _) -> t
   | BName(_, t, _) -> t
-  | BTuple(args, a) -> TyTup(List.map bind_to_typ args, a)
 ;;
 
            
 let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   match e with
   | ESeq(e1, e2, a) -> ESeq(map_tag_E f e1, map_tag_E f e2, f a)
-  | ETuple(exprs, a) -> ETuple(List.map (map_tag_E f) exprs, f a)
-  | EGetItem(e, idx, len, a) -> EGetItem(map_tag_E f e, idx, len, f a)
-  | ESetItem(e, idx, len, newval, a) -> ESetItem(map_tag_E f e, idx, len, map_tag_E f newval, f a)
   | EId(x, a) -> EId(x, f a)
   | ENumber(n, a) -> ENumber(n, f a)
   | EBool(b, a) -> EBool(b, f a)
@@ -179,9 +166,6 @@ and map_tag_B (f : 'a -> 'b) b =
      let tag_ax = f ax in
      let tag_t = map_tag_T f t in
      BName(x, tag_t, tag_ax)
-  | BTuple(binds, t) ->
-     let tag_tup = f t in
-     BTuple(List.map (map_tag_B f) binds, tag_tup)
 and map_tag_T (f : 'a -> 'b) t =
   match t with
   | TyBlank a -> TyBlank(f a)
@@ -197,7 +181,6 @@ and map_tag_T (f : 'a -> 'b) t =
      let tag_args = List.map (map_tag_T f) args in
      TyApp(tag_t, tag_args, tag_app)
   | TyVar (x, a) -> TyVar(x, f a)
-  | TyTup(tys, a) -> TyTup(List.map (map_tag_T f) tys, f a)
 and map_tag_S (f : 'a -> 'b) s =
   match s with
   | SForall(vars, typ, a) -> SForall(vars, map_tag_T f typ, f a)
@@ -209,6 +192,16 @@ and map_tag_D (f : 'a -> 'b) d =
      let tag_scheme = map_tag_S f scheme in
      let tag_body = map_tag_E f body in
      DFun(name, tag_args, tag_scheme, tag_body, tag_fun)
+  | DClass(name, fields, methods, a) ->
+     let tag_a = f a in
+     let tag_binding (b, e, t) =
+     let tag_bind = f t in
+     let tag_b = map_tag_B f b in
+     let tag_e = map_tag_E f e in
+     (tag_b, tag_e, tag_bind) in
+     let tag_fields = List.map tag_binding fields in
+     let tag_methods = List.map (map_tag_D f) methods in
+     DClass(name, tag_fields, tag_methods, tag_a)
 and map_tag_TD (f : 'a -> 'b) td =
   match td with
   | TyDecl(name, args, a) ->
@@ -253,9 +246,6 @@ let rec untagP (p : 'a program) : unit program =
 and untagE e =
   match e with
   | ESeq(e1, e2, _) -> ESeq(untagE e1, untagE e2, ())
-  | ETuple(exprs, _) -> ETuple(List.map untagE exprs, ())
-  | EGetItem(e, idx, len, _) -> EGetItem(untagE e, idx, len, ())
-  | ESetItem(e, idx, len, newval, _) -> ESetItem(untagE e, idx, len, untagE newval, ())
   | EId(x, _) -> EId(x, ())
   | ENumber(n, _) -> ENumber(n, ())
   | EBool(b, _) -> EBool(b, ())
@@ -279,7 +269,6 @@ and untagB b =
   match b with
   | BBlank(typ, _) -> BBlank(untagT typ, ())
   | BName(x, typ, _) -> BName(x, untagT typ, ())
-  | BTuple(binds, _) -> BTuple(List.map untagB binds, ())
 and untagT t =
   match t with
   | TyBlank _ -> TyBlank ()
@@ -287,14 +276,15 @@ and untagT t =
   | TyArr(args, ret, _) -> TyArr(List.map untagT args, untagT ret, ())
   | TyApp(t, args, _) -> TyApp(untagT t, List.map untagT args, ())
   | TyVar(x, _) -> TyVar(x, ())
-  | TyTup(tys, _) -> TyTup(List.map untagT tys, ())
 and untagS s =
   match s with
   | SForall(vars, typ, _) -> SForall(vars, untagT typ, ())
 and untagD d =
   match d with
   | DFun(name, args, scheme, body, _) ->
-     DFun(name, List.map untagB args, untagS scheme, untagE body, ())
+      DFun(name, List.map untagB args, untagS scheme, untagE body, ())
+  | DClass(name, fields, methods, _) ->
+      DClass(name, List.map (fun (b, e, _) -> (untagB b, untagE e, ())) fields, List.map (untagD) methods, ())
 and untagTD td =
   match td with
   | TyDecl(name, args, _) -> TyDecl(name, List.map untagT args, ())
@@ -332,15 +322,6 @@ let atag (p : 'a aprogram) : tag aprogram =
        let app_tag = tag() in
        CApp(helpI fn, List.map helpI args, app_tag)
     | CImmExpr i -> CImmExpr (helpI i)
-    | CTuple(es, _) ->
-       let tup_tag = tag() in
-       CTuple(List.map helpI es, tup_tag)
-    | CGetItem(e, idx, _) ->
-       let get_tag = tag() in
-       CGetItem(helpI e, idx, get_tag)
-    | CSetItem(e, idx, newval, _) ->
-       let set_tag = tag() in
-       CSetItem(helpI e, idx, helpI newval, set_tag)
     | CLambda(args, body, _) ->
        let lam_tag = tag() in
        CLambda(args, helpA body, lam_tag)
@@ -355,6 +336,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | ADFun(name, args, body, _) ->
        let fun_tag = tag() in
        ADFun(name, args, helpA body, fun_tag)
+    | AClass(name, fields, methods, _) ->
+       let class_tag = tag() in
+       AClass(name, List.map (fun (x, c) -> (x, helpC c)) fields, List.map (helpD) methods, class_tag)
   and helpP p =
     match p with
     | AProgram(decls, body, _) ->

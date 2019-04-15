@@ -118,9 +118,6 @@ let print_errors (exns : exn list) : string list =
            | EId(_, t) -> t
            | EApp(_, _, t) -> t
            | EAnnot(_, _, t) -> t
-           | ETuple(_, t) -> t
-           | EGetItem(_, _, _, t) -> t
-           | ESetItem(_, _, _, _, t) -> t
            | ESeq(_, _, t) -> t
            | ELambda(_, _, t) -> t
          in
