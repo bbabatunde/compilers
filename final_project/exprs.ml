@@ -60,6 +60,7 @@ and 'a expr =
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
   | EObject of string * 'a
+  | ENewObject of string * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
 
@@ -88,6 +89,7 @@ and 'a cexpr = (* compound expressions *)
   | CApp of 'a immexpr * 'a immexpr list * 'a
   | CImmExpr of 'a immexpr (* for when you just need an immediate value *)
   | CLambda of string list * 'a aexpr * 'a
+  | CNewObject of string * 'a
   | CMethodCall of 'a immexpr * string * 'a immexpr list * string * 'a  
   | CSetField of 'a immexpr * string * 'a immexpr * string * 'a                                            
 and 'a aexpr = (* anf expressions *)
@@ -159,6 +161,11 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | ELambda(binds, body, a) ->
      let tag_lam = f a in
      ELambda(List.map (map_tag_B f) binds, map_tag_E f body, tag_lam)
+  | EObject(name, a) ->
+     EObject(name, (f a))
+  | ENewObject(name, a) -> ENewObject(name, (f a))
+  | EMethodCall(name, meth, args, n2, a) ->
+     EMethodCall(map_tag_E f name, meth, List.map (map_tag_E f) args,  n2, (f a))
 and map_tag_B (f : 'a -> 'b) b =
   match b with
   | BBlank(t, tag) -> BBlank(map_tag_T f t, f tag)
@@ -325,12 +332,17 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CLambda(args, body, _) ->
        let lam_tag = tag() in
        CLambda(args, helpA body, lam_tag)
+    | CMethodCall(name, meth, args, className, _) ->
+       CMethodCall(helpI name, meth, List.map helpI args, className, tag())
+    | CNewObject(name, _) ->
+       CNewObject(name, tag())
   and helpI (i : 'a immexpr) : tag immexpr =
     match i with
     | ImmNil(_) -> ImmNil(tag())
     | ImmId(x, _) -> ImmId(x, tag())
     | ImmNum(n, _) -> ImmNum(n, tag())
     | ImmBool(b, _) -> ImmBool(b, tag())
+    | ImmObj(n, _) -> ImmObj(n, tag())
   and helpD d =
     match d with
     | ADFun(name, args, body, _) ->

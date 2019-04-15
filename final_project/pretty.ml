@@ -118,6 +118,14 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
      let binds_strs = List.map string_of_bind binds in
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(lam(%s) %s)%s" binds_str (string_of_expr body) (print_a a)
+  | ENewObject(n, a) -> sprintf "(newObj(%s))%s" n (print_a a)
+  | EObject(n, a) -> sprintf "(obj(%s))%s" n (print_a a)
+  | EMethodCall(e, f, args, n, a) -> sprintf "(methodCall(%s.%s) (%s) %s)%s"
+        (string_of_expr e)
+        f
+        (ExtString.String.join ", " (List.map string_of_expr args))
+        n
+        (print_a a)
 let string_of_expr (e : 'a expr) : string =
   string_of_expr_with (fun _ -> "") e
 
@@ -199,12 +207,20 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
   | CLambda(args, body, a) ->
      sprintf "(lam(%s) %s)%s" (ExtString.String.join ", " args) (string_of_aexpr body) (print_a a)
   | CImmExpr i -> string_of_immexpr i
+  | CNewObject(name, a) -> sprintf "(new_obj(%s))%s" name (print_a a)
+  | CMethodCall(obj, meth, args, obj_name, a) -> sprintf "(method_call(%s.%s) (%s) %s)%s"
+        (string_of_immexpr obj)
+        meth
+        (ExtString.String.join ", " (List.map string_of_immexpr args))
+        obj_name
+        (print_a a)
 and string_of_immexpr_with (print_a : 'a -> string) (i : 'a immexpr) : string =
   match i with
   | ImmNil(a) -> "nil" ^ (print_a a)
   | ImmNum(n, a) -> (string_of_int n) ^ (print_a a)
   | ImmBool(b, a) -> (string_of_bool b) ^ (print_a a)
   | ImmId(x, a) -> x ^ (print_a a)
+  | ImmObj(n, a) -> "obj " ^ n ^ (print_a a)
 and string_of_aprogram_with (print_a : 'a -> string) (p : 'a aprogram) : string =
   match p with
   | AProgram(decls, body, a) ->
@@ -215,6 +231,13 @@ and string_of_adecl_with (print_a : 'a -> string) (d : 'a adecl) : string =
   | ADFun(name, args, body, a) ->
      sprintf "(fun %s(%s): %s)%s" name (ExtString.String.join ", " args)
        (string_of_aexpr_with 1000 print_a body) (print_a a)
+  | AClass(name, xes, methods, a) ->
+     let string_of_immexpr = string_of_immexpr_with print_a in
+     sprintf "(classdecl %s fields %s methods %s)%s"
+        name
+        (ExtString.String.join ",\n    " (List.map (fun (x, c) -> sprintf "%s = %s" x (string_of_immexpr c)) xes))
+        (ExtString.String.join ", " (List.map (string_of_adecl_with print_a) methods))
+        (print_a a)
 
 let string_of_aexpr (e : 'a aexpr) (depth : int) : string = string_of_aexpr_with depth (fun _ -> "") e
 let string_of_cexpr (c : 'a cexpr) (depth : int) : string = string_of_cexpr_with depth (fun _ -> "") c

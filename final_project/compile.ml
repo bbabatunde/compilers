@@ -412,6 +412,10 @@ let rename_and_tag (p : tag program) : tag program =
        let (binds', env') = helpBS env binds in
        let body' = helpE env' body in
        ELambda(binds', body', tag)
+    | ENewObject _ -> e
+    | EObject _ -> e
+    | EMethodCall(name, meth, args, n2, tag) ->
+       EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
   in (rename [] p)
 ;;
 
@@ -484,6 +488,8 @@ let anf (p : tag program) : unit aprogram =
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (CApp(fun_ans, new_args, ()), fun_setup @ List.concat new_setup)
 
+    | ENewObject(name, _) -> (CNewObject(name, ()), [])
+
     | ESeq(e1, e2, _) ->
        let (e1_ans, e1_setup) = helpC e1 in
        let (e2_ans, e2_setup) = helpC e2 in
@@ -513,8 +519,12 @@ let anf (p : tag program) : unit aprogram =
     | EBool(b, _) -> (ImmBool(b, ()), [])
     | EId(name, _) -> (ImmId(name, ()), [])
     | ENil _ -> (ImmNil(), [])
+    | ENewObject(name, tag) ->
+        let tmp = sprintf "new_obj_%d" tag in
+        let (newo_imm, newo_setup) = helpC e in
+        (ImmId(tmp, ()), newo_setup @ [BLet(tmp, newo_imm)])
+    | EObject(name, _) -> (ImmObj(name, ()), [])
     | EAnnot(e, _, _) -> helpI e
-
     | ESeq(e1, e2, _) ->
        let (e1_imm, e1_setup) = helpI e1 in
        let (e2_imm, e2_setup) = helpI e2 in
@@ -568,6 +578,20 @@ let anf (p : tag program) : unit aprogram =
                         @ [BLetRec (List.combine names new_binds)]
                         @ body_setup
                         @ [BLet(tmp, body_ans)])
+    | EMethodCall(name, meth, args, n2, tag) ->
+        let tmp = sprintf "emc_%d" tag in
+        (* Figure out object *)
+        let (name, n_setup) = helpI name in
+        (* Args to the funciton call*)
+        let (new_args, new_setup) = List.split (List.map helpI args) in
+        (ImmId(tmp, ()),
+            n_setup @
+            (List.concat new_setup) @
+            [BLet(tmp, CMethodCall(name, meth, new_args, getClass name, ()))])
+  and getClass immNewObj =
+      match immNewObj with
+      | ImmObj(name, _) -> name
+      | _ -> raise (InternalCompilerError "Weird imm obj :/")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
@@ -578,7 +602,9 @@ let anf (p : tag program) : unit aprogram =
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)
   in
-  helpP p
+  let anf_p = helpP p in
+     debug_printf "AFTER ANF: %s\n" (string_of_aprogram anf_p);
+     anf_p
 ;;
 
 
@@ -649,6 +675,8 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
         | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
+        | ENewObject _ -> e
+        | EMethodCall _ -> e
         | ENumber _ | EBool _ | ENil _ | EId _ -> e )
     and helpB bindings =
         match bindings with
@@ -677,6 +705,11 @@ let rec makeBlanks rem pos =
 ;;
 
 let desugarPre (p : sourcespan program) : sourcespan program =
+  let gensym =
+    let next = ref 0 in
+    (fun name ->
+        next := !next + 1;
+        sprintf "%s_%d" name (!next)) in
   let rec helpE (e : sourcespan expr) (* other parameters may be needed here *) =
     match e with
     | ESeq(e1, e2, loc) ->
@@ -689,6 +722,13 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
     | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
+    | ENewObject _ -> e
+    | EMethodCall(obj, meth, args, _, loc) ->
+        let tmp = gensym "new_obj" in
+        match obj with
+        | EId(str, pos) -> EMethodCall(EObject(str, pos), meth, args, "fix", loc)
+        | ENewObject(str, pos) -> e
+        | _ -> raise (InternalCompilerError "Non object/id in method call.")
     | ENumber _ | EBool _ | ENil _ | EId _ -> e
   and helpB bindings =
     match bindings with
