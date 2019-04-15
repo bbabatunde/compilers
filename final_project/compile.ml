@@ -882,6 +882,8 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
 
   | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail []) @
                           (compile_aexpr right si env num_args is_tail)
+  | AObject(name,obj,classname,_) ->  failwith "a object"
+
 and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
@@ -1124,6 +1126,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
             ICall(Label("equal"));
             IAdd(Reg(ESP), Const(8))
      ]
+    |Instanceof -> failwith "implement instance of "
+
    end
     | CApp(imm_name, imm_args, _) ->
   
@@ -1296,12 +1300,16 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
    
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
+  | CMethodCall(obj,funname,args,classname,_) -> failwith "method call"
+  | CSetField(obj,fieldname, arg,classname,_) -> failwith "set field "
  and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
+  | ImmObj(x,_) ->  failwith "implement object "
+
 
  ;;
 

@@ -27,6 +27,7 @@ type prim2 =
   | LessEq
   | Eq
   | EqB
+  | Instanceof
 
 
 type 'a typ =
