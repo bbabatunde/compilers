@@ -743,7 +743,7 @@ let reserve size tag =
    below for one way to use this ability... *)
 let rec compile_method (fun_name : string) body args env is_entry_point fields: instruction list =
   let stack_offset = word_size*((count_vars body)+1) in
-  let newEnv = List.flatten (List.mapi (fun i field -> [(field, RegOffset((i+3) * word_size, EBP))] ) fields) in
+  let newEnv = List.flatten (List.mapi (fun i field -> [(field, RegOffset((i+3) * word_size, ECX))] ) fields) in
   let lbl = 
       if (is_entry_point=true) then
         ILabel(fun_name)
@@ -755,7 +755,9 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
       ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
       IPush(Reg(EBP));
       IMov(Reg(EBP), Reg(ESP));
-      ISub(Reg(ESP), HexConst(stack_offset))
+      ISub(Reg(ESP), HexConst(stack_offset));
+      IMov(Reg(ECX), RegOffset(8, EBP))
+
     ]
   and postlude_asm = [
       ILineComment(Printf.sprintf "Clean up for %s" fun_name);
@@ -1211,7 +1213,7 @@ let compile_class dclass = match  dclass with
     let (mapping,_)  = List.fold_left (fun (acc,i) name ->  (StringMap.add name (i+1) acc,i+1)) (inner_hash,0) names  in 
     let outter_init =  StringMap.empty in 
     let table = StringMap.add name mapping outter_init in 
-    (classmethods, [(name,RegOffset(~-word_size * 1, EBP))], table)
+    (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * 1, EBP))], table)
 
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
@@ -1311,9 +1313,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  let (classmethods, classobjenv, table) = compile_class (List.hd decls) in 
-  let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true classobjenv table []) in
-  let as_assembly_string = (to_asm  (classmethods @  [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
+  let (create_objectprototype, classmethods, classobjenv, table) = compile_class (List.hd decls) in 
+  let body = [ILineComment("body start")] @ (compile_aexpr body 2 [] 0 true classobjenv table []) in
+  let as_assembly_string = (to_asm  (classmethods @  [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ create_objectprototype @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
