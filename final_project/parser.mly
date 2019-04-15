@@ -7,7 +7,7 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 
 %token <int> NUM
 %token <string> ID TYID
-%token DEF ANDDEF ADD1 SUB1 LPARENSPACE LPARENNOSPACE RPAREN LBRACK RBRACK LBRACE RBRACE LET IN OF EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON EOF PRINT PRINTSTACK TRUE FALSE ISBOOL ISNUM ISTUPLE EQEQ LESSSPACE LESSNOSPACE GREATER LESSEQ GREATEREQ AND OR NOT THINARROW COLONEQ SEMI NIL TYPE LAMBDA BEGIN END REC UNDERSCORE
+%token DEF ANDDEF CLASS FIELDS METHODS NEW ADD1 SUB1 LPARENSPACE LPARENNOSPACE RPAREN LBRACK RBRACK LBRACE RBRACE LET IN OF EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON EOF PRINT PRINTSTACK TRUE FALSE ISBOOL ISNUM EQEQ LESSSPACE LESSNOSPACE GREATER LESSEQ GREATEREQ AND OR NOT THINARROW COLONEQ SEMI NIL TYPE LAMBDA BEGIN END REC UNDERSCORE
 
 %right SEMI
 %left COLON
@@ -34,7 +34,6 @@ prim1 :
   | PRINT { Print }
   | ISBOOL { IsBool }
   | ISNUM { IsNum }
-  | ISTUPLE { IsTuple }
   | PRINTSTACK { PrintStack }
 
 bindings :
@@ -52,39 +51,13 @@ expr :
   | BEGIN expr END { $2 }
   | binop_expr SEMI expr { ESeq($1, $3, full_span()) }
   | binop_expr %prec SEMI { $1 }
+  | NEW ID { EObject($2, full_span()) }
 
 exprs :
   | expr { [$1] }
   | expr COMMA exprs { $1::$3 }
 
-tuple_expr :
-  | LPARENNOSPACE RPAREN { ETuple([], full_span()) }
-  | LPARENSPACE RPAREN { ETuple([], full_span()) }
-  | LPARENNOSPACE expr COMMA RPAREN { ETuple([$2], full_span()) }
-  | LPARENSPACE expr COMMA RPAREN { ETuple([$2], full_span()) }
-  | LPARENNOSPACE expr COMMA exprs RPAREN { ETuple($2::$4, full_span()) }
-  | LPARENSPACE expr COMMA exprs RPAREN { ETuple($2::$4, full_span()) }
-
-tuple_get :
-  | id LBRACK NUM OF NUM RBRACK { EGetItem($1, $3, $5, full_span()) }
-  | tuple_get LBRACK NUM OF NUM RBRACK { EGetItem($1, $3, $5, full_span()) }
-
-tuple_set :
-  | id LBRACK NUM OF NUM COLONEQ expr RBRACK { ESetItem($1, $3, $5, $7, full_span()) }
-  | tuple_get LBRACK NUM OF NUM COLONEQ expr RBRACK { ESetItem($1, $3, $5, $7, full_span()) }
-  | tuple_set LBRACK NUM OF NUM COLONEQ expr RBRACK { ESetItem($1, $3, $5, $7, full_span()) }
-
-
-simple_expr :
-  // Primops
-  | prim1 LPARENNOSPACE expr RPAREN { EPrim1($1, $3, full_span()) }
-  // Tuples
-  | tuple_expr { $1 }
-  | tuple_get { $1 }
-  | tuple_set { $1 }
-  // Parentheses
-  | LPARENSPACE expr RPAREN { $2 }
-  | LPARENNOSPACE expr RPAREN { $2 }
+lambda_expr :
   // Lambdas
   | LPARENNOSPACE LAMBDA LPARENNOSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENNOSPACE LAMBDA LPARENSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
@@ -92,9 +65,19 @@ simple_expr :
   | LPARENSPACE LAMBDA LPARENNOSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENSPACE LAMBDA LPARENSPACE binds RPAREN COLON expr RPAREN { ELambda($4, $7, full_span()) }
   | LPARENSPACE LAMBDA COLON expr RPAREN { ELambda([], $4, full_span()) }
+
+
+simple_expr :
+  // Primops
+  | prim1 LPARENNOSPACE expr RPAREN { EPrim1($1, $3, full_span()) }
+  // Parentheses
+  | LPARENSPACE expr RPAREN { $2 }
+  | LPARENNOSPACE expr RPAREN { $2 }
   // Function calls
   | binop_expr LPARENNOSPACE exprs RPAREN { EApp($1, $3, full_span()) }
   | binop_expr LPARENNOSPACE RPAREN { EApp($1, [], full_span()) }
+  // Lambdas
+  | lambda_expr { $1 }
   // Simple cases
   | const { $1 }
   | LPARENNOSPACE expr COLON typ RPAREN { EAnnot($2, $4, full_span()) }
@@ -147,6 +130,14 @@ decl :
       let typ_pos = tok_span(3, 7) in
       DFun($2, $4, SForall([], TyArr(arg_types, $7, typ_pos), typ_pos), $9, full_span())
     }
+  | CLASS ID COLON FIELDS namebindings_consts METHODS inclass_decls END {DClass($2, $5, $7, full_span())}
+
+namebindings_consts :
+  // just id?
+  // | id
+  | namebind EQUAL const { [($1, $3, full_span())] }
+  | namebind EQUAL const COMMA namebindings_consts { ($1, $3, tok_span(1, 3))::$5 }
+
 
 tyids :
   | { [] }
@@ -162,8 +153,6 @@ binds :
 bind :
   | namebind { $1 }
   | blankbind { $1 }
-  | LPARENNOSPACE binds RPAREN { BTuple($2, full_span()) }
-  | LPARENSPACE binds RPAREN { BTuple($2, full_span()) }
 
 blankbind :
   | UNDERSCORE %prec SEMI { BBlank(TyBlank(full_span()), full_span()) }
@@ -177,20 +166,12 @@ typ :
   | ID { TyCon($1, full_span()) }
   | tyid { $1 }
   | arrowtyp { $1 }
-  | tupletyp { $1 }
 
 arrowtyp :
   | LPARENNOSPACE typs THINARROW typ RPAREN { TyArr($2, $4, full_span()) }
   | LPARENSPACE typs THINARROW typ RPAREN { TyArr($2, $4, full_span()) }
   | LPARENNOSPACE THINARROW typ RPAREN { TyArr([], $3, full_span()) }
   | LPARENSPACE THINARROW typ RPAREN { TyArr([], $3, full_span()) }
-
-
-tupletyp :
-  | LPARENNOSPACE startyps RPAREN { TyTup($2, full_span()) }
-  | LPARENSPACE startyps RPAREN { TyTup($2, full_span()) }
-  | LPARENNOSPACE RPAREN { TyTup([], full_span()) }
-  | LPARENSPACE RPAREN { TyTup([], full_span()) }
 
 
 typs :
@@ -208,6 +189,10 @@ declgroup :
 decls :
   | { [] }
   | declgroup decls { $1::$2 }
+
+inclass_decls :
+  | { [] }
+  | decl inclass_decls { $1::$2 }
 
 tydecl :
   | TYPE ID EQUAL LPARENNOSPACE startyps RPAREN { TyDecl($2, $5, full_span()) }

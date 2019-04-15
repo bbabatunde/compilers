@@ -19,7 +19,6 @@ let string_of_op1 op =
   | Not -> "!"
   | IsNum -> "isnum"
   | IsBool -> "isbool"
-  | IsTuple -> "istuple"
 
 let name_of_op1 op =
   match op with
@@ -31,7 +30,6 @@ let name_of_op1 op =
   | Not -> "Not"
   | IsNum -> "IsNum"
   | IsBool -> "IsBool"
-  | IsTuple -> "IsTuple"
 
 let string_of_op2 op =
   match op with
@@ -72,7 +70,6 @@ let rec string_of_typ (t : 'a typ) : string =
                            (string_of_typ t)
                            (ExtString.String.join ", " (List.map string_of_typ args))
   | TyVar(id, _) -> "'" ^ id
-  | TyTup(tys, _) -> "(" ^ (ExtString.String.join " * " (List.map string_of_typ tys)) ^ ")"
 let string_of_scheme (s : 'a scheme) : string =
   match s with
   | SForall(vars, typ, _) -> sprintf "Forall %s, %s" (ExtString.String.join ", " vars) (string_of_typ typ)
@@ -82,7 +79,6 @@ let rec string_of_bind (b : 'a bind) : string =
   | BBlank(_) -> "_"
   | BName(name, TyBlank _, _) -> name
   | BName(name, typ, _) -> sprintf "%s : %s" name (string_of_typ typ)
-  | BTuple(binds, _) -> "(" ^ (ExtString.String.join ", " (List.map string_of_bind binds)) ^ ")"
 
 let rec string_of_binding_with (print_a : 'a -> string) ((bind, expr, _) : 'a binding) : string =
   sprintf "%s = %s" (string_of_bind bind) (string_of_expr_with print_a expr)
@@ -93,10 +89,6 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
   let string_of_expr = string_of_expr_with print_a in
   match e with
   | ESeq(e1, e2, a) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
-  | ETuple([e], a) -> "(" ^ (string_of_expr e) ^ ",)" ^ (print_a a)
-  | ETuple(exprs, a) -> "(" ^ (ExtString.String.join ", " (List.map string_of_expr exprs)) ^ ")"
-  | EGetItem(e, idx, len, a) -> sprintf "%s[%d of %d]%s" (string_of_expr e) idx len (print_a a)
-  | ESetItem(e, idx, len, newval, a) -> sprintf "%s[%d of %d := %s]%s" (string_of_expr e) idx len (string_of_expr newval) (print_a a)
   | ENumber(n, a) -> (string_of_int n) ^ (print_a a)
   | EBool(b, a) -> (string_of_bool b) ^ (print_a a)
   | ENil(t, a) -> "nil : " ^ (string_of_typ t) ^ (print_a a)
@@ -185,9 +177,6 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
   let string_of_immexpr = string_of_immexpr_with print_a in
   if depth <= 0 then "..." else
   match c with
-  | CTuple(imms, a) -> sprintf "(%s)%s" (ExtString.String.join ", " (List.map string_of_immexpr imms)) (print_a a)
-  | CGetItem(e, idx, a) -> sprintf "%s[%d]%s" (string_of_immexpr e) idx (print_a a)
-  | CSetItem(e, idx, newval, a) -> sprintf "%s[%d := %s]%s" (string_of_immexpr e) idx (string_of_immexpr newval) (print_a a)
   | CPrim1(op, e, a) ->
      sprintf "%s(%s)%s" (string_of_op1 op) (string_of_immexpr e) (print_a a)
   | CPrim2(op, left, right, a) ->
@@ -279,8 +268,6 @@ let rec format_typ (fmt : Format.formatter) (print_a : 'a -> string) (t : 'a typ
      open_angle fmt;
      print_list fmt help args print_comma_sep;
      close_angle fmt; pp_print_string fmt (maybe_angle (print_a a)); pp_print_string fmt " "
-  | TyTup(tys, a) ->
-     open_paren fmt; print_list fmt help tys print_star_sep; close_paren fmt
 ;;
 let rec format_bind (fmt : Format.formatter) (print_a : 'a -> string) (b : 'a bind) : unit =
   match b with
@@ -289,9 +276,6 @@ let rec format_bind (fmt : Format.formatter) (print_a : 'a -> string) (b : 'a bi
      pp_print_string fmt x;
      pp_print_string fmt " : ";
      format_typ fmt print_a typ;
-     pp_print_string fmt (maybe_angle (print_a a))
-  | BTuple(binds, a) ->
-     open_paren fmt; print_list fmt (fun fmt -> format_bind fmt print_a) binds print_comma_sep; close_paren fmt;
      pp_print_string fmt (maybe_angle (print_a a))
 ;;
 let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a expr) : unit =
@@ -302,18 +286,6 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
      help e1;
      pp_print_string fmt "; ";
      help e2;
-     close_paren fmt
-  | ETuple(es, a) ->
-     open_label fmt "ETuple" (print_a a);
-     print_list fmt (fun fmt -> format_expr fmt print_a) es print_comma_sep;
-     close_paren fmt
-  | EGetItem(e, idx, len, a) ->
-     open_label fmt "EGetItem" (print_a a);
-     help e; print_comma_sep fmt; pp_print_int fmt idx;
-     close_paren fmt
-  | ESetItem(e, idx, len, newval, a) -> 
-     open_label fmt "ESetItem" (print_a a);
-     help e; print_comma_sep fmt; pp_print_int fmt idx; pp_print_string fmt " := "; help newval;
      close_paren fmt
   | ENumber(n, a) ->
      open_label fmt "ENumber" (print_a a);

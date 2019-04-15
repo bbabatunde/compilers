@@ -10,6 +10,15 @@ type 'a envt = (string * 'a) list
 module StringSet = Set.Make(String);;
 module StringMap = Map.Make(String);;
 
+let skip_typechecking = ref false
+let show_debug_print = ref false
+
+let debug_printf fmt =
+    if !show_debug_print
+    then printf fmt
+    else ifprintf stdout fmt
+;;
+
      
 let gensym =
   let count = ref 0 in
@@ -57,8 +66,8 @@ let fun_prim = ["input";"print"]
 let rec strip_binds arg =
   let result = (List.fold_left (fun env b -> match b with 
   |BBlank(_,_) -> env
-  |BName( str, typ , loc) ->  [(str , loc)]@env
-  |BTuple(binds,loc) ->  env @ (strip_binds binds) ) [] arg) in result
+  |BName( str, typ , loc) ->  [(str , loc)]@env) [] arg)
+  in result
 
 let rec findlst ls str = 
    match ls with
@@ -153,27 +162,6 @@ let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * 
 
 ;;
 
-
-let rec tupArgs arg_lst =
-    match arg_lst with
-    | first::rest ->
-        (match first with
-        | BTuple(_, _) -> first :: (tupArgs rest)
-        | _ -> tupArgs rest)
-    | [] -> []
-;;
-
-let rec replaceTups tag arg_lst ctr =
-    let tmp_tup_name = (sprintf "%s_%d" tag ctr) in
-    match arg_lst with
-    | first::rest ->
-        (match first with
-        | BTuple(_, loc) -> BName(tmp_tup_name, bind_to_typ first, loc) :: (replaceTups tag rest (ctr + 1))
-        | BName(_, _, _) -> first :: (replaceTups tag rest ctr)
-        | _ -> raise (InternalCompilerError "BBlank in function definition o.O"))
-    | [] -> []
-;;
-
 let rec bindsToBindings bl =
     match bl with
     | first::rest ->
@@ -235,23 +223,12 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
     |ELet((bind,expr,exploc)::rest as bindings, body, pos) -> 
      let shadowlist = begin match bind with
                      | BBlank(typ,loc) -> wf_T typ tydecls
-                     | BName(name, typ,loc) ->  (check_shadowid name  expr exploc env ds tydecls) @ wf_T typ tydecls
-                     | BTuple(bindlist,loc) ->  check_bind_list bindlist expr exploc env ds tydecls end
+                     | BName(name, typ,loc) ->  (check_shadowid name  expr exploc env ds tydecls) @ wf_T typ tydecls end
     in
     let(exnbinds_list,newenv) = check_binding_list bindings env ds tydecls in 
     (shadowlist @ exnbinds_list @ (wf_E body ds newenv tydecls))  
 
    | ESeq(left, right,_) -> wf_E left ds env  tydecls @ wf_E right ds env tydecls
-   | ETuple(exprlist, _) -> List.fold_left (fun lst e -> wf_E e ds env tydecls) [] exprlist
-   | EGetItem(tuple,index,size,loc)-> 
-     if ( index >=  size) 
-     then  wf_E tuple ds env tydecls @ [IndexTooLarge(index,size,loc)]
-     else if (index < 0) then wf_E tuple ds env tydecls @ [IndexTooSmall(index,loc)] else  wf_E tuple ds env tydecls
-   | ESetItem (exp,index,size,exp2,loc) -> 
-     if (index >=  size) 
-     then  wf_E exp ds env tydecls @ [IndexTooLarge(index,size, loc)] @  wf_E exp2 ds env tydecls
-     else if (index < 0) then wf_E exp ds env tydecls @ [IndexTooSmall(index,loc)]  @  wf_E exp2 ds env tydecls
-     else wf_E exp ds env tydecls @  wf_E exp2 ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
 
 and bindingsToBinds bl =
@@ -290,7 +267,6 @@ and check_bind_list bind_list expr exproc env ds tydecls: exn list =
 and check_shadowid_tuple b expr exploc env ds tydecls: exn list = match b with
   | BBlank(typ,_) ->  []
   | BName(str, typ,loc) -> (check_shadowid str  expr exploc env ds tydecls) 
-  | BTuple(bindlist,_) ->  check_bind_list bindlist expr exploc env ds tydecls
 
 
 and check_shadowid bind expr exploc env ds tydecls: exn list = match find2 env bind with
@@ -301,7 +277,6 @@ and check_binding_list (bindings: 'a binding list) (env : (string * sourcespan) 
   ((exn list )  * ((string * sourcespan) list))=
    (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
        |(BBlank(typ, _),    e,   y) ->  (wf_E e ds env tydecls, env)
-       |(BTuple(blst, _),   e,   y) ->  (wf_E e ds (add_bindlst_env blst env) tydecls, (add_bindlst_env blst env))
        |(BName(n,typ,loc),  e,   y)  -> match find2 env n with  
                                           |None ->(exnlist, [(n,y)]@env)
                                           |Some(exploc) ->((wf_E e ds ([(n,y)] @ env) tydecls) @[DuplicateId(n,exploc,y)]@exnlist , [(n,y)]@env))
@@ -313,7 +288,6 @@ and add_bindlst_env blst env =
     match e with
    | BBlank(typ,_) ->  env
    | BName(str, typ,loc) -> [(str,loc)]@env
-   | BTuple(bindlist,_) -> env @ add_bindlst_env bindlist env
     )  env blst
 
   and wf_D  (ds : 'a decl list) (tydecls: 'a tydecl list): exn list = 
@@ -345,7 +319,6 @@ and add_bindlst_env blst env =
                         |Some(x) -> [] end
     | TyArr(typlist,typ,_)-> []
     | TyApp(typ,typlist,_) -> []
-    | TyTup(typlst,_)-> List.fold_left (fun errlst t -> errlst@  wf_T t tydecls) [] typlst
   and wf_S (s : sourcespan scheme)  (tydecls: 'a tydecl list): exn list = match s with 
     | SForall(strlst,typ,loc) ->   (wf_T typ  tydecls)
 
@@ -383,9 +356,6 @@ let rename_and_tag (p : tag program) : tag program =
     | BName(name, typ, tag) ->
        let name' = sprintf "%s_%d" name tag in
        (BName(name', typ, tag), (name, name') :: env)
-    | BTuple(binds, tag) ->
-       let (binds', env') = helpBS env binds in
-       (BTuple(binds', tag), env')
   and helpBS env (bs : tag bind list) =
     match bs with
     | [] -> ([], env)
@@ -405,9 +375,6 @@ let rename_and_tag (p : tag program) : tag program =
     match e with
     | EAnnot(e, t, tag) -> helpE env e
     | ESeq(e1, e2, tag) -> ESeq(helpE env e1, helpE env e2, tag)
-    | ETuple(es, tag) -> ETuple(List.map (helpE env) es, tag)
-    | EGetItem(e, idx, len, tag) -> EGetItem(helpE env e, idx, len, tag)
-    | ESetItem(e, idx, len, newval, tag) -> ESetItem(helpE env e, idx, len, helpE env newval, tag)
     | EPrim1(op, arg, tag) -> EPrim1(op, helpE env arg, tag)
     | EPrim2(op, left, right, tag) -> EPrim2(op, helpE env left, helpE env right, tag)
     | EIf(c, t, f, tag) -> EIf(helpE env c, helpE env t, helpE env f, tag)
@@ -453,98 +420,6 @@ let defn_to_letrec (p : 'a program) : 'a program =
   | Program(tydecls, declgroups, body, tag) ->
      Program(tydecls, [], wrap declgroups body tag, tag)*)
 
-let desugar_bindings (p : sourcespan program) : sourcespan program =
-  let gensym =
-    let next = ref 0 in
-    (fun name ->
-      next := !next + 1;
-      sprintf "%s_%d" name (!next)) in
-  let rec helpP (p : sourcespan program) =
-    match p with
-    | Program(tydecls, decls, body, tag) -> Program(tydecls, List.map helpG decls, helpE body, tag)
-  and helpG g =
-    List.map helpD g
-  and helpD d =
-    match d with
-    | DFun(name, args, ret, body, tag) ->
-       let helpArg a =
-         match a with
-         | BTuple(_, tag) ->
-            let name = gensym "argtup" in
-            let typ = bind_to_typ a in
-            let newbind = BName(name, typ, tag) in
-            (newbind, [(a, EId(name, tag), tag)])
-         | _ -> (a, []) in
-       let (newargs, argbinds) = List.split (List.map helpArg args) in
-       let newbody = ELet(List.flatten argbinds, body, tag) in
-       DFun(name, newargs, ret, helpE newbody, tag)
-  and helpBE bind =
-    let (b, e, btag) = bind in
-    match b with
-    | BTuple(binds, ttag) ->
-       let typ = bind_to_typ b in
-       (match e with
-        | EId _ ->
-           expandTuple binds ttag typ e
-        | _ ->
-           let newname = gensym "tup" in
-           (BName(newname, typ, ttag), e, btag) :: expandTuple binds ttag typ (EId(newname, ttag)))
-    | _ -> [bind]
-  and expandTuple binds tag typ source : sourcespan binding list =
-    let len = List.length binds in
-    let helpB i b =
-      match b with
-      | BBlank _ -> []
-      | BName(name, typ, btag) -> [(b, EGetItem(source, i, len, tag), btag)]
-      | BTuple(binds, tag) ->
-         let newname = gensym "tup" in
-         let newexpr = EId(newname, tag) in
-         let t = match typ with
-           | TyTup(typs, _) -> (List.nth typs i)
-           | _ -> TyBlank tag in
-         (BName(newname, t, tag), EGetItem(source, i, len, tag), tag) :: expandTuple binds tag t newexpr in
-    List.flatten (List.mapi helpB binds)
-  and helpE e =
-    match e with
-    | ESeq(e1, e2, tag) -> ELet([(BBlank(TyBlank tag, tag), helpE e1, tag)], helpE e2, tag)
-    | ETuple(exprs, tag) -> ETuple(List.map helpE exprs, tag)
-    | EGetItem(e, idx, len, tag) -> EGetItem(helpE e, idx, len, tag)
-    | ESetItem(e, idx, len, newval, tag) -> ESetItem(helpE e, idx, len, helpE newval, tag)
-    | EId(x, tag) -> EId(x, tag)
-    | ENumber(n, tag) -> ENumber(n, tag)
-    | EBool(b, tag) -> EBool(b, tag)
-    | ENil(t, tag) -> ENil(t, tag)
-    | EAnnot(e, t, tag) -> EAnnot(helpE e, t, tag)
-    | EPrim1(op, e, tag) ->
-       EPrim1(op, helpE e, tag)
-    | EPrim2(op, e1, e2, tag) ->
-       EPrim2(op, helpE e1, helpE e2, tag)
-    | ELet(binds, body, tag) ->
-       let newbinds = (List.map helpBE binds) in
-       List.fold_right (fun binds body -> ELet(binds, body, tag)) newbinds (helpE body)
-    | ELetRec(binds, body, tag) ->
-       let newbinds = (List.map helpBE binds) in
-       ELetRec(List.flatten newbinds, helpE body, tag)
-    | EIf(cond, thn, els, tag) ->
-       EIf(helpE cond, helpE thn, helpE els, tag)
-    | EApp(name, args, tag) ->
-       EApp(helpE name, List.map helpE args, tag)
-    | ELambda(args, body, tag) ->
-       let helpArg a =
-         match a with
-         | BTuple(_, tag) ->
-            let name = gensym "argtup" in
-            let typ = bind_to_typ a in
-            let newbind = BName(name, typ, tag) in
-            (newbind, [(a, EId(name, tag), tag)])
-         | _ -> (a, []) in
-       let (newargs, argbinds) = List.split (List.map helpArg args) in
-       let newbody = ELet(List.flatten argbinds, body, tag) in
-       ELambda(newargs, helpE newbody, tag)
-
-  in helpP p
-;;
-
 
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram =
@@ -582,8 +457,6 @@ let anf (p : tag program) : unit aprogram =
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
-    | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
-       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
     | EApp(funname, args, _) ->
        let (fun_ans, fun_setup) = helpI funname in
        let (new_args, new_setup) = List.split (List.map helpI args) in
@@ -593,24 +466,11 @@ let anf (p : tag program) : unit aprogram =
        let (e1_ans, e1_setup) = helpC e1 in
        let (e2_ans, e2_setup) = helpC e2 in
        (e2_ans, e1_setup @ [BSeq e1_ans] @ e2_setup)
-
-    | ETuple(args, _) ->
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (CTuple(new_args, ()), List.concat new_setup)
-    | EGetItem(tup, idx, len, _) ->
-       let (tup_imm, tup_setup) = helpI tup in
-       (CGetItem(tup_imm, idx, ()), tup_setup)
-    | ESetItem(tup, idx, len, newval, _) ->
-       let (tup_imm, tup_setup) = helpI tup in
-       let (new_imm, new_setup) = helpI newval in
-       (CSetItem(tup_imm, idx, new_imm, ()), tup_setup @ new_setup)
-         
     | ELambda(binds, body, _) ->
        let args = List.map (fun a ->
                       match a with
                       | BName(a, _, _) -> a
-                      | BBlank(_, _) -> gensym "blank"
-                      | BTuple _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away")))
+                      | BBlank(_, _) -> gensym "blank")
                     binds in
        (CLambda(args, helpA body, ()), [])
     | ELetRec(binds, body, _) ->
@@ -637,21 +497,6 @@ let anf (p : tag program) : unit aprogram =
        let (e1_imm, e1_setup) = helpI e1 in
        let (e2_imm, e2_setup) = helpI e2 in
        (e2_imm, e1_setup @ e2_setup)
-
-
-    | ETuple(args, tag) ->
-       let tmp = sprintf "tup_%d" tag in
-       let (new_args, new_setup) = List.split (List.map helpI args) in
-       (ImmId(tmp, ()), (List.concat new_setup) @ [BLet(tmp, CTuple(new_args, ()))])
-    | EGetItem(tup, idx, len, tag) ->
-       let tmp = sprintf "get_%d" tag in
-       let (tup_imm, tup_setup) = helpI tup in
-       (ImmId(tmp, ()), tup_setup @ [BLet(tmp, CGetItem(tup_imm, idx, ()))])
-    | ESetItem(tup, idx, len, newval, tag) ->
-       let tmp = sprintf "set_%d" tag in
-       let (tup_imm, tup_setup) = helpI tup in
-       let (new_imm, new_setup) = helpI newval in
-       (ImmId(tmp, ()), tup_setup @ new_setup @ [BLet(tmp, CSetItem(tup_imm, idx, new_imm,()))])
 
     | EPrim1(op, arg, tag) ->
        let tmp = sprintf "unary_%d" tag in
@@ -681,16 +526,13 @@ let anf (p : tag program) : unit aprogram =
        let args = List.map (fun a ->
                       match a with
                       | BName(a, _, _) -> a
-                      | BBlank(_, _) -> gensym "blank"
-                      | BTuple _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away")))
+                      | BBlank(_, _) -> gensym "blank")
                     binds in
        (ImmId(tmp, ()), [BLet(tmp, CLambda(args, helpA body, ()))])
     | ELet((BName(bind, _, _), exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
-    | ELet((BTuple(binds, _), exp, _)::rest, body, pos) ->
-       raise (InternalCompilerError("Tuple bindings should have been desugared away"))
     | ELetRec(binds, body, tag) ->
        let tmp = sprintf "lam_%d" tag in
        let name_of b =
@@ -743,9 +585,6 @@ let free_vars_E (e : 'a aexpr) rec_binds : string list =
     | CPrim2(_, left, right, _) -> helpI bound left @ helpI bound right
     | CApp(fn, args, _) ->
       (helpI bound fn) @ (List.flatten (List.map (fun arg -> helpI bound arg) args))
-    | CTuple(vals, _) -> List.flatten (List.map (fun v -> helpI bound v) vals)
-    | CGetItem(tup, _, _) -> helpI bound tup
-    | CSetItem(tup, _, rhs, _) -> helpI bound tup @ helpI bound rhs
     | CImmExpr i -> helpI bound i
   and helpI (bound : string list) (e : 'a immexpr) : string list =
     match e with
@@ -769,11 +608,9 @@ let rec free_typ_tyvars typ =
   | TyVar(s, _) -> [s]
   | TyArr(args, ret, _) -> List.concat (List.map free_typ_tyvars (args @ [ret]))
   | TyApp(typ, args, _) -> List.concat (List.map free_typ_tyvars (args @ [typ]))
-  | TyTup(args, _) -> List.concat (List.map free_typ_tyvars args)
 and free_scheme_tyvars (args, typ) =
   List.fold_left ExtList.List.remove (List.sort_uniq String.compare (free_typ_tyvars typ)) args
 ;;
-
 
 let desugarPost (p : sourcespan program) : sourcespan program =
     let rec helpE e =
@@ -783,17 +620,13 @@ let desugarPost (p : sourcespan program) : sourcespan program =
             let seq_blank = (BBlank(TyBlank(loc), loc), e1_desugar, loc) in
             ELet([seq_blank], helpE e2, loc)
         | ELet(bindings, e, loc) -> ELet(helpB bindings, helpE e, loc)
-        | ETuple(el, loc) -> ETuple(List.map helpE el, loc)
-        | ETuple(expr_lst, loc) -> ETuple(List.map helpE expr_lst, loc)
-        | EGetItem(eg, i1, i2, loc) -> EGetItem(helpE eg, i1, i2, loc)
-        | ESetItem(eg, i1, i2, es, loc) -> ESetItem(helpE eg, i1, i2, helpE es, loc)
         | EPrim1(p1, e, loc) -> EPrim1(p1, helpE e, loc)
         | EPrim2(p2, e1, e2, loc) -> EPrim2(p2, helpE e1, helpE e2, loc)
         | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
         | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
         | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
-        | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc) 
+        | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
         | ENumber _ | EBool _ | ENil _ | EId _ -> e )
     and helpB bindings =
         match bindings with
@@ -801,14 +634,54 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
     in
     match p with
-    | Program(tydecls, [], body, t) -> 
+    | Program(tydecls, [], body, t) ->
             let new_p = Program(tydecls, [], helpE body, t) in
+            debug_printf "BEFORE DESUGAR_POST: %s\n" (string_of_program p);
+            debug_printf "AFTER DESUGAR_POST: %s\n" (string_of_program new_p);
             new_p
     | _ -> raise (InternalCompilerError("Program function definitons not desugared into body :/"))
 ;;
 
+let rec makeBlanks rem pos =
+    if rem = 0 then []
+    else [TyBlank(pos)] @ (makeBlanks (rem - 1) pos)
+;;
 
-  
+let desugarPre (p : sourcespan program) : sourcespan program =
+  let rec helpE (e : sourcespan expr) (* other parameters may be needed here *) =
+    match e with
+    | ESeq(e1, e2, loc) ->
+        ESeq(helpE e1, helpE e2, loc)
+    | ELet(bindings, e, loc) -> ELet(bindings, helpE e, loc)
+    | EPrim1(p1, e, loc) -> EPrim1(p1, helpE e, loc)
+    | EPrim2(p2, e1, e2, loc) -> EPrim2(p2, helpE e1, helpE e2, loc)
+    | EIf(c, t, e, loc) -> EIf(helpE c, helpE t, helpE e, loc)
+    | EApp(n, el, loc) -> EApp(n, List.map helpE el, loc)
+    | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
+    | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
+    | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
+    | ENumber _ | EBool _ | ENil _ | EId _ -> e
+  and helpB bindings =
+    match bindings with
+    | [] -> []
+    | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
+  and helpD (d : sourcespan decl) (* other parameters may be needed here *) =
+    match d with
+    | DFun(name, args, scheme, body, pos) ->
+        let final_body = ELambda(args, helpE body, pos) in
+        let this_let_binding = [((BName(name, TyArr((makeBlanks (List.length args) pos), TyBlank(pos), pos), pos)), final_body, pos)] in
+        this_let_binding
+  in
+  match p with
+  | Program(tydecls, decls, body, t) ->
+          let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
+          let new_body = if List.length new_decls > 0 then ELetRec(List.concat new_decls, (helpE body), t) else helpE body in
+          let new_p = Program(tydecls, [], new_body, t) in
+          debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
+          debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
+          new_p
+;;
+
 let reserve size tag =
   let ok = sprintf "$memcheck_%d" tag in
   [
@@ -953,22 +826,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
         IJz(Label("logic_expected_a_boolean"));
         IXor(Reg(EAX),bool_mask)
        ]
-      |IsTuple -> 
-        let  istuple_label = sprintf "istuple_label_%s" (string_of_int tag) in
-         let done_label = sprintf "istuple_labeldone_%s" (string_of_int tag) in
-         [
-          IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ 
-          [
-            IAnd(Reg(EAX), Const(0x00000007));
-            ICmp(Reg(EAX), Const(0x00000001));
-            IMov(Reg(EAX),const_false);
-            IJne(Label(done_label));
-            ILabel(istuple_label);
-            IMov(Reg(EAX),const_true);
-            ILabel(done_label)
-          ]
-
-
       |PrintStack -> failwith "print stack"
       |Print -> 
         [
@@ -1161,57 +1018,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
                 IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
          ]
 
-
-  | CTuple(lst,_)-> 
-      let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))] in
-      let args = List.map (fun e ->  compile_imm e env classobjenv table) lst in
-      let instr = List.flatten (List.mapi (fun i a -> [
-        IMov(Reg(EAX), Sized(DWORD_PTR, a));
-        IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
-
-      let to_tuple = [IMov(Reg(EAX), Reg(ESI)); 
-                       IAdd(Reg(EAX), HexConst(0x1))] in
-      let offset = [IAdd(Reg(ESI), Const(word_size * (List.length lst + 1)));
-                    IAdd(Reg(ESI), HexConst(0x7));
-                    IAnd(Reg(ESI), HexConst(0xFFFFFFF8))
-                  ] in
-
-       size @  instr @ to_tuple @ offset
-     
-
-  | CGetItem(pair,index,_)-> 
-   [
-
-
-      
-      IMov(Reg(EAX),  Sized(DWORD_PTR, compile_imm pair env classobjenv table));
-      IMov(Reg(ECX), Reg(EAX));
-      IAnd(Reg(ECX), HexConst(0x7));
-      ICmp(Reg(ECX), HexConst(0x001));
-      IJne(Label("error_not_tuple"));
-      ISub(Reg(EAX),HexConst(0x1));
-      IMov(Reg(EDX),Const(index));
-      IMov(Reg(ECX),HexConst(0x0));
-      ICmp(Reg(EDX),Reg(ECX));
-      IJl(Label("index_too_low"));
-      ICmp(Reg(EDX),RegOffset(0, EAX));
-      IJge(Label("index_too_high"));
-      IMov(Reg(EAX),RegOffset(word_size * (index + 1), EAX))
-
-   ]
-  | CSetItem(pair,index,newitem,_)-> 
-    [
-     IMov(Reg(EAX), compile_imm pair env classobjenv table);
-     IMov(Reg(EDX), compile_imm newitem env classobjenv table);
-     IMov(Reg(ECX), Reg(EAX));
-     IAnd(Reg(ECX), HexConst(0x7));
-     ICmp(Reg(ECX),HexConst(0x1));
-     IJne(Label("error_not_tuple"));
-     ISub(Reg(EAX),HexConst(0x1));
-     IMov(RegOffset( word_size * (index + 1), EAX),Reg(EDX));
-     IAdd(Reg(EAX),HexConst(0x1));
-    ]
-
   | CLambda(args,body,tag) ->  
         
 
@@ -1324,6 +1130,7 @@ let compile_class dclass = match  dclass with
      let fields_size = (List.length fields) * word_size in 
      let fields_names = List.flatten (List.map (fun e -> match e with 
                                     |(str,_)-> [str]) fields )   in 
+
      let classmethods = List.flatten (List.map (fun f -> match f with
                                     |ADFun(name,args,body,tag) -> 
                                         compile_method name  body args [] false fields_names ) methods) in  
@@ -1458,7 +1265,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
   |> (add_err_phase well_formed is_well_formed)
-  |> (add_phase desugared_preTC desugar_bindings)
+  |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
   |> (add_phase renamed rename_and_tag)
