@@ -32,6 +32,7 @@ rule token = parse
   | "def" { DEF }
   | "and" { ANDDEF }
   | "class" { CLASS }
+  | "extends" { EXTENDS }
   | "fields" { FIELDS }
   | "methods" { METHODS }
   | "new" { NEW }
