@@ -834,7 +834,7 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
 
   | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail [] classobjenv table newclassbindigs)@
                             (compile_aexpr right si env num_args is_tail classobjenv table newclassbindigs)
-  | AObject(name,obj,classname,body,_) -> [
+  | ANewObject(name,obj,classname,body,_) -> [
                                             IMov(Reg(ESI), (compile_imm obj env classobjenv table));
                                             IAdd(Reg(ESI), RegOffset(0, ESI)) 
                                           ]

@@ -60,10 +60,9 @@ and 'a expr =
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
   | EObject of string * 'a
-  | ENewObject of string * 'a
+  | ENewObject of string * 'a expr * string * 'a expr * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
-
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
@@ -97,7 +96,7 @@ and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ALetRec of (string * 'a cexpr) list * 'a aexpr * 'a
   | ACExpr of 'a cexpr
-  | AObject of string * 'a immexpr * string * 'a aexpr * 'a
+  | ANewObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
   | AClass of string * (string * 'a immexpr) list * 'a adecl list * 'a
