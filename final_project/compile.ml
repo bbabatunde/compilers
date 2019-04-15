@@ -854,57 +854,63 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
       IPop(Reg(EBP));
       IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
   ]
-  and body_asm = compile_aexpr body 1 (newEnv@env) (List.length args) true in 
+  and body_asm = compile_aexpr body 1 (newEnv@env) (List.length args) true [] StringMap.empty [] in 
     stack_setup_asm
     @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
     @ body_asm
     @ postlude_asm;
 
- and  compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = 
+ and  compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) classobjenv table newclassbindigs: instruction list = 
   match e with 
   | ALet(name, bind, body, _)  -> 
-  let prelude = (compile_cexpr bind (si + 1) env num_args false []) in
-  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail) in
+  let prelude = (compile_cexpr bind (si + 1) env num_args false [] classobjenv table newclassbindigs) in
+  let body = (compile_aexpr body (si + 1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args is_tail classobjenv table newclassbindigs)   in
   prelude @ [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @ body
-  | ACExpr(body) -> compile_cexpr body si env num_args is_tail []
+  | ACExpr(body) -> compile_cexpr body si env num_args is_tail [] classobjenv table newclassbindigs
   | ALetRec(cexplist, body,_) ->
       let newEnv  = env@ (List.flatten (List.mapi (fun i (str,_) -> [(str,RegOffset(~-word_size * (si+i), EBP))]) cexplist)) in 
 
       let compile_bindings =  List.flatten (List.mapi (fun i (self,cexp) ->
-                                  (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail [self] )@
+                                  (compile_cexpr cexp (si + i + 1) newEnv num_args is_tail [self] classobjenv table newclassbindigs)@
                                   [ILineComment("move EAX to EBP")]@
                                   [IMov(RegOffset(~-word_size * (si+i), EBP), Reg(EAX))]) cexplist) in 
 
-      let compile_body =  (compile_aexpr body (si + 1 + (List.length cexplist)) newEnv num_args is_tail) in 
+      let compile_body =  (compile_aexpr body (si + 1 + (List.length cexplist)) newEnv num_args is_tail classobjenv table newclassbindigs) in 
 
         [ILineComment("compile bindings start ")]@compile_bindings@[ILineComment("compile bindings end ")]@compile_body
 
 
-  | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail []) @
-                          (compile_aexpr right si env num_args is_tail)
-  | AObject(name,obj,classname,_) ->  failwith "a object"
+  | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail [] classobjenv table newclassbindigs)@
+                            (compile_aexpr right si env num_args is_tail classobjenv table newclassbindigs)
+  | AObject(name,obj,classname,body,_) -> [
+                                            IMov(Reg(ESI), (compile_imm obj env classobjenv table));
+                                            IAdd(Reg(ESI), RegOffset(0, ESI)) 
+                                          ]
 
-and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list = match e with 
+  @ compile_aexpr body (si+1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args false classobjenv table ((name,classname)::newclassbindigs)
+
+
+and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table newclassbindigs: instruction list = match e with 
   | CIf(cond, _then, _else, tag) ->
       let true_label  =  sprintf "if_true_%s" (string_of_int tag) in
       let false_label = sprintf "if_false_%s" (string_of_int tag) in
       let done_label  =  sprintf "if_done_%s" (string_of_int tag) in
-      [IMov(Reg(EAX),(compile_imm cond env));
+      [IMov(Reg(EAX),(compile_imm cond env classobjenv table));
        ICmp(Reg(EAX), const_true);
        IJne(Label(false_label));
        ILabel(true_label)] @ 
-      (compile_aexpr _then (si + 1) env num_args is_tail) @
+      (compile_aexpr _then (si + 1) env num_args is_tail classobjenv table newclassbindigs) @
       [IJmp(Label(done_label));
        ILabel(false_label);
        ICmp(Reg(EAX), const_false);
        IJne(Label("error_not_boolean_if"))] @
-      (compile_aexpr _else (si + 2) env num_args is_tail) @
+      (compile_aexpr _else (si + 2) env num_args is_tail classobjenv table newclassbindigs) @
       [ILabel(done_label)]
 
   | CPrim1(op, e, tag) -> 
      begin match op with
       |Add1 -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
+        [IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ 
         [
         ITest(Reg(EAX),tag_as_bool);
         IJnz(Label("arithmetic_expected_a_number"));
@@ -912,7 +918,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
         IJo(Label("overflow"))
        ] 
       |Sub1 -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ 
+        [IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ 
         [ITest(Reg(EAX),tag_as_bool);
         IJnz(Label("arithmetic_expected_a_number"));
         ISub(Reg(EAX),Const(2));
@@ -922,7 +928,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
       |IsBool -> 
         let not_bool_label = sprintf "isBOOL_false_%s" (string_of_int tag) in
         let done_label = sprintf "isBool_done_%s" (string_of_int tag) in
-       [IMov(Reg(EAX),(compile_imm e env))] @  [
+       [IMov(Reg(EAX),(compile_imm e env classobjenv table))] @  [
         ITest(Reg(EAX), tag_as_bool);
         IJz(Label (not_bool_label));
         IMov(Reg(EAX),const_true);
@@ -933,7 +939,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
       |IsNum -> 
          let  isNum_label = sprintf "isNumtrue_%s" (string_of_int tag) in
          let done_label = sprintf "isNumdone_%s" (string_of_int tag) in
-         [IMov(Reg(EAX),(compile_imm e env))] @ [
+         [IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ [
          ITest(Reg(EAX), tag_as_bool);
          IJz(Label(isNum_label));
          IMov(Reg(EAX),const_false);
@@ -942,7 +948,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
          IMov(Reg(EAX),const_true);
          ILabel(done_label)]
       |Not -> 
-        [IMov(Reg(EAX),(compile_imm e env))] @ [
+        [IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ [
         ITest(Reg(EAX), tag_as_bool);
         IJz(Label("logic_expected_a_boolean"));
         IXor(Reg(EAX),bool_mask)
@@ -951,7 +957,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
         let  istuple_label = sprintf "istuple_label_%s" (string_of_int tag) in
          let done_label = sprintf "istuple_labeldone_%s" (string_of_int tag) in
          [
-          IMov(Reg(EAX),(compile_imm e env))] @ 
+          IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ 
           [
             IAnd(Reg(EAX), Const(0x00000007));
             ICmp(Reg(EAX), Const(0x00000001));
@@ -966,7 +972,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
       |PrintStack -> failwith "print stack"
       |Print -> 
         [
-          IMov(Reg(EAX),(compile_imm e env))] @ 
+          IMov(Reg(EAX),(compile_imm e env classobjenv table))] @ 
         [
          IPush(Reg(EAX));
          ICall(Label("print"));
@@ -977,9 +983,9 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
   | CPrim2(op, left, right, tag) -> 
     let instr =
-        [IMov(Reg(EAX),(compile_imm left  env))] @
+        [IMov(Reg(EAX),(compile_imm left  env classobjenv table))] @
         [IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX))] @
-        [IMov(Reg(EAX),(compile_imm right env))] @
+        [IMov(Reg(EAX),(compile_imm right env classobjenv table))] @
         [IMov(RegOffset(~-word_size * (si + 1), EBP), Reg(EAX))] in
    begin match op with
    | Plus -> instr @
@@ -1132,8 +1138,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
     | CApp(imm_name, imm_args, _) ->
   
 
-        let fname = compile_imm imm_name env in
-        let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env))))  (List.rev imm_args) in
+        let fname = compile_imm imm_name env classobjenv table in
+        let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env classobjenv table))))  (List.rev imm_args) in
          
          [
                 ILineComment("calling functions");
@@ -1158,7 +1164,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
   | CTuple(lst,_)-> 
       let size = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(List.length lst)))] in
-      let args = List.map (fun e ->  compile_imm e env) lst in
+      let args = List.map (fun e ->  compile_imm e env classobjenv table) lst in
       let instr = List.flatten (List.mapi (fun i a -> [
         IMov(Reg(EAX), Sized(DWORD_PTR, a));
         IMov(Sized(DWORD_PTR, RegOffset( (i + 1) * word_size, ESI)), Reg(EAX))]) args) in
@@ -1178,7 +1184,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
 
       
-      IMov(Reg(EAX),  Sized(DWORD_PTR, compile_imm pair env));
+      IMov(Reg(EAX),  Sized(DWORD_PTR, compile_imm pair env classobjenv table));
       IMov(Reg(ECX), Reg(EAX));
       IAnd(Reg(ECX), HexConst(0x7));
       ICmp(Reg(ECX), HexConst(0x001));
@@ -1195,8 +1201,8 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
    ]
   | CSetItem(pair,index,newitem,_)-> 
     [
-     IMov(Reg(EAX), compile_imm pair env);
-     IMov(Reg(EDX), compile_imm newitem env);
+     IMov(Reg(EAX), compile_imm pair env classobjenv table);
+     IMov(Reg(EDX), compile_imm newitem env classobjenv table);
      IMov(Reg(ECX), Reg(EAX));
      IAnd(Reg(ECX), HexConst(0x7));
      ICmp(Reg(ECX),HexConst(0x1));
@@ -1252,7 +1258,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
            ] @self_setup@copy_free_to_stack in  
 
-          let compileBody = compile_aexpr body (List.length frees + 2) newEnv num_args is_tail in
+          let compileBody = compile_aexpr body (List.length frees + 2) newEnv num_args is_tail classobjenv table newclassbindigs in
 
           let inner_lambda_epilogue =  [ 
                   IMov(Reg(ESP), Reg(EBP));
@@ -1299,16 +1305,19 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
           in
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
    
-  | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
+  | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env classobjenv table))]
   | CMethodCall(obj,funname,args,classname,_) -> failwith "method call"
   | CSetField(obj,fieldname, arg,classname,_) -> failwith "set field "
- and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
+ and compile_imm (e : tag immexpr)  (env : arg envt)  classobjenv table = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
-  | ImmObj(x,_) ->  failwith "implement object "
+  | ImmObj(x,_) ->  (find classobjenv x)
+               
+                    
+
 
 
  ;;
@@ -1317,15 +1326,16 @@ let compile_class dclass = match  dclass with
 | AClass(name,fields,methods,tag) -> 
      let fields_size = (List.length fields) * word_size in 
      let fields_names = bindingsToStrings fields in 
-     let instr = List.flatten (List.map (fun f -> match f with
+     let classmethods = List.flatten (List.map (fun f -> match f with
                                     |ADFun(name,args,body,tag) -> 
                                         compile_method name  body args [] false fields_names ) methods) in  
-     let closure = (List.flatten (List.mapi (fun i f ->  match f with
+     let create_objectprototype = [IMov(RegOffset(0, ESI), Const(fields_size + (word_size * (List.length classmethods))))]
+                                  @ (List.flatten (List.mapi (fun i f ->  match f with
                                     |ADFun(name,args,body,tag) -> 
 
                                         [
                                           IMov(Reg(EAX),  Label(name));
-                                          IMov(RegOffset(fields_size +  (word_size*i), ESI), Reg(EAX))
+                                          IMov(RegOffset(4 + fields_size +  (word_size*i), ESI), Reg(EAX))
                                         ]
                                     ) methods ) @
             [
@@ -1336,14 +1346,13 @@ let compile_class dclass = match  dclass with
             ])
 
    in 
-    let inner_hash = Hashtbl.create 12 in 
+    let inner_hash =StringMap.empty in 
     let names = List.sort compare (fields_names @ List.flatten( List.map(fun f ->  match f with
                                     |ADFun(name,args,body,tag) ->  [name]) methods )) in 
-    [([],[],[])]
-    (*let (mapping, _) = List.fold_left (fun (inner_hash,i) name -> (Hashtbl.add inner_hash name (i+1),i+1) ) (inner_hash,0) names in 
-    let outter_init =  Hashtbl.create 10 in 
-    let outter_hash = Hashtbl.add outter_init name mapping in 
-    (instr, closure, outter_hash)*)
+    let (mapping,_)  = List.fold_left (fun (acc,i) name ->  (StringMap.add name (i+1) acc,i+1)) (inner_hash,0) names  in 
+    let outter_init =  StringMap.empty in 
+    let outter_hash = StringMap.add name mapping outter_init in 
+    (classmethods, [(name,RegOffset(~-word_size * 1, EBP))], outter_hash)
 
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
@@ -1443,9 +1452,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  (*let (classmethodinstr, classobj, mapping) = List.flatten (List.map compile_class decls) in *)
-  let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm  ([ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
+  let (classmethods, classobjenv, table) = compile_class (List.hd decls) in 
+  let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true classobjenv table []) in
+  let as_assembly_string = (to_asm  (classmethods @  [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =

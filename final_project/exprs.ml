@@ -104,7 +104,7 @@ and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ALetRec of (string * 'a cexpr) list * 'a aexpr * 'a
   | ACExpr of 'a cexpr
-  | AObject of string * 'a immexpr * string * 'a
+  | AObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
   | AClass of string * 'a binding list * 'a adecl list * 'a
