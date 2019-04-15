@@ -11,7 +11,7 @@ module StringSet = Set.Make(String);;
 module StringMap = Map.Make(String);;
 
 let skip_typechecking = ref false
-let show_debug_print = ref false
+let show_debug_print = ref true
 
 let debug_printf fmt =
     if !show_debug_print
@@ -350,6 +350,18 @@ let rename_and_tag (p : tag program) : tag program =
     | DFun(name, args, scheme, body, tag) ->
        let (newArgs, env') = helpBS env args in
        DFun(name, newArgs, scheme, helpE env' body, tag)
+    | DClass(n, b, d, tag) ->
+       let (revbinds, env) = List.fold_left (fun (revbinds, env) (b, e, t) ->
+                                let (b, env) = helpB env b in ((b, e, t)::revbinds, env)) ([], env) b in
+       let bindings' = List.fold_left (fun bindings (b, e, tag) -> (b, helpE env e, tag)::bindings) [] revbinds in
+       let new_decls = List.map (helpD []) d in
+       DClass(n, bindings', new_decls, tag)
+    | DClassE(n, b, d, e, tag) ->
+        let (revbinds, env) = List.fold_left (fun (revbinds, env) (b, e, t) ->
+                                let (b, env) = helpB env b in ((b, e, t)::revbinds, env)) ([], env) b in
+       let bindings' = List.fold_left (fun bindings (b, e, tag) -> (b, helpE env e, tag)::bindings) [] revbinds in
+       let new_decls = List.map (helpD []) d in
+       DClassE(n, bindings', new_decls, e, tag)
   and helpB env b =
     match b with
     | BBlank(typ, tag) -> (b, env)
@@ -435,7 +447,17 @@ let anf (p : tag program) : unit aprogram =
                       | BName(a, _, _) -> a
                       | _ -> raise (InternalCompilerError("Tuple bindings should have been desugared away"))) args in
        ADFun(name, args, helpA body, ())
-  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
+    | DClass(name, fields, methods, _) ->
+        let new_fields = List.map (fun a ->
+            match a with
+            | (BName(name, _, _), default, _) -> 
+                    let (def_imm, def_setup) = helpI default in
+                    if List.length def_setup != 0 then raise (InternalCompilerError("DClass immediate not non context immediate :/")) else
+                    (name, def_imm)
+            ) fields in
+        let new_methods = List.map helpD methods in
+        AClass(name, new_fields, new_methods, ())
+   and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
     match e with
     | EAnnot(e, _, _) -> helpC e
     | EPrim1(op, arg, _) ->
@@ -632,10 +654,17 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         match bindings with
         | [] -> []
         | (b, e, l)::rest -> (b, helpE e, l) :: helpB rest
+    and helpC classes =
+        match classes with
+        | [] -> []
+        | (DClass(n, b, d, p)::[])::rest ->  DClass(n, b, d, p)::(helpC rest)
+        | (DClassE(n, b, d, e, p)::[])::rest -> DClassE(n, b, d, e, p)::(helpC rest)
+        | _ -> raise (InternalCompilerError("declarations not desugared right! Non class decl found."))
     in
     match p with
-    | Program(tydecls, [], body, t) ->
-            let new_p = Program(tydecls, [], helpE body, t) in
+    | Program(tydecls, classes, body, t) ->
+            let only_classes = helpC classes in
+            let new_p = Program(tydecls, classes, helpE body, t) in
             debug_printf "BEFORE DESUGAR_POST: %s\n" (string_of_program p);
             debug_printf "AFTER DESUGAR_POST: %s\n" (string_of_program new_p);
             new_p
@@ -671,12 +700,20 @@ let desugarPre (p : sourcespan program) : sourcespan program =
         let final_body = ELambda(args, helpE body, pos) in
         let this_let_binding = [((BName(name, TyArr((makeBlanks (List.length args) pos), TyBlank(pos), pos), pos)), final_body, pos)] in
         this_let_binding
+    | DClass(name, fields, methods, pos) -> []
+    | DClassE(name, fields, methods, super, pos) -> []
+  and extractClasses decls =
+    match decls with
+    | [] -> []
+    | DClass(n, b, d, p)::empty -> [DClass(n, b, d, p)]
+    | DClassE(n, b, d, e, p)::empty -> [DClassE(n, b, d, e, p)]
   in
   match p with
   | Program(tydecls, decls, body, t) ->
           let new_decls = List.flatten(List.map (fun group -> List.map helpD group) decls) in
           let new_body = if List.length new_decls > 0 then ELetRec(List.concat new_decls, (helpE body), t) else helpE body in
-          let new_p = Program(tydecls, [], new_body, t) in
+          let classes = (List.map extractClasses decls) in
+          let new_p = Program(tydecls, classes, new_body, t) in
           debug_printf "BEFORE DESUGAR_PRE: %s\n" (string_of_program p);
           debug_printf "AFTER DESUGAR_PRE: %s\n" (string_of_program new_p);
           new_p
@@ -1281,7 +1318,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
-  |> (add_err_phase well_formed is_well_formed)
+  (* |> (add_err_phase well_formed is_well_formed)*)
   |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)

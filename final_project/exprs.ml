@@ -98,8 +98,8 @@ and 'a aexpr = (* anf expressions *)
   | AObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
-  | AClass of string * (string * 'a cexpr) list * 'a adecl list * 'a
-  | AClassE  of string * (string * 'a cexpr) list * 'a adecl list * string *  'a
+  | AClass of string * (string * 'a immexpr) list * 'a adecl list * 'a
+  | AClassE  of string * (string * 'a immexpr) list * 'a adecl list * string *  'a
 and 'a aprogram =
   | AProgram of 'a adecl list * 'a aexpr * 'a
 ;;
@@ -338,7 +338,7 @@ let atag (p : 'a aprogram) : tag aprogram =
        ADFun(name, args, helpA body, fun_tag)
     | AClass(name, fields, methods, _) ->
        let class_tag = tag() in
-       AClass(name, List.map (fun (x, c) -> (x, helpC c)) fields, List.map (helpD) methods, class_tag)
+       AClass(name, List.map (fun (x, c) -> (x, helpI c)) fields, List.map (helpD) methods, class_tag)
   and helpP p =
     match p with
     | AProgram(decls, body, _) ->

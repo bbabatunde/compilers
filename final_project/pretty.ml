@@ -121,13 +121,19 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
 let string_of_expr (e : 'a expr) : string =
   string_of_expr_with (fun _ -> "") e
 
-let string_of_decl_with (print_a : 'a -> string) (d : 'a decl) : string =
+let rec string_of_decl_with (print_a : 'a -> string) (d : 'a decl) : string =
   match d with
   | DFun(name, args, _, body, a) ->
      sprintf "(def %s(%s):\n  %s)%s"
        name
        (ExtString.String.join ", " (List.map string_of_bind args))
        (string_of_expr_with print_a body) (print_a a)
+  | DClass(name, fields, methods, a) ->
+      sprintf "(class %s: fields %s\n methods %s)%s"
+       name
+       (ExtString.String.join ", " (List.map string_of_binding fields))
+       (ExtString.String.join ", " (List.map (string_of_decl_with print_a) methods))
+       (print_a a)
 let string_of_decl (d : 'a decl) : string =
   string_of_decl_with (fun _ -> "") d
 
