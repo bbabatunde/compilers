@@ -1306,8 +1306,10 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
    
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env classobjenv table))]
-  | CMethodCall(obj,funname,args,classname,_) -> failwith "method call"
-  | CSetField(obj,fieldname, arg,classname,_) -> failwith "set field "
+  | CMethodCall(obj,funname,args,objectname,_) -> failwith "method call"
+  | CSetField(obj,fieldname, arg,objectname,_) -> failwith "set fields call"
+    (*let classname = (find newclassbindigs objectname) in 
+    let fieldindex  = *)
  and compile_imm (e : tag immexpr)  (env : arg envt)  classobjenv table = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
@@ -1315,17 +1317,13 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
   | ImmObj(x,_) ->  (find classobjenv x)
-               
-                    
-
-
-
  ;;
 
 let compile_class dclass = match  dclass with
 | AClass(name,fields,methods,tag) -> 
      let fields_size = (List.length fields) * word_size in 
-     let fields_names = bindingsToStrings fields in 
+     let fields_names = List.flatten (List.map (fun e -> match e with 
+                                    |(str,_)-> [str]) fields )   in 
      let classmethods = List.flatten (List.map (fun f -> match f with
                                     |ADFun(name,args,body,tag) -> 
                                         compile_method name  body args [] false fields_names ) methods) in  

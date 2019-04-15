@@ -107,8 +107,8 @@ and 'a aexpr = (* anf expressions *)
   | AObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
-  | AClass of string * 'a binding list * 'a adecl list * 'a
-  | AClassE  of string * 'a binding list * 'a adecl list * string *  'a
+  | AClass of string * (string * 'a cexpr) list * 'a adecl list * 'a
+  | AClassE  of string * (string * 'a cexpr) list * 'a adecl list * string *  'a
 and 'a aprogram =
   | AProgram of 'a adecl list * 'a aexpr * 'a
 ;;
