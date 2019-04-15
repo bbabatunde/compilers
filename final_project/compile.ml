@@ -1112,10 +1112,27 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
    
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env classobjenv table))]
-  | CMethodCall(obj,funname,args,objectname,_) -> failwith "method call"
-  | CSetField(obj,fieldname, arg,objectname,_) -> failwith "set fields call"
-    (*let classname = (find newclassbindigs objectname) in 
-    let fieldindex  = *)
+  | CMethodCall(obj,funname,imm_args,objectname,_) -> 
+    let classname = (find newclassbindigs objectname) in 
+    let methodindex  = StringMap.find funname (StringMap.find  classname table)  in 
+    let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env classobjenv table))))  (List.rev imm_args) in
+
+    [
+        IMov(Reg(EAX), (compile_imm obj env classobjenv table))
+    ] @ args @
+    [
+        IPush(Sized(DWORD_PTR,Reg(EAX)));
+        ICall(RegOffset((methodindex * word_size), EAX));
+        IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
+
+    ]
+  | CSetField(obj,fieldname, arg,objectname,_) -> 
+    let classname = (find newclassbindigs objectname) in 
+    let fieldindex  = StringMap.find fieldname (StringMap.find classname table)  in 
+    [
+        IMov(Reg(EAX), compile_imm obj env classobjenv table);
+        IMov(RegOffset((fieldindex * word_size), EAX), compile_imm arg env classobjenv table)
+    ]
  and compile_imm (e : tag immexpr)  (env : arg envt)  classobjenv table = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
   | ImmBool(true, _) -> const_true
@@ -1156,8 +1173,8 @@ let compile_class dclass = match  dclass with
                                     |ADFun(name,args,body,tag) ->  [name]) methods )) in 
     let (mapping,_)  = List.fold_left (fun (acc,i) name ->  (StringMap.add name (i+1) acc,i+1)) (inner_hash,0) names  in 
     let outter_init =  StringMap.empty in 
-    let outter_hash = StringMap.add name mapping outter_init in 
-    (classmethods, [(name,RegOffset(~-word_size * 1, EBP))], outter_hash)
+    let table = StringMap.add name mapping outter_init in 
+    (classmethods, [(name,RegOffset(~-word_size * 1, EBP))], table)
 
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
