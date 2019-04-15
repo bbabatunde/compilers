@@ -831,8 +831,36 @@ let reserve size tag =
 (* Additionally, you are provided an initial environment of values that you may want to
    assume should take up the first few stack slots.  See the compiliation of Programs
    below for one way to use this ability... *)
+let rec compile_method (fun_name : string) body args env is_entry_point fields: instruction list =
+  let stack_offset = word_size*((count_vars body)+1) in
+  let newEnv = List.flatten (List.mapi (fun i field -> [(field, RegOffset((i+3) * word_size, EBP))] ) fields) in
+  let lbl = 
+      if (is_entry_point=true) then
+        ILabel(fun_name)
+      else
+        ILabel(fun_name)
+  in
+  let stack_setup_asm = [
+      lbl;
+      ILineComment(Printf.sprintf "Stack_setup for %s" fun_name);
+      IPush(Reg(EBP));
+      IMov(Reg(EBP), Reg(ESP));
+      ISub(Reg(ESP), HexConst(stack_offset))
+    ]
+  and postlude_asm = [
+      ILineComment(Printf.sprintf "Clean up for %s" fun_name);
+      IAdd(Reg(ESP), HexConst(stack_offset)); 
+      IMov(Reg(ESP), Reg(EBP));
+      IPop(Reg(EBP));
+      IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
+  ]
+  and body_asm = compile_aexpr body 1 (newEnv@env) (List.length args) true in 
+    stack_setup_asm
+    @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
+    @ body_asm
+    @ postlude_asm;
 
-let rec compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = 
+ and  compile_aexpr (e : tag aexpr) (si : int) (env : arg envt) (num_args : int) (is_tail : bool) : instruction list = 
   match e with 
   | ALet(name, bind, body, _)  -> 
   let prelude = (compile_cexpr bind (si + 1) env num_args false []) in
@@ -1256,7 +1284,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
               IMov(RegOffset(12 ,ESI), Reg(ESI));
               IAdd(RegOffset(12 ,ESI), Sized(DWORD_PTR, HexConst(0x5)));
 
-              IMov(Reg(EAX), Reg(ESI)); 
               IAdd(Reg(EAX), HexConst(0x5));
               
               IAdd(Reg(ESI), Const((List.length frees * word_size) + 16));
@@ -1267,7 +1294,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
 
           in
           [IJmp(Label(inner_lambda_end_label))] @ lambda_section  @ closure_prologue
-
+   
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env))]
  and compile_imm (e : tag immexpr)  (env : arg envt) = match e with
   | ImmNum(n, _) -> Const((n lsl 1))
@@ -1276,25 +1303,42 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self: instruction list
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
 
-let native_to_lambda i (name, arity) =
-  raise (NotYetImplemented "Develop a wrapper that acts like a lambda and calls a native function")
-;;
+ ;;
 
-let native_call (label : arg) args =
-  let setup = List.rev_map (fun arg ->
-                  match arg with
-                  | Sized _ -> IPush(arg)
-                  | _ -> IPush(Sized(DWORD_PTR, arg))) args in
-  let teardown =
-    let len = List.length args in
-    if len = 0 then []
-    else [ IInstrComment(IAdd(Reg(ESP), Const(word_size * len)), sprintf "Popping %d arguments" len) ] in
-  setup @ [ ICall(label) ] @ teardown
-;;  
-                               
+let compile_class dclass = match  dclass with
+| AClass(name,fields,methods,tag) -> 
+     let fields_size = (List.length fields) * word_size in 
+     let fields_names = bindingsToStrings fields in 
+     let instr = List.flatten (List.map (fun f -> match f with
+                                    |ADFun(name,args,body,tag) -> 
+                                        compile_method name  body args [] false fields_names ) methods) in  
+     let closure = (List.flatten (List.mapi (fun i f ->  match f with
+                                    |ADFun(name,args,body,tag) -> 
+
+                                        [
+                                          IMov(Reg(EAX),  Label(name));
+                                          IMov(RegOffset(fields_size +  (word_size*i), ESI), Reg(EAX))
+                                        ]
+                                    ) methods ) @
+            [
+              IMov(Reg(EAX), Reg(ESI)); 
+              IAdd(Reg(EAX), HexConst(0x1));
+              IAdd(Reg(ESI), Const((List.length methods *  word_size) + fields_size));
+              IMov(RegOffset(~-word_size * 1, EBP), Reg(EAX))
+            ])
+
+   in 
+    let inner_hash = Hashtbl.create 12 in 
+    let names = List.sort compare (fields_names @ List.flatten( List.map(fun f ->  match f with
+                                    |ADFun(name,args,body,tag) ->  [name]) methods )) in 
+    [([],[],[])]
+    (*let (mapping, _) = List.fold_left (fun (inner_hash,i) name -> (Hashtbl.add inner_hash name (i+1),i+1) ) (inner_hash,0) names in 
+    let outter_init =  Hashtbl.create 10 in 
+    let outter_hash = Hashtbl.add outter_init name mapping in 
+    (instr, closure, outter_hash)*)
+
 let compile_prog (anfed : tag aprogram) : string = match anfed with
-  | AProgram (ADFun (_, _, _, _)::_, _, _) -> raise (InternalCompilerError("Weird AProgram, seems to have decls, desugar broken?"))
-  | AProgram([], body, _)  ->
+  | AProgram(decls,body,_)  -> 
   let prelude =
  "section .text
   extern error
@@ -1391,8 +1435,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
+  (*let (classmethodinstr, classobj, mapping) = List.flatten (List.map compile_class decls) in *)
   let body = [ILineComment("body start")] @ (compile_aexpr body 1 [] 0 true) in
-  let as_assembly_string = (to_asm ([ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
+  let as_assembly_string = (to_asm  ([ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =

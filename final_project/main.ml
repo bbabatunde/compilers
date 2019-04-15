@@ -16,7 +16,6 @@ Printexc.record_backtrace true
 let () =
   let speclist = [
       ("-t", Arg.Set show_trace, "Display the trace of compilation");
-      ("-no-tc", Arg.Set skip_typechecking, "Skip static type checking");
       ("-d", Arg.Set show_debug_print, "Enable debug printing")
     ] in
   Arg.parse speclist (fun name ->

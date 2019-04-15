@@ -64,9 +64,15 @@ and 'a expr =
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
+  | EObject of string * 'a
+  | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
+  | ESetField of 'a expr * string * 'a expr * string * 'a
+
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
+  | DClass of string * 'a binding list * 'a decl list * 'a
+  | DClassE  of string * 'a binding list * 'a decl list * string *  'a
 
 type 'a tydecl =
   | TyDecl of string * 'a typ list * 'a
@@ -78,6 +84,7 @@ type 'a immexpr = (* immediate expressions *)
   | ImmNum of int * 'a
   | ImmBool of bool * 'a
   | ImmId of string * 'a
+  | ImmObj of string * 'a
   | ImmNil of 'a
 and 'a cexpr = (* compound expressions *)
   | CIf of 'a immexpr * 'a aexpr * 'a aexpr * 'a
@@ -88,15 +95,19 @@ and 'a cexpr = (* compound expressions *)
   | CTuple of 'a immexpr list * 'a
   | CGetItem of 'a immexpr * int * 'a
   | CSetItem of 'a immexpr * int * 'a immexpr * 'a
-  | CLambda of string list * 'a aexpr * 'a                                            
+  | CLambda of string list * 'a aexpr * 'a
+  | CMethodCall of 'a immexpr * string * 'a immexpr list * string * 'a  
+  | CSetField of 'a immexpr * string * 'a immexpr * string * 'a                                            
 and 'a aexpr = (* anf expressions *)
   | ASeq of 'a cexpr * 'a aexpr * 'a
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ALetRec of (string * 'a cexpr) list * 'a aexpr * 'a
   | ACExpr of 'a cexpr
+  | AObject of string * 'a immexpr * string * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
-
+  | AClass of string * 'a binding list * 'a adecl list * 'a
+  | AClassE  of string * 'a binding list * 'a adecl list * string *  'a
 and 'a aprogram =
   | AProgram of 'a adecl list * 'a aexpr * 'a
 ;;
