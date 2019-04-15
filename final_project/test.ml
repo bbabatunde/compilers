@@ -669,18 +669,22 @@ let failing_tests = [
      t "lambda11" "let a = (lambda(x): x(1)) in a((lambda(y): y))" "" "";
 ]
 
+ let class_tests = [
+     t "class1" "class test:
+                 fields x = 1, y = 2
+                 methods
+                 def f1():
+                     1
+                 def f2():
+                     2
+                 end
+                 let x = new test
+                 in x.f1()" "" "";
+ ]
+
 let suite =
 "suite">:::
- well_formed_tests @
- sequence_test @
- desugaring_tests @
- if_tests @
- prim2_test @
- tuple_tests @
- curr_tests @
- prim2_test @
- new_well_formed_tests @
- lambdas_tests @
+ class_tests @
   (*inference_tests @*)
  []
 ;;
