@@ -108,6 +108,7 @@ let count_vars e =
     | ALetRec(binds, body, _) ->
        (List.length binds) + List.fold_left max (helpA body) (List.map (fun (_, rhs) -> helpC rhs) binds)
     | ACExpr e -> helpC e
+    | ANewObject _ -> 0
   and helpC e =
     match e with
     | CIf(_, t, f, _) -> max (helpA t) (helpA f)
@@ -598,7 +599,10 @@ let anf (p : tag program) : unit aprogram =
       (fun bind body ->
         match bind with
         | BSeq(exp) -> ASeq(exp, body, ())
-        | BLet(name, exp) -> ALet(name, exp, body, ())
+        | BLet(var_name, exp) -> 
+            (match exp with
+            | CNewObject(class_name, _) -> ANewObject(var_name, ImmObj(class_name, ()), class_name, body, ())
+            | _ -> ALet(var_name, exp, body, ()))
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)
   in

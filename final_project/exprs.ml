@@ -60,7 +60,7 @@ and 'a expr =
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
   | EObject of string * 'a
-  | ENewObject of string * 'a expr * string * 'a expr * 'a
+  | ENewObject of string * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
 
@@ -313,6 +313,8 @@ let atag (p : 'a aprogram) : tag aprogram =
        let letrec_tag = tag() in
        ALetRec(List.map (fun (x, c) -> (x, helpC c)) binds, helpA body, letrec_tag)
     | ACExpr c -> ACExpr (helpC c)
+    | ANewObject(vn, cn, cn2, b, _) ->
+       ANewObject(vn, helpI cn, cn2, helpA b, tag())
   and helpC (c : 'a cexpr) : tag cexpr =
     match c with
     | CPrim1(op, e, _) ->

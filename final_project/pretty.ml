@@ -185,6 +185,13 @@ let rec string_of_aexpr_with (depth : int) (print_a : 'a -> string) (e : 'a aexp
      sprintf "(aletrec (%s) in %s)%s"
        (ExtString.String.join ",\n    " (List.map (fun (x, c) -> sprintf "%s = %s" x (string_of_cexpr c)) xes))
        (string_of_aexpr b) (print_a a)
+  | ANewObject(vn, cn, cn2, b, a) ->
+     sprintf "(anewobj (%s) %s %s %s)%s"
+        vn
+        (string_of_immexpr_with print_a cn)
+        cn2
+        (string_of_aexpr b)
+        (print_a a)
   | ACExpr c -> string_of_cexpr c
 and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) : string =
   let string_of_aexpr = string_of_aexpr_with (depth - 1) print_a in
