@@ -44,6 +44,7 @@ let string_of_op2 op =
   | LessEq -> "<="
   | Eq -> "=="
   | EqB -> "=?"
+  | Instanceof -> "∈"
 let name_of_op2 op =
   match op with
   | Plus -> "Plus"
@@ -57,6 +58,7 @@ let name_of_op2 op =
   | LessEq -> "LessEq"
   | Eq -> "Eq"
   | EqB -> "EqB"
+  | Instanceof -> "∈"
                
 
 let rec string_of_typ (t : 'a typ) : string =
@@ -126,6 +128,12 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
         (ExtString.String.join ", " (List.map string_of_expr args))
         n
         (print_a a)
+  | ESetField(e1, s1, e2, s2, a) -> sprintf "(setField(%s.%s) to %s, %s)%s"
+        (string_of_expr e1)
+        s1
+        (string_of_expr e2)
+        s2
+        (print_a a)
 let string_of_expr (e : 'a expr) : string =
   string_of_expr_with (fun _ -> "") e
 
@@ -142,6 +150,14 @@ let rec string_of_decl_with (print_a : 'a -> string) (d : 'a decl) : string =
        (ExtString.String.join ", " (List.map string_of_binding fields))
        (ExtString.String.join ", " (List.map (string_of_decl_with print_a) methods))
        (print_a a)
+  | DClassE(name, fields, methods, extends, a) ->
+      sprintf "(class %s: fields %s\n methods %s extends %s)%s"
+       name
+       (ExtString.String.join ", " (List.map string_of_binding fields))
+       (ExtString.String.join ", " (List.map (string_of_decl_with print_a) methods))
+       extends
+       (print_a a)
+
 let string_of_decl (d : 'a decl) : string =
   string_of_decl_with (fun _ -> "") d
 
@@ -215,11 +231,17 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
      sprintf "(lam(%s) %s)%s" (ExtString.String.join ", " args) (string_of_aexpr body) (print_a a)
   | CImmExpr i -> string_of_immexpr i
   | CNewObject(name, a) -> sprintf "(new_obj(%s))%s" name (print_a a)
-  | CMethodCall(obj, meth, args, obj_name, a) -> sprintf "(method_call(%s.%s) (%s) %s)%s"
+  | CMethodCall(obj, meth, args, obj_name, a) -> sprintf "(cmethod_call(%s.%s) (%s) %s)%s"
         (string_of_immexpr obj)
         meth
         (ExtString.String.join ", " (List.map string_of_immexpr args))
         obj_name
+        (print_a a)
+  | CSetField(imm1, s1, imm2, s2, a) -> sprintf "(csetField(%s.%s) to %s, %s)%s"
+        (string_of_immexpr imm1)
+        s1
+        (string_of_immexpr imm2)
+        s2
         (print_a a)
 and string_of_immexpr_with (print_a : 'a -> string) (i : 'a immexpr) : string =
   match i with
@@ -236,14 +258,22 @@ and string_of_aprogram_with (print_a : 'a -> string) (p : 'a aprogram) : string 
 and string_of_adecl_with (print_a : 'a -> string) (d : 'a adecl) : string =
   match d with
   | ADFun(name, args, body, a) ->
-     sprintf "(fun %s(%s): %s)%s" name (ExtString.String.join ", " args)
+     sprintf "(adfun %s(%s): %s)%s" name (ExtString.String.join ", " args)
        (string_of_aexpr_with 1000 print_a body) (print_a a)
   | AClass(name, xes, methods, a) ->
      let string_of_immexpr = string_of_immexpr_with print_a in
-     sprintf "(classdecl %s fields %s methods %s)%s"
+     sprintf "(aclassdecl %s fields %s methods %s)%s"
         name
         (ExtString.String.join ",\n    " (List.map (fun (x, c) -> sprintf "%s = %s" x (string_of_immexpr c)) xes))
         (ExtString.String.join ", " (List.map (string_of_adecl_with print_a) methods))
+        (print_a a)
+  | AClassE(name, xes, methods, extends, a) ->
+     let string_of_immexpr = string_of_immexpr_with print_a in
+     sprintf "(aclassdecle %s fields %s methods %s extends %s)%s"
+        name
+        (ExtString.String.join ",\n    " (List.map (fun (x, c) -> sprintf "%s = %s" x (string_of_immexpr c)) xes))
+        (ExtString.String.join ", " (List.map (string_of_adecl_with print_a) methods))
+        extends
         (print_a a)
 
 let string_of_aexpr (e : 'a aexpr) (depth : int) : string = string_of_aexpr_with depth (fun _ -> "") e
@@ -395,6 +425,8 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
      pp_print_string fmt ":"; pp_print_space fmt ();
      help body;
      close_paren fmt
+  | EObject _ | ENewObject _ | EMethodCall _ | ESetField _ -> 
+          failwith "Formatwith doesn't implement these yet!"
 ;;
 let format_scheme (fmt : Format.formatter) (print_a : 'a -> string) (s : 'a scheme) : unit =
   match s with
@@ -421,6 +453,7 @@ let format_decl (fmt : Format.formatter) (print_a : 'a -> string) (d : 'a decl) 
      pp_print_string fmt "Body: "; open_paren fmt;
      format_expr fmt print_a body;
      close_paren fmt; close_paren fmt
+  | DClass _ | DClassE _ -> failwith "Formatdecl doesn't implement these yet!"
 ;;
 let format_declgroup (fmt : Format.formatter) (print_a : 'a -> string) (d : 'a decl list) : unit =
   print_list fmt (fun fmt -> format_decl fmt print_a) d (fun fmt -> pp_print_break fmt 1 0; pp_print_string fmt "and ")

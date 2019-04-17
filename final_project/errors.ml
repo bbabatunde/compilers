@@ -120,6 +120,10 @@ let print_errors (exns : exn list) : string list =
            | EAnnot(_, _, t) -> t
            | ESeq(_, _, t) -> t
            | ELambda(_, _, t) -> t
+           | ENewObject(_, t) -> t
+           | EObject(_, t) -> t
+           | EMethodCall(_, _, _, _, t) -> t
+           | ESetField(_, _, _, _, t) -> t
          in
          let print_reason r =
            match r with

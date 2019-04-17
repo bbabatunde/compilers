@@ -125,6 +125,7 @@ let rec find_decl (ds : 'a decl list) (name : string) : 'a decl option =
     | [] -> None
     | (DFun(fname, _, _, _, _) as d)::ds_rest ->
       if name = fname then Some(d) else find_decl ds_rest name
+    | _::ds_rest -> find_decl ds_rest name
 
 let rec find_one (l : 'a list) (elt : 'a) : bool =
   match l with
@@ -145,6 +146,7 @@ let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list =
     | [] -> None
     | (DFun(fname, _, _, _,_))::ds_rest ->
       if name = fname then Some(ds_rest) else find_decl2 ds_rest name
+    | _::ds_rest -> find_decl2 ds_rest name
   in 
   match (find_decl2  ls n) with
   |None -> ls
@@ -196,7 +198,7 @@ let rec bindingsToStrings binds =
     | [] -> []
 ;;
                              
-(* FINISH THIS FUNCTION WITH THE WELL-FORMEDNESS FROM FER-DE-LANCE *)
+(*
 let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
   let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) (tydecls: 'a tydecl list) 
   : exn list = match e with
@@ -231,6 +233,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
 
    | ESeq(left, right,_) -> wf_E left ds env  tydecls @ wf_E right ds env tydecls
    | ENil(typ,_) ->  wf_T typ  tydecls
+   | _ -> failwith "WF not implemented for these!!"
 
 and bindingsToBinds bl =
     match bl with
@@ -331,15 +334,13 @@ and add_bindlst_env blst env =
          (if List.hd args = List.hd (List.rev args)  then [CyclicTy(name,loc)] else []))
         |Some(x) -> error @ [DuplicateType(name,loc)] @  (List.fold_left (fun error t -> error @ wf_T t tlst) [] args))  [] tlst) 
        in result
-
   in
   match p with
   | Program(tydecls, decls, body, _) ->
      let output = wf_TD tydecls @  wf_G decls tydecls @ wf_E body (List.flatten decls)  [] tydecls in
      if output = [] then Ok(p) else Error(output)
-
-
 ;;
+*)
 
 let rename_and_tag (p : tag program) : tag program =
   let rec rename env p =
@@ -417,6 +418,8 @@ let rename_and_tag (p : tag program) : tag program =
     | EObject _ -> e
     | EMethodCall(name, meth, args, n2, tag) ->
        EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
+    | ESetField(obj, field, new_val, obj_name, tag) ->
+       ESetField((helpE env obj), field, (helpE env new_val), obj_name, tag)
   in (rename [] p)
 ;;
 
@@ -459,9 +462,21 @@ let anf (p : tag program) : unit aprogram =
                     let (def_imm, def_setup) = helpI default in
                     if List.length def_setup != 0 then raise (InternalCompilerError("DClass immediate not non context immediate :/")) else
                     (name, def_imm)
+            | _ -> raise (InternalCompilerError("BBlank as a class name? o.O"))
             ) fields in
         let new_methods = List.map helpD methods in
         AClass(name, new_fields, new_methods, ())
+    | DClassE(name, fields, methods, extends, _) ->
+        let new_fields = List.map (fun a ->
+            match a with
+            | (BName(name, _, _), default, _) -> 
+                    let (def_imm, def_setup) = helpI default in
+                    if List.length def_setup != 0 then raise (InternalCompilerError("DClass immediate not non context immediate :/")) else
+                    (name, def_imm)
+            | _ -> raise (InternalCompilerError("BBlank as a class name? o.O"))
+            ) fields in
+        let new_methods = List.map helpD methods in
+        AClassE(name, new_fields, new_methods, extends, ())
    and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
     match e with
     | EAnnot(e, _, _) -> helpC e
@@ -589,6 +604,14 @@ let anf (p : tag program) : unit aprogram =
             n_setup @
             (List.concat new_setup) @
             [BLet(tmp, CMethodCall(name, meth, new_args, getClass name, ()))])
+    | ESetField(e1, s1, e2, s2, tag) ->
+        let tmp = sprintf "esf_%d" tag in
+        let (e1_new, e1_setup) = helpI e1 in
+        let (e2_new, e2_setup) = helpI e2 in
+        (ImmId(tmp, ()),
+            e1_setup @
+            e2_setup @
+            [BLet(tmp, CSetField(e1_new, s1, e2_new, s2, ()))])
   and getClass immNewObj =
       match immNewObj with
       | ImmObj(name, _) -> name
@@ -607,6 +630,7 @@ let anf (p : tag program) : unit aprogram =
       ans_setup (ACExpr ans)
   in
   let anf_p = helpP p in
+     debug_printf "BEFORE ANF: %s\n" (string_of_program p);
      debug_printf "AFTER ANF: %s\n" (string_of_aprogram anf_p);
      anf_p
 ;;
@@ -627,6 +651,7 @@ let free_vars_E (e : 'a aexpr) rec_binds : string list =
        let new_bound = (names @ bound) in
         (helpA new_bound body) @ List.flatten (List.map (fun binding -> helpC new_bound (snd binding)) bindings)
     | ACExpr c -> helpC bound c
+    | ANewObject _ -> failwith "Implement this."
   and helpC (bound : string list) (e : 'a cexpr) : string list =
     match e with
     | CLambda(args, body, _) ->
@@ -638,6 +663,7 @@ let free_vars_E (e : 'a aexpr) rec_binds : string list =
     | CApp(fn, args, _) ->
       (helpI bound fn) @ (List.flatten (List.map (fun arg -> helpI bound arg) args))
     | CImmExpr i -> helpI bound i
+    | CNewObject _ | CMethodCall _ | CSetField _ -> failwith "Implement this."
   and helpI (bound : string list) (e : 'a immexpr) : string list =
     match e with
     | ImmId(name, _) ->
@@ -679,8 +705,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
         | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-        | ENewObject _ -> e
-        | EMethodCall _ -> e
+        | ENewObject _ | EMethodCall _ | EObject _ | ESetField _
         | ENumber _ | EBool _ | ENil _ | EId _ -> e )
     and helpB bindings =
         match bindings with
@@ -696,7 +721,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
     match p with
     | Program(tydecls, classes, body, t) ->
             let only_classes = helpC classes in
-            let new_p = Program(tydecls, classes, helpE body, t) in
+            let new_p = Program(tydecls, [only_classes], helpE body, t) in
             debug_printf "BEFORE DESUGAR_POST: %s\n" (string_of_program p);
             debug_printf "AFTER DESUGAR_POST: %s\n" (string_of_program new_p);
             new_p
@@ -726,13 +751,13 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
     | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-    | ENewObject _ -> e
+    | ENewObject _ | EObject _  | ESetField _ -> e
     | EMethodCall(obj, meth, args, _, loc) ->
         let tmp = gensym "new_obj" in
-        match obj with
+        (match obj with
         | EId(str, pos) -> EMethodCall(EObject(str, pos), meth, args, "fix", loc)
         | ENewObject(str, pos) -> e
-        | _ -> raise (InternalCompilerError "Non object/id in method call.")
+        | _ -> raise (InternalCompilerError "Non object/id in method call."))
     | ENumber _ | EBool _ | ENil _ | EId _ -> e
   and helpB bindings =
     match bindings with
@@ -748,9 +773,9 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | DClassE(name, fields, methods, super, pos) -> []
   and extractClasses decls =
     match decls with
-    | [] -> []
     | DClass(n, b, d, p)::empty -> [DClass(n, b, d, p)]
     | DClassE(n, b, d, e, p)::empty -> [DClassE(n, b, d, e, p)]
+    | _ -> []
   in
   match p with
   | Program(tydecls, decls, body, t) ->
@@ -1368,7 +1393,6 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
-  |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> (atag (anf p))))
   |> (add_phase result compile_prog)
 ;;

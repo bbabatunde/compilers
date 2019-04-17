@@ -165,6 +165,9 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | ENewObject(name, a) -> ENewObject(name, (f a))
   | EMethodCall(name, meth, args, n2, a) ->
      EMethodCall(map_tag_E f name, meth, List.map (map_tag_E f) args,  n2, (f a))
+  | ESetField(e1, s1, e2, s2, a) ->
+     ESetField(map_tag_E f e1, s1, map_tag_E f e2, s2, f a)
+  
 and map_tag_B (f : 'a -> 'b) b =
   match b with
   | BBlank(t, tag) -> BBlank(map_tag_T f t, f tag)
@@ -208,6 +211,17 @@ and map_tag_D (f : 'a -> 'b) d =
      let tag_fields = List.map tag_binding fields in
      let tag_methods = List.map (map_tag_D f) methods in
      DClass(name, tag_fields, tag_methods, tag_a)
+  | DClassE(name, fields, methods, extended, a) ->
+     let tag_a = f a in
+     let tag_binding (b, e, t) =
+     let tag_bind = f t in
+     let tag_b = map_tag_B f b in
+     let tag_e = map_tag_E f e in
+     (tag_b, tag_e, tag_bind) in
+     let tag_fields = List.map tag_binding fields in
+     let tag_methods = List.map (map_tag_D f) methods in
+     DClassE(name, tag_fields, tag_methods, extended, tag_a)
+
 and map_tag_TD (f : 'a -> 'b) td =
   match td with
   | TyDecl(name, args, a) ->
@@ -271,6 +285,10 @@ and untagE e =
      EApp(untagE name, List.map untagE args, ())
   | ELambda(binds, body, _) ->
      ELambda(List.map untagB binds, untagE body, ())
+  | EObject(name, _) -> EObject(name, ())
+  | ENewObject(name, _) -> ENewObject(name, ())
+  | EMethodCall(e1, s1, el1, s2, _) -> EMethodCall(untagE e1, s1, List.map untagE el1, s2, ())
+  | ESetField(e1, s1, e2, s2, _) -> ESetField(untagE e1, s1, untagE e2, s2, ())
 and untagB b =
   match b with
   | BBlank(typ, _) -> BBlank(untagT typ, ())
@@ -291,7 +309,9 @@ and untagD d =
       DFun(name, List.map untagB args, untagS scheme, untagE body, ())
   | DClass(name, fields, methods, _) ->
       DClass(name, List.map (fun (b, e, _) -> (untagB b, untagE e, ())) fields, List.map (untagD) methods, ())
-and untagTD td =
+  | DClassE(name, fields, methods, extends, _) ->
+      DClassE(name, List.map (fun (b, e, _) -> (untagB b, untagE e, ())) fields, List.map (untagD) methods, extends, ())
+  and untagTD td =
   match td with
   | TyDecl(name, args, _) -> TyDecl(name, List.map untagT args, ())
 ;;
@@ -337,6 +357,7 @@ let atag (p : 'a aprogram) : tag aprogram =
        CMethodCall(helpI name, meth, List.map helpI args, className, tag())
     | CNewObject(name, _) ->
        CNewObject(name, tag())
+    | CSetField(imm1, s1, imm2, s2, _) -> CSetField(helpI imm1, s1, helpI imm2, s2, tag())
   and helpI (i : 'a immexpr) : tag immexpr =
     match i with
     | ImmNil(_) -> ImmNil(tag())
@@ -352,6 +373,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | AClass(name, fields, methods, _) ->
        let class_tag = tag() in
        AClass(name, List.map (fun (x, c) -> (x, helpI c)) fields, List.map (helpD) methods, class_tag)
+    | AClassE(name, fields, methods, extends, _) ->
+       let class_tag = tag() in
+       AClassE(name, List.map (fun (x, c) -> (x, helpI c)) fields, List.map (helpD) methods, extends, class_tag)
   and helpP p =
     match p with
     | AProgram(decls, body, _) ->
