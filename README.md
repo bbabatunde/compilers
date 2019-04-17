@@ -1,7 +1,7 @@
 #welfformedness
 
 #TODO
-1. this
+this
 
 Fields - set field 
 
