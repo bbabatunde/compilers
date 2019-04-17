@@ -1,7 +1,7 @@
-welfformedness
+#welfformedness
 
 #TODO
-this
+1. this
 Fields - set field 
 Dynamic dispatch
 Inheritance
