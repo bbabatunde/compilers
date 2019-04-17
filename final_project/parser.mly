@@ -84,7 +84,7 @@ simple_expr :
   | LPARENSPACE expr COLON typ RPAREN { EAnnot($2, $4, full_span()) }
   | id { $1 }
   // Object stuff
-  | simple_expr DOT LBRACK ID RBRACK { EGetField($1, $4, full_span()) }
+  | simple_expr LBRACK ID RBRACK { EGetField($1, $3, full_span()) }
   | simple_expr DOT ID LPARENNOSPACE exprs RPAREN { EMethodCall($1, $3, $5, $3, full_span()) }
   | simple_expr DOT ID LPARENNOSPACE RPAREN { EMethodCall($1, $3, [], $3, full_span()) }
 

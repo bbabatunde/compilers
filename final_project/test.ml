@@ -679,7 +679,8 @@ let failing_tests = [
                      2
                  end
                  let x = new test
-                 in x.f1()" "" "";
+                 in x.f1();
+                 x[x]" "" "";
  ]
 
 let suite =
