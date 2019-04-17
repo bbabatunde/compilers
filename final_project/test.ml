@@ -678,6 +678,12 @@ let failing_tests = [
                  def f2():
                      2
                  end
+ class test1 extends test:
+    fields z = 3
+   methods
+   def f3():
+       3
+       end
                  let x = new test
                  in x.f1();
                  x[x]" "" "";
