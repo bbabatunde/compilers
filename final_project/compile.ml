@@ -420,6 +420,8 @@ let rename_and_tag (p : tag program) : tag program =
        EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
     | ESetField(obj, field, new_val, obj_name, tag) ->
        ESetField((helpE env obj), field, (helpE env new_val), obj_name, tag)
+    | EGetField(obj, field, tag) ->
+       EGetField((helpE env obj), field, tag)
   in (rename [] p)
 ;;
 
@@ -612,6 +614,12 @@ let anf (p : tag program) : unit aprogram =
             e1_setup @
             e2_setup @
             [BLet(tmp, CSetField(e1_new, s1, e2_new, s2, ()))])
+    | EGetField(e1, s1, tag) ->
+        let tmp = sprintf "egf_%d" tag in
+        let (e1_new, e1_setup) = helpI e1 in
+        (ImmId(tmp, ()),
+            e1_setup @
+            [BLet(tmp, CGetField(e1_new, s1, ()))])
   and getClass immNewObj =
       match immNewObj with
       | ImmObj(name, _) -> name
@@ -663,7 +671,7 @@ let free_vars_E (e : 'a aexpr) rec_binds : string list =
     | CApp(fn, args, _) ->
       (helpI bound fn) @ (List.flatten (List.map (fun arg -> helpI bound arg) args))
     | CImmExpr i -> helpI bound i
-    | CNewObject _ | CMethodCall _ | CSetField _ -> failwith "Implement this."
+    | CNewObject _ | CMethodCall _ | CSetField _ | CGetField _ -> failwith "Implement this."
   and helpI (bound : string list) (e : 'a immexpr) : string list =
     match e with
     | ImmId(name, _) ->
@@ -705,7 +713,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
         | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-        | ENewObject _ | EMethodCall _ | EObject _ | ESetField _
+        | ENewObject _ | EMethodCall _ | EObject _ | ESetField _ | EGetField _
         | ENumber _ | EBool _ | ENil _ | EId _ -> e )
     and helpB bindings =
         match bindings with
@@ -751,7 +759,7 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
     | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-    | ENewObject _ | EObject _  | ESetField _ -> e
+    | ENewObject _ | EObject _  | ESetField _ | EGetField _ -> e
     | EMethodCall(obj, meth, args, _, loc) ->
         let tmp = gensym "new_obj" in
         (match obj with
@@ -1393,6 +1401,7 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
+  |> (add_phase renamed rename_and_tag)
   |> (add_phase anfed (fun p -> (atag (anf p))))
   |> (add_phase result compile_prog)
 ;;
