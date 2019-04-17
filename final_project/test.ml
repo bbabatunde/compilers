@@ -674,12 +674,22 @@ let failing_tests = [
                  fields x = 1, y = 2
                  methods
                  def f1():
-                     1
+                     this.x = 1
                  def f2():
                      2
                  end
-                 let x = new test
-                 in x.f1()" "" "";
+
+                 class test2 test:
+                  fields x = 1, y = 2
+                   methods
+                   def f1():
+                       4
+                   def f3():
+                       12
+                   end
+
+                 let x = new test in 
+                  x.y" "" "1";
  ]
 
 let suite =

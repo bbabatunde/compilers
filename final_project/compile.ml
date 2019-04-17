@@ -812,7 +812,8 @@ let reserve size tag =
    below for one way to use this ability... *)
 let rec compile_method (fun_name : string) body args env is_entry_point fields: instruction list =
   let stack_offset = word_size*((count_vars body)+1) in
-  let newEnv = List.flatten (List.mapi (fun i field -> [(field, RegOffset((i+3) * word_size, ECX))] ) fields) in
+  let newEnv = List.flatten (List.mapi (fun i field -> [(field, RegOffset((i) * word_size, ECX))] ) fields) in
+  let args_env = List.flatten (List.mapi (fun i arg -> [(arg, RegOffset((i+3) * word_size, EBP))] ) (List.rev args)) in 
   let lbl = 
       if (is_entry_point=true) then
         ILabel(fun_name)
@@ -835,7 +836,7 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
       IPop(Reg(EBP));
       IInstrComment(IRet, Printf.sprintf "Return for %s" fun_name);
   ]
-  and body_asm = compile_aexpr body 1 (newEnv@env) (List.length args) true [] StringMap.empty [] in 
+  and body_asm = compile_aexpr body 1 (newEnv@env@args_env) (List.length args) true [] StringMap.empty [] in 
     stack_setup_asm
     @ [IInstrComment(ILabel(Printf.sprintf "fun_%s_body" fun_name), Printf.sprintf "Body for %s" fun_name)]
     @ body_asm
@@ -864,8 +865,11 @@ let rec compile_method (fun_name : string) body args env is_entry_point fields: 
   | ASeq(left, right, _) -> (compile_cexpr left si env num_args is_tail [] classobjenv table newclassbindigs)@
                             (compile_aexpr right si env num_args is_tail classobjenv table newclassbindigs)
   | ANewObject(name,obj,classname,body,_) -> [
-                                            IMov(Reg(ESI), (compile_imm obj env classobjenv table));
-                                            IAdd(Reg(ESI), RegOffset(0, ESI)) 
+                                            IMov(Reg(EAX),(find  classobjenv classname));
+                                            IMov(Reg(ESI), Reg(EAX));
+                                            IAdd(Reg(ESI), RegOffset(word_size, ESI));
+                                            IMov(Reg(EAX), Reg(ESI));
+                                            IMov(RegOffset(~-word_size * (si), EBP), Reg(EAX));
                                           ]
 
   @ compile_aexpr body (si+1) ((name,RegOffset(~-word_size * (si), EBP))::env) num_args false classobjenv table ((name,classname)::newclassbindigs)
@@ -1230,6 +1234,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
     ] @ args @
     [
         IPush(Sized(DWORD_PTR,Reg(EAX)));
+        ISub(Reg(EAX), HexConst(0x1));
         ICall(RegOffset((methodindex * word_size), EAX));
         IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
 
@@ -1247,7 +1252,7 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
-  | ImmObj(x,_) ->  (find classobjenv x)
+  | ImmObj(x,_) ->  (find env x)
  ;;
 
 let compile_class dclass = match  dclass with
@@ -1259,7 +1264,7 @@ let compile_class dclass = match  dclass with
      let classmethods = List.flatten (List.map (fun f -> match f with
                                     |ADFun(name,args,body,tag) -> 
                                         compile_method name  body args [] false fields_names ) methods) in  
-     let create_objectprototype = [IMov(RegOffset(0, ESI), Const(fields_size + (word_size * (List.length classmethods))))]
+     let create_objectprototype = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(fields_size + (word_size * (List.length methods)))))]
                                   @ (List.flatten (List.mapi (fun i f ->  match f with
                                     |ADFun(name,args,body,tag) -> 
 
@@ -1277,13 +1282,13 @@ let compile_class dclass = match  dclass with
 
    in 
     let inner_hash =StringMap.empty in 
-    let names = List.sort compare (fields_names @ List.flatten( List.map(fun f ->  match f with
+    let names = (fields_names @ List.flatten( List.map(fun f ->  match f with
                                     |ADFun(name,args,body,tag) ->  [name]) methods )) in 
     let (mapping,_)  = List.fold_left (fun (acc,i) name ->  (StringMap.add name (i+1) acc,i+1)) (inner_hash,0) names  in 
     let outter_init =  StringMap.empty in 
     let table = StringMap.add name mapping outter_init in 
     (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * 1, EBP))], table)
-
+ |AClassE(name,fields,methods,inheritance,tag) -> failwith "class inheritance"
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
