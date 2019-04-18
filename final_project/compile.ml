@@ -4,7 +4,7 @@ open Assembly
 open Errors
 open Pretty
 open Phases
-
+open Hex
 
 type 'a envt = (string * 'a) list
 module StringSet = Set.Make(String);;
@@ -59,7 +59,12 @@ let error_not_closure = 10
 let error_wrong_arity  = 11
 
                              
+let class_id = ref 0 
 
+let next_val = 
+    fun () ->
+      class_id := (!class_id) + 1;
+      !class_id
 
 let fun_prim = ["input";"print"]
 
@@ -118,6 +123,15 @@ let count_vars e =
 let rec replicate x i =
   if i = 0 then []
   else x :: (replicate x (i - 1))
+
+let rec find_class (ds : 'a adecl list) (name : string) : 'a adecl list =
+  match ds with
+    | [] -> []
+    | (AClass(name,fields,methods,tag) as d)::ds_rest ->
+      if name = name then [d] else find_class ds_rest name
+    |(AClassE(name,fields,methods,inheritance,tag) as d)::ds_rest ->
+      if name = name then [d]@find_class ds_rest inheritance else find_class ds_rest name
+    | _::ds_rest -> find_class ds_rest name
 
 
 let rec find_decl (ds : 'a decl list) (name : string) : 'a decl option =
@@ -1233,20 +1247,33 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
    
   | CImmExpr(e) -> [IMov(Reg(EAX),(compile_imm e env classobjenv table))]
   | CMethodCall(obj,funname,imm_args,objectname,_) -> 
-    let classname = (find newclassbindigs objectname) in 
-    let methodindex  = StringMap.find funname (StringMap.find  classname table)  in 
+  
     let args = List.map  (fun e -> IPush(Sized(DWORD_PTR, (compile_imm e env classobjenv table))))  (List.rev imm_args) in
+     let hexval =  ((Hashtbl.hash funname) mod 200) in
 
     [
-        IMov(Reg(EAX), (compile_imm obj env classobjenv table))
+        IMov(Reg(EAX), (compile_imm obj env classobjenv table));
+        ISub(Reg(EAX), HexConst(0x1));
+        IPush(Const(hexval));
+        IPush(Sized(DWORD_PTR,RegOffset(4, EAX)));
+        ICall(Label("search"));
+        IAdd(Reg(ESP),Const(8));
+        IMov(Reg(ECX), Reg(EAX));
+        IMov(Reg(EAX), (compile_imm obj env classobjenv table));
+
+
+
+
     ] @ args @
     [
         IPush(Sized(DWORD_PTR,Reg(EAX)));
         ISub(Reg(EAX), HexConst(0x1));
-        ICall(RegOffset((methodindex * word_size), EAX));
+        ICall(RegOffsetReg(EAX,ECX));
         IAdd(Reg(ESP),Const((List.length imm_args * word_size) + word_size))
 
     ]
+  | CGetField(obj, fieldname, tag) -> failwith "get field"                                        
+
   | CSetField(obj,fieldname, arg,objectname,_) -> 
     let classname = (find newclassbindigs objectname) in 
     let fieldindex  = StringMap.find fieldname (StringMap.find classname table)  in 
@@ -1262,23 +1289,44 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
   | ImmNil(_) -> HexConst(0x1)
   | ImmObj(x,_) ->  (find env x)
  ;;
+ 
 
-let compile_class dclass = match  dclass with
+
+let compile_class dclass env dclassList= match  dclass with
 | AClass(name,fields,methods,tag) -> 
      let fields_size = (List.length fields) * word_size in 
      let fields_names = List.flatten (List.map (fun e -> match e with 
                                     |(str,_)-> [str]) fields )   in 
 
      let classmethods = List.flatten (List.map (fun f -> match f with
-                                    |ADFun(name,args,body,tag) -> 
-                                        compile_method name  body args [] false fields_names ) methods) in  
-     let create_objectprototype = [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(fields_size + (word_size * (List.length methods)))))]
+                                    |ADFun(fname,args,body,tag) -> 
+                                        compile_method (name^fname)  body args [] false fields_names ) methods) in
+      let myclass_id  =  next_val() in 
+      let names = (fields_names @ List.flatten( List.map(fun f ->  match f with
+                                    |ADFun(fname,args,body,tag) ->  [fname]) methods )) in 
+      let vtable = List.flatten (List.mapi (fun i vname -> 
+
+                                        let hexval =  ((Hashtbl.hash name mod 200)) in
+                                                       
+                                        [
+
+                                          (*id *)
+                                          IMov(Reg(EAX), Sized(DWORD_PTR, Const(hexval)));
+                                          IPush(Sized(DWORD_PTR, Const(myclass_id)));
+                                          IPush(Sized(DWORD_PTR, Reg(EAX)));
+                                          IPush(Sized(DWORD_PTR, Const(word_size * i)));
+                                          ICall(Label("insert"));
+                                          IAdd(Reg(ESP),Const(12))
+
+                                         ]) names) in 
+     let create_objectprototype = vtable @ [IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(fields_size + (word_size * (List.length methods)))));
+                                  IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Const(myclass_id)))]
                                   @ (List.flatten (List.mapi (fun i f ->  match f with
-                                    |ADFun(name,args,body,tag) -> 
+                                    |ADFun(fname,args,body,tag) -> 
 
                                         [
-                                          IMov(Reg(EAX),  Label(name));
-                                          IMov(RegOffset(4 + fields_size +  (word_size*i), ESI), Reg(EAX))
+                                          IMov(Reg(EAX),  Label(name^fname));
+                                          IMov(RegOffset(8 + fields_size +  (word_size*i), ESI), Reg(EAX))
                                         ]
                                     ) methods ) @
             [
@@ -1289,14 +1337,164 @@ let compile_class dclass = match  dclass with
             ])
 
    in 
-    let inner_hash =StringMap.empty in 
-    let names = (fields_names @ List.flatten( List.map(fun f ->  match f with
-                                    |ADFun(name,args,body,tag) ->  [name]) methods )) in 
-    let (mapping,_)  = List.fold_left (fun (acc,i) name ->  (StringMap.add name (i+1) acc,i+1)) (inner_hash,0) names  in 
-    let outter_init =  StringMap.empty in 
-    let table = StringMap.add name mapping outter_init in 
-    (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * 1, EBP))], table)
- |AClassE(name,fields,methods,inheritance,tag) -> failwith "class inheritance"
+    
+    (create_objectprototype, classmethods, [(name,RegOffset((~-word_size * myclass_id), EBP))])
+ |AClassE(name,fields,methods,inheritance,tag) -> 
+       let parentclass = find_class  dclassList  inheritance in 
+       let fields_names = List.flatten (List.map (fun e -> match e with 
+                                    |(str,_)-> [str]) fields )   in 
+      let classmethodsnames = List.flatten( List.map(fun f ->  match f with
+                                    |ADFun(fname,args,body,tag) ->  [fname]) methods ) in 
+
+       let mynames = fields_names @ classmethodsnames in 
+      let parentfieldsnames list =  List.flatten (List.map (fun e -> match e with 
+                                    |(str,_)-> [str]) list ) in 
+
+      let parentmethodsname list = List.flatten( List.map(fun f ->  match f with
+                                    |ADFun(fname,args,body,tag) ->  [fname]) list ) in 
+ 
+      let parentsinfo = List.flatten (List.map(fun e -> match e with 
+                                          | AClass(name,fields,methods,tag) -> 
+                                          [([name], 
+                                            (List.filter (fun e -> match e with 
+                                                            |(mname,_) -> not(List.mem mname mynames) ) fields), 
+                                            (List.filter (fun e ->  match e with 
+                                                              |ADFun(fname,args,body,tag) -> not(List.mem fname mynames) ) methods))]
+                                          |AClassE(name,fields,methods,inheritance,tag) -> [([name], 
+                                            (List.filter (fun e -> match e with 
+                                                            |(mname,_) -> not(List.mem mname mynames) ) fields), 
+                                            (List.filter (fun e ->  match e with 
+                                                            |ADFun(fname,args,body,tag) -> not(List.mem fname mynames) ) methods))])parentclass) in 
+
+
+    
+      let classmethods = List.flatten (List.map (fun f -> match f with
+                                    |ADFun(fname,args,body,tag) -> 
+                                        compile_method (name^fname)  body args [] false fields_names ) methods) in
+        let vtableindex  = ref 0 in 
+        let next_vtableindex  = 
+              fun (n) ->
+                vtableindex := (!vtableindex) + n;
+                !vtableindex
+        in 
+
+        let myclass_id  =  next_val() in 
+ 
+        let parentvtable = List.flatten (List.map (fun e  -> match e with 
+                                      |(name,fieldlist,methodlist) ->
+                                        (List.map (fun e ->
+                                        let name = (match e with 
+                                                    |(str,_) -> str) in  
+                                        let hexval =  ((Hashtbl.hash name mod 200)) in
+                                        let myid = next_vtableindex(1) in 
+                                                       
+                                        [
+
+                                          (*id *)
+                                          IMov(Reg(EAX), Sized(DWORD_PTR, Const(hexval)));
+                                          IPush(Sized(DWORD_PTR, Const(myclass_id)));
+                                          IPush(Sized(DWORD_PTR, Reg(EAX)));
+                                          IPush(Sized(DWORD_PTR, Const(word_size * myid)));
+                                          ICall(Label("insert"));
+                                          IAdd(Reg(ESP),Const(12))
+
+                                         ] 
+                                        ) fieldlist) @
+
+                                        (List.map (fun e ->
+                                        let name = (match e with 
+                                                    |ADFun(fname,args,body,tag) -> fname) in  
+                                        let hexval =  ((Hashtbl.hash name mod 200)) in
+                                        let myid = next_vtableindex(1) in 
+                                                       
+                                        [
+
+                                          (*id *)
+                                          IMov(Reg(EAX), Sized(DWORD_PTR, Const(hexval)));
+                                          IPush(Sized(DWORD_PTR, Const(myclass_id)));
+                                          IPush(Sized(DWORD_PTR, Reg(EAX)));
+                                          IPush(Sized(DWORD_PTR, Const(word_size * myid)));
+                                          ICall(Label("insert"));
+                                          IAdd(Reg(ESP),Const(12))
+
+                                         ] 
+                                        ) methodlist)
+
+
+
+
+                                      ) parentsinfo) in 
+
+
+   
+  
+      let myvtable = List.flatten (List.map (fun e ->
+                                        let hexval =  ((Hashtbl.hash e mod 200)) in
+                                        let myid = next_vtableindex(1) in 
+               
+                                        [
+
+                                          (*id *)
+                                          IMov(Reg(EAX), Sized(DWORD_PTR, Const(hexval)));
+                                          IPush(Sized(DWORD_PTR, Const(myclass_id)));
+                                          IPush(Sized(DWORD_PTR, Reg(EAX)));
+                                          IPush(Sized(DWORD_PTR, Const(word_size * myid)));
+                                          ICall(Label("insert"));
+                                          IAdd(Reg(ESP),Const(12))
+
+                                         ])mynames) in 
+
+    
+        let prototypeindex  = ref 0 in 
+        let next_prototypeindex = 
+              fun (n) ->
+                prototypeindex := (!prototypeindex) + n;
+                !prototypeindex
+        in
+
+       let create_objectprototypeparent = (List.flatten parentvtable) @ myvtable @
+
+                                     [IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Const(myclass_id)))] @
+                                     (List.flatten (List.map (fun e  -> match e with 
+                                      |(cname,fieldlist,methodlist) ->
+                                        let field_size = (List.length fieldlist * word_size) in 
+                                        let increment = next_vtableindex(field_size) in 
+                                        (List.flatten (List.map (fun e -> match e with 
+                                                    |ADFun(fname,args,body,tag) ->  
+                                                   let myid = next_vtableindex(1) in 
+                                                    let classname =  List.hd cname  in 
+                                                    [
+
+                                                      IMov(Reg(EAX),  Label(classname^fname));
+                                                      IMov(RegOffset(8 +  (word_size*myid), ESI), Reg(EAX))
+
+                                                    ] 
+                                                    ) methodlist))) parentsinfo)) in 
+
+
+
+
+                              
+
+
+    let myfield_size = (List.length fields  * word_size)  in
+    let myincre = next_vtableindex(myfield_size) in 
+    let create_objectprototype =  create_objectprototypeparent  @ 
+                                                              [
+                                                                IMov(RegOffset(0, ESI), Sized(DWORD_PTR, Const(myfield_size + (word_size * (List.length methods)))));
+                                                                IMov(RegOffset(4, ESI), Sized(DWORD_PTR, Const(myclass_id)))
+                                                              ] @ 
+                                      (List.flatten (List.map (fun f ->  match f with
+                                                                      |ADFun(fname,args,body,tag) -> 
+                                                                        let myid = next_vtableindex(1) in 
+
+                                                                          [
+                                                                            IMov(Reg(EAX),  Label(name^fname));
+                                                                            IMov(RegOffset(8 +  (word_size*myid), ESI), Reg(EAX))
+                                                                          ]
+                                                                      ) methods )) in 
+    (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * myclass_id, EBP))])
+   
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
   let prelude =
@@ -1305,6 +1503,8 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   extern print
   extern print_stack
   extern equal
+  extern insert
+  extern search
   extern try_gc
   extern naive_print_heap
   extern HEAP
@@ -1323,7 +1523,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
       ILineComment("stack start");
       IPush(Reg(EBP));
       IMov(Reg(EBP),Reg(ESP));
-      ISub(Reg(ESP),Const(count))] 
+      ISub(Reg(ESP),Const(256))] 
     in
   let postlude = [
     ILineComment("postlude start");
@@ -1395,8 +1595,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  let (create_objectprototype, classmethods, classobjenv, table) = compile_class (List.hd decls) in 
-  let body = [ILineComment("body start")] @ (compile_aexpr body 2 [] 0 true classobjenv table []) in
+  let (create_objectprototype, classmethods, classobjenv) = List.fold_left (fun (proto,meth,env) decl -> match compile_class decl env decls with
+                                                                                              |(p,m,e) -> (proto@p,meth@m,env@e)) ([],[],[]) decls in 
+  let body = [ILineComment("body start")] @ (compile_aexpr body (List.length  classobjenv + 1 ) [] 0 true classobjenv StringMap.empty []) in
   let as_assembly_string = (to_asm  (classmethods @  [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ create_objectprototype @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
@@ -1406,7 +1607,7 @@ let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)
-  |> (add_phase renamed rename_and_tag)
+  (*|> (add_phase renamed rename_and_tag)*)
   |> (add_phase anfed (fun p -> (atag (anf p))))
   |> (add_phase result compile_prog)
 ;;

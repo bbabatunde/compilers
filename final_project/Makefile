@@ -9,7 +9,7 @@ ifeq ($(UNAME), Darwin)
 endif
 endif
 
-PKGS=oUnit,extlib,unix,batteries
+PKGS=oUnit,extlib,unix,batteries,hex
 BUILD=ocamlbuild -r -use-ocamlfind -ocamlyacc 'ocamlyacc -v'
 
 main: *.ml parser.mly lexer.mll
@@ -20,9 +20,9 @@ test: *.ml parser.mly lexer.mll
 	$(BUILD) -no-hygiene -package $(PKGS) test.native
 	mv test.native test
 
-output/%.run: output/%.o main.c gc.o
-	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
 
+output/%.run: output/%.o main.c gc.o
+	clang $(PIE) -mstackrealign -g  -m32 -o  $@ gc.o main.c $< 
 output/%.o: output/%.s
 	nasm -f $(FORMAT) -o $@ $<
 

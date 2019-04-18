@@ -674,20 +674,22 @@ let failing_tests = [
                  fields x = 1, y = 2
                  methods
                  def f1():
-                     this.x = 1
+                     1
                  def f2():
                      2
                  end
-
-           class test1 extends test:
-              fields z = 3
-             methods
-             def f3():
-                 3
-            end
-                 let x = new test
-                 in x.f1();
-                 x[x]" "" "";
+               class test2 extends test:
+                fields x = 3, z = 1
+                methods 
+                def f2():
+                  true
+                def f3():
+                   3
+                end
+            let x = new test in 
+            let y = x 
+                 in  y.f2()"
+               "" "";
  ]
 
 let suite =

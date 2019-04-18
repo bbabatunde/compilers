@@ -23,7 +23,7 @@ type arg =
   | HexConst of int
   | Reg of reg
   | RegOffset of int * reg (* int is # words of offset *)
-  | RegOffsetReg of reg * reg * int * int
+  | RegOffsetReg of reg * reg 
   | Sized of size * arg
   | Label of string
   | LabelContents of string
@@ -87,9 +87,9 @@ let rec arg_to_asm (a : arg) : string =
        sprintf "[%s+%d]" (r_to_asm r) n
      else
        sprintf "[%s-%d]" (r_to_asm r) (-1 * n)
-  | RegOffsetReg(r1, r2, mul, off) ->
-     sprintf "[%s + %s * %d + %d]"
-             (r_to_asm r1) (r_to_asm r2) mul off
+  | RegOffsetReg(r1, r2) ->
+     sprintf "[%s + %s]"
+             (r_to_asm r1) (r_to_asm r2)
   | Sized(size, a) ->
      sprintf "%s %s"
              (match size with | DWORD_PTR -> "DWORD" | WORD_PTR -> "WORD" | BYTE_PTR -> "BYTE")

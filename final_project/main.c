@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "gc.h"
+#include <time.h>
+
+#include "uthash.h"
+//#include "gc.h"
+
+
 
 typedef unsigned long int ulong;
 typedef unsigned short int ushort;
@@ -8,6 +13,9 @@ typedef unsigned int uint;
 
 
 extern int our_code_starts_here(int* HEAP) asm("our_code_starts_here");
+extern void insert(int, int , int ) asm("insert");
+extern int search(int key, int name ) asm("search");
+
 extern void error() asm("error");
 extern int print(int val) asm("print");
 extern int g_PrintStack(int val, int* esp, int* ebp, int args) asm("print_stack");
@@ -56,6 +64,61 @@ int* FROM_S;
 int* FROM_E;
 int* TO_S;
 int* TO_E;
+
+#define SIZE 200
+
+struct my_data {
+   int id;
+   int offset;
+   UT_hash_handle hh;         /* makes this structure hashable */
+
+};
+
+struct my_struct {
+    int id;                    /* key */
+    struct my_data* name;
+    UT_hash_handle hh;         /* makes this structure hashable */
+};
+
+struct my_struct *users = NULL;
+
+int search(int key, int fieldid) {
+
+
+
+   struct my_struct *s;
+   struct my_data *y;
+   HASH_FIND_INT( users, &key, s);  /* s: output pointer */  
+   HASH_FIND_INT(s->name, &fieldid, y);  /* s: output pointer */  
+   return y->offset+8;
+
+}
+
+void insert(int offset, int fieldid, int key ) {
+
+     struct my_struct *s;
+     struct my_data *y;
+  
+    
+    HASH_FIND_INT(users, &key, s);  /* id already in the hash? */
+    if (s==NULL) {
+        s = (struct my_struct*)malloc(sizeof(struct my_struct));
+        s->id = key;
+        s->name = NULL;
+        HASH_ADD_INT( users, id, s );  /* id: name of key field */
+    }
+    
+    HASH_FIND_INT(s->name, &fieldid, y);  /* id already in the hash? */
+    if (y==NULL) {
+        y = (struct my_data*)malloc(sizeof(struct my_data));
+        y->id = fieldid;
+        y->offset = offset;
+        HASH_ADD_INT( s->name, id,y );  /* id: name of key field */
+    }
+    y->offset = offset;
+
+}
+
 
 
 int equal(int val1, int val2) {
@@ -243,7 +306,6 @@ void error(int i, int val) {
   printHelp(stderr, val);
   fprintf(stderr, "\n");
   fflush(stderr);
-  naive_print_heap(HEAP, HEAP_SIZE);
   fflush(stdout);
   exit(i);
 }
@@ -272,60 +334,11 @@ void error(int i, int val) {
   Side effect:
     Also updates HEAP_END to point to the new end of the heap, if it's changed
 */
-int* try_gc(int* alloc_ptr, int bytes_needed, int* cur_frame, int* cur_stack_top) {
-  int* new_heap = (int*)calloc(HEAP_SIZE + 7, sizeof(int));
-  int* old_heap = HEAP;
-  int* old_heap_end = HEAP_END;
 
-  int* new_esi = (int*)(((int)new_heap + 7) & ~0x7);
-  int* new_heap_end = new_esi + HEAP_SIZE;
-
-  FROM_S = (int*)(((int)HEAP + 7) & ~0x7);
-  FROM_E = HEAP_END;
-  TO_S = new_esi;
-  TO_E = new_heap_end;
-
-  /* printf("FROM_S = %p, FROM_E = %p, TO_S = %p, TO_E = %p\n", FROM_S, FROM_E, TO_S, TO_E); */
-  /* naive_print_heap(FROM_S, FROM_E); */
-  /* g_PrintStack(BOOL_TRUE, cur_stack_top, cur_frame, 0); */
-
-  // Abort early, if we can't allocate a new to-space
-  if (new_heap == NULL) {
-    fprintf(stderr, "Out of memory: could not allocate a new semispace for garbage collection\n");
-    fflush(stderr);
-    if (old_heap != NULL) free(old_heap);
-    exit(ERR_OUT_OF_MEMORY);
-  }
-  
-  new_esi = gc(STACK_BOTTOM, cur_frame, cur_stack_top, FROM_S, HEAP_END, new_esi);
-  HEAP = new_heap;
-  HEAP_END = new_heap_end;
-  free(old_heap);
-
-  // Note: strict greater-than is correct here: if new_esi + (bytes_needed / 4) == HEAP_END,
-  // that does not mean we're *using* the byte at HEAP_END, but rather that it would be the
-  // next free byte, which is still ok and not a heap-overflow.
-  if (bytes_needed / 4 > HEAP_SIZE) {
-    fprintf(stderr, "Allocation error: needed %d words, but the heap is only %d words\n",
-            bytes_needed / 4, HEAP_SIZE);
-    fflush(stderr);
-    if (new_heap != NULL) free(new_heap);
-    exit(ERR_OUT_OF_MEMORY);
-  } else if((new_esi + (bytes_needed / 4)) > HEAP_END) {
-    fprintf(stderr, "Out of memory: needed %d words, but only %d remain after collection\n",
-            bytes_needed / 4, (HEAP_END - new_esi));
-    fflush(stderr);
-    if (new_heap != NULL) free(new_heap);
-    exit(ERR_OUT_OF_MEMORY);
-  } else {
-    /* fprintf(stderr, "new_esi = %p\n", new_esi); */
-    /* naive_print_heap(HEAP, HEAP_END); */
-    return new_esi;
-  }
-}
 
 int main(int argc, char** argv) {
-  HEAP_SIZE = 100000;
+    HEAP_SIZE = 100000;
+    
   if (argc > 1) { HEAP_SIZE = atoi(argv[1]); }
   if (HEAP_SIZE < 0 || HEAP_SIZE > 1000000) { HEAP_SIZE = 0; }
   HEAP = (int*)calloc(HEAP_SIZE + 7, sizeof (int));
@@ -333,8 +346,10 @@ int main(int argc, char** argv) {
   int* aligned = (int*)(((int)HEAP + 7) & ~0x7);
   HEAP_END = aligned + HEAP_SIZE;
   /* printf("HEAP = %p, aligned = %p, HEAP_END = %p\n", HEAP, aligned, HEAP_END); */
-  int result = our_code_starts_here(aligned);
+  int result = our_code_starts_here(aligned);;
   /* smarter_print_heap(aligned, HEAP_END, TO_S, TO_E); */
+  /*insert(12,1,1);
+  printf("%d\n", search(1,1));*/
   print(result);
 
   free(HEAP);

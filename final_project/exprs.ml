@@ -63,7 +63,7 @@ and 'a expr =
   | ENewObject of string * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
-  | EGetField of 'a expr * string * string * 'a
+  | EGetField of 'a expr * string  * 'a
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
@@ -92,7 +92,7 @@ and 'a cexpr = (* compound expressions *)
   | CNewObject of string * 'a
   | CMethodCall of 'a immexpr * string * 'a immexpr list * string * 'a  
   | CSetField of 'a immexpr * string * 'a immexpr * string * 'a
-  | CGetField of 'a immexpr * string * string * 'a                                            
+  | CGetField of 'a immexpr * string  * 'a                                            
                                             
 
 and 'a aexpr = (* anf expressions *)
@@ -103,7 +103,7 @@ and 'a aexpr = (* anf expressions *)
   | ANewObject of string * 'a immexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
-  | AClass of string * (string * 'a immexpr) list * 'a adecl list * 'a
+  | AClass of string *  (string * 'a immexpr) list  *'a adecl list * 'a
   | AClassE  of string * (string * 'a immexpr) list * 'a adecl list * string *  'a
 and 'a aprogram =
   | AProgram of 'a adecl list * 'a aexpr * 'a
