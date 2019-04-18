@@ -59,7 +59,6 @@ and 'a expr =
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
-  | EObject of string * 'a
   | ENewObject of string * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
@@ -80,7 +79,6 @@ type 'a immexpr = (* immediate expressions *)
   | ImmNum of int * 'a
   | ImmBool of bool * 'a
   | ImmId of string * 'a
-  | ImmObj of string * 'a
   | ImmNil of 'a
 and 'a cexpr = (* compound expressions *)
   | CIf of 'a immexpr * 'a aexpr * 'a aexpr * 'a
@@ -100,7 +98,7 @@ and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ALetRec of (string * 'a cexpr) list * 'a aexpr * 'a
   | ACExpr of 'a cexpr
-  | ANewObject of string * 'a immexpr * string * 'a aexpr * 'a
+  | ANewObject of string * 'a cexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
   | AClass of string * (string * 'a immexpr) list * 'a adecl list * 'a
@@ -164,8 +162,6 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | ELambda(binds, body, a) ->
      let tag_lam = f a in
      ELambda(List.map (map_tag_B f) binds, map_tag_E f body, tag_lam)
-  | EObject(name, a) ->
-     EObject(name, (f a))
   | ENewObject(name, a) -> ENewObject(name, (f a))
   | EMethodCall(name, meth, args, n2, a) ->
      EMethodCall(map_tag_E f name, meth, List.map (map_tag_E f) args,  n2, (f a))
@@ -291,7 +287,6 @@ and untagE e =
      EApp(untagE name, List.map untagE args, ())
   | ELambda(binds, body, _) ->
      ELambda(List.map untagB binds, untagE body, ())
-  | EObject(name, _) -> EObject(name, ())
   | ENewObject(name, _) -> ENewObject(name, ())
   | EMethodCall(e1, s1, el1, s2, _) -> EMethodCall(untagE e1, s1, List.map untagE el1, s2, ())
   | ESetField(e1, s1, e2, s2, _) -> ESetField(untagE e1, s1, untagE e2, s2, ())
@@ -341,7 +336,7 @@ let atag (p : 'a aprogram) : tag aprogram =
        ALetRec(List.map (fun (x, c) -> (x, helpC c)) binds, helpA body, letrec_tag)
     | ACExpr c -> ACExpr (helpC c)
     | ANewObject(vn, cn, cn2, b, _) ->
-       ANewObject(vn, helpI cn, cn2, helpA b, tag())
+       ANewObject(vn, helpC cn, cn2, helpA b, tag())
   and helpC (c : 'a cexpr) : tag cexpr =
     match c with
     | CPrim1(op, e, _) ->
@@ -372,7 +367,6 @@ let atag (p : 'a aprogram) : tag aprogram =
     | ImmId(x, _) -> ImmId(x, tag())
     | ImmNum(n, _) -> ImmNum(n, tag())
     | ImmBool(b, _) -> ImmBool(b, tag())
-    | ImmObj(n, _) -> ImmObj(n, tag())
   and helpD d =
     match d with
     | ADFun(name, args, body, _) ->

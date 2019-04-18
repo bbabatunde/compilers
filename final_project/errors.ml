@@ -121,7 +121,6 @@ let print_errors (exns : exn list) : string list =
            | ESeq(_, _, t) -> t
            | ELambda(_, _, t) -> t
            | ENewObject(_, t) -> t
-           | EObject(_, t) -> t
            | EMethodCall(_, _, _, _, t) -> t
            | ESetField(_, _, _, _, t) -> t
            | EGetField(_, _, _, t) -> t

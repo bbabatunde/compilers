@@ -415,7 +415,6 @@ let rename_and_tag (p : tag program) : tag program =
        let body' = helpE env' body in
        ELambda(binds', body', tag)
     | ENewObject _ -> e
-    | EObject _ -> e
     | EMethodCall(name, meth, args, n2, tag) ->
        EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
     | ESetField(obj, field, new_val, obj_name, tag) ->
@@ -541,7 +540,6 @@ let anf (p : tag program) : unit aprogram =
         let tmp = sprintf "new_obj_%d" tag in
         let (newo_imm, newo_setup) = helpC e in
         (ImmId(tmp, ()), newo_setup @ [BLet(tmp, newo_imm)])
-    | EObject(name, _) -> (ImmObj(name, ()), [])
     | EAnnot(e, _, _) -> helpI e
     | ESeq(e1, e2, _) ->
        let (e1_imm, e1_setup) = helpI e1 in
@@ -605,7 +603,7 @@ let anf (p : tag program) : unit aprogram =
         (ImmId(tmp, ()),
             n_setup @
             (List.concat new_setup) @
-            [BLet(tmp, CMethodCall(name, meth, new_args, getClass name, ()))])
+            [BLet(tmp, CMethodCall(name, meth, new_args, "dummyClass", ()))])
     | ESetField(e1, s1, e2, s2, tag) ->
         let tmp = sprintf "esf_%d" tag in
         let (e1_new, e1_setup) = helpI e1 in
@@ -620,10 +618,6 @@ let anf (p : tag program) : unit aprogram =
         (ImmId(tmp, ()),
             e1_setup @
             [BLet(tmp, CGetField(e1_new, s1, s2, ()))])
-  and getClass immNewObj =
-      match immNewObj with
-      | ImmObj(name, _) -> name
-      | _ -> raise (InternalCompilerError "Weird imm obj :/")
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
@@ -632,7 +626,7 @@ let anf (p : tag program) : unit aprogram =
         | BSeq(exp) -> ASeq(exp, body, ())
         | BLet(var_name, exp) -> 
             (match exp with
-            | CNewObject(class_name, _) -> ANewObject(var_name, ImmObj(class_name, ()), class_name, body, ())
+            | CNewObject(class_name, _) -> ANewObject(var_name, exp, class_name, body, ())
             | _ -> ALet(var_name, exp, body, ()))
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)
@@ -713,7 +707,7 @@ let desugarPost (p : sourcespan program) : sourcespan program =
         | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
         | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
         | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-        | ENewObject _ | EMethodCall _ | EObject _ | ESetField _ | EGetField _
+        | ENewObject _ | EMethodCall _ | ESetField _ | EGetField _
         | ENumber _ | EBool _ | ENil _ | EId _ -> e )
     and helpB bindings =
         match bindings with
@@ -759,12 +753,12 @@ let desugarPre (p : sourcespan program) : sourcespan program =
     | EAnnot(e, t, loc) -> EAnnot(helpE e, t, loc)
     | ELetRec(bindl, e, loc) -> ELetRec(helpB bindl, helpE e, loc)
     | ELambda(bindl, e, loc) -> ELambda(bindl, helpE e, loc)
-    | ENewObject _ | EObject _  | ESetField _ | EGetField _ -> e
+    | ENewObject _ | ESetField _ | EGetField _ -> e
     | EMethodCall(obj, meth, args, _, loc) ->
         let tmp = gensym "new_obj" in
         (match obj with
-        | EId(str, pos) -> EMethodCall(EObject(str, pos), meth, args, "fix", loc)
-        | ENewObject(str, pos) -> e
+        | EId _ -> e
+        | ENewObject(str, pos) -> failwith "Implement new object desugaring!"
         | _ -> raise (InternalCompilerError "Non object/id in method call."))
     | ENumber _ | EBool _ | ENil _ | EId _ -> e
   and helpB bindings =
@@ -1260,7 +1254,6 @@ and compile_cexpr (e : tag cexpr) si env num_args is_tail self classobjenv table
   | ImmBool(false, _) -> const_false
   | ImmId(x, _) -> (find env x)
   | ImmNil(_) -> HexConst(0x1)
-  | ImmObj(x,_) ->  (find env x)
  ;;
 
 let compile_class dclass = match  dclass with
