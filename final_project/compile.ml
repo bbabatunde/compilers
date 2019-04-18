@@ -258,7 +258,7 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
    | EMethodCall(obj, _, args, _, _) -> wf_O obj ds env @
            (List.fold_left (fun lst e -> wf_E e ds env tydecls inclass) [] args)
    | ESetField(obj, _, e, _, _) -> wf_O obj ds env @ wf_E e ds env tydecls inclass
-   | EGetField(obj, _, _, _) -> wf_O obj ds env
+   | EGetField(obj, _, _) -> wf_O obj ds env
    | EDummy _ -> raise (InternalCompilerError("This is impossible :)"))
 and wf_O obj ds env =
     match obj with
@@ -270,7 +270,7 @@ and wf_O obj ds env =
     |ESeq (_, _, l)|ELet (_, _, l)|ELetRec (_, _, l)|EPrim1 (_, _, l)
     |EPrim2 (_, _, _, l)|EIf (_, _, _, l)|ENumber (_, l)|EBool (_, l)|ENil (_, l)
     |EThis(l)|EApp (_, _, l)|ELambda (_, _, l)|EAnnot (_, _, l)|EDummy(l)
-    |EMethodCall (_, _, _, _, l)|ESetField (_, _, _, _, l)|EGetField (_, _, _, l) -> [ExpectedObject(l)]
+    |EMethodCall (_, _, _, _, l)|ESetField (_, _, _, _, l)|EGetField (_, _, l) -> [ExpectedObject(l)]
 and bindingsToBinds bl =
     match bl with
     | (b, _, _)::rest ->
@@ -507,8 +507,8 @@ let rename_and_tag (p : tag program) : tag program =
        EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
     | ESetField(obj, field, new_val, obj_name, tag) ->
        ESetField((helpE env obj), field, (helpE env new_val), obj_name, tag)
-    | EGetField(obj, field, objclass, tag) ->
-       EGetField((helpE env obj), field, objclass, tag)
+    | EGetField(obj, field, tag) ->
+       EGetField((helpE env obj), field, tag)
   in (rename [] p)
 ;;
 
@@ -700,12 +700,12 @@ let anf (p : tag program) : unit aprogram =
             e1_setup @
             e2_setup @
             [BLet(tmp, CSetField(e1_new, s1, e2_new, s2, ()))])
-    | EGetField(e1, s1, s2, tag) ->
+    | EGetField(e1, s1, tag) ->
         let tmp = sprintf "egf_%d" tag in
         let (e1_new, e1_setup) = helpI e1 in
         (ImmId(tmp, ()),
             e1_setup @
-            [BLet(tmp, CGetField(e1_new, s1, s2, ()))])
+            [BLet(tmp, CGetField(e1_new, s1, ()))])
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
