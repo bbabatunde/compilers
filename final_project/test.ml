@@ -670,21 +670,6 @@ let failing_tests = [
 ]
 
  let class_tests = [
-<<<<<<< HEAD
-     t "class1" "class test:
-                 fields x = 1, y = 2
-                 methods
-                 def f1():
-                     1
-                 def f2():
-                     2
-                 end
-           
-            let x = new test in 
-            let y = x 
-                 in  y.f2()"
-               "" "";
-=======
      te "classDuplicate" "class test:
                          fields x = 1, y = 2
                          methods
@@ -759,8 +744,6 @@ Field redefined: a at <cascadeFail, 9:42-9:47>
 The function name b, redefined at <cascadeFail, 11:25-12:26>, duplicates one at <cascadeFail, 13:25-14:26>
 The function name b, redefined at <cascadeFail, 13:25-14:26>, duplicates one at <cascadeFail, 13:25-14:26>
 Expected Object at <cascadeFail, 15:54-15:58>";
-
->>>>>>> 3a6098536146ead9cba9a1aafe5a496f569cc901
  ]
 
 
