@@ -84,12 +84,11 @@ struct my_struct *users = NULL;
 
 int search(int key, int fieldid) {
 
-
-
    struct my_struct *s;
    struct my_data *y;
    HASH_FIND_INT( users, &key, s);  /* s: output pointer */  
    HASH_FIND_INT(s->name, &fieldid, y);  /* s: output pointer */  
+
    return y->offset+8;
 
 }

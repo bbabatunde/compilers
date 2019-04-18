@@ -678,14 +678,7 @@ let failing_tests = [
                  def f2():
                      2
                  end
-               class test2 extends test:
-                fields x = 3, z = 1
-                methods 
-                def f2():
-                  true
-                def f3():
-                   3
-                end
+           
             let x = new test in 
             let y = x 
                  in  y.f2()"

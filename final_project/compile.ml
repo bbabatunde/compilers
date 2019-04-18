@@ -1300,13 +1300,13 @@ let compile_class dclass env dclassList= match  dclass with
 
      let classmethods = List.flatten (List.map (fun f -> match f with
                                     |ADFun(fname,args,body,tag) -> 
-                                        compile_method (name^fname)  body args [] false fields_names ) methods) in
-      let myclass_id  =  next_val() in 
+                                        compile_method fname  body args [] false fields_names ) methods) in
+      let myclass_id  =  1 in 
       let names = (fields_names @ List.flatten( List.map(fun f ->  match f with
                                     |ADFun(fname,args,body,tag) ->  [fname]) methods )) in 
       let vtable = List.flatten (List.mapi (fun i vname -> 
 
-                                        let hexval =  ((Hashtbl.hash name mod 200)) in
+                                        let hexval =  ((Hashtbl.hash vname mod 200)) in
                                                        
                                         [
 
@@ -1325,7 +1325,7 @@ let compile_class dclass env dclassList= match  dclass with
                                     |ADFun(fname,args,body,tag) -> 
 
                                         [
-                                          IMov(Reg(EAX),  Label(name^fname));
+                                          IMov(Reg(EAX),  Label(fname));
                                           IMov(RegOffset(8 + fields_size +  (word_size*i), ESI), Reg(EAX))
                                         ]
                                     ) methods ) @
@@ -1338,9 +1338,9 @@ let compile_class dclass env dclassList= match  dclass with
 
    in 
     
-    (create_objectprototype, classmethods, [(name,RegOffset((~-word_size * myclass_id), EBP))])
- |AClassE(name,fields,methods,inheritance,tag) -> 
-       let parentclass = find_class  dclassList  inheritance in 
+    (create_objectprototype, classmethods, [(name,RegOffset((~-word_size * 1), EBP))])
+ |AClassE(name,fields,methods,inheritance,tag) -> failwith "AClassE"
+       (*let parentclass = find_class  dclassList  inheritance in 
        let fields_names = List.flatten (List.map (fun e -> match e with 
                                     |(str,_)-> [str]) fields )   in 
       let classmethodsnames = List.flatten( List.map(fun f ->  match f with
@@ -1493,7 +1493,7 @@ let compile_class dclass env dclassList= match  dclass with
                                                                             IMov(RegOffset(8 +  (word_size*myid), ESI), Reg(EAX))
                                                                           ]
                                                                       ) methods )) in 
-    (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * myclass_id, EBP))])
+    (create_objectprototype, classmethods, [(name,RegOffset(~-word_size * myclass_id, EBP))]) *)
    
 let compile_prog (anfed : tag aprogram) : string = match anfed with
   | AProgram(decls,body,_)  -> 
@@ -1595,9 +1595,9 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
     IPush(Const(error_wrong_arity));
     ICall(Label("error"));
     ] in
-  let (create_objectprototype, classmethods, classobjenv) = List.fold_left (fun (proto,meth,env) decl -> match compile_class decl env decls with
-                                                                                              |(p,m,e) -> (proto@p,meth@m,env@e)) ([],[],[]) decls in 
-  let body = [ILineComment("body start")] @ (compile_aexpr body (List.length  classobjenv + 1 ) [] 0 true classobjenv StringMap.empty []) in
+  let (create_objectprototype, classmethods, classobjenv) = compile_class (List.hd decls) [] decls (*List.fold_left (fun (proto,meth,env) decl -> match compile_class decl env decls with
+                                                                                              |(p,m,e) -> (proto@p,meth@m,env@e)) ([],[],[]) decls*)in 
+  let body = [ILineComment("body start")] @ (compile_aexpr body 2 [] 0 true classobjenv StringMap.empty []) in
   let as_assembly_string = (to_asm  (classmethods @  [ILabel("our_code_starts_here")] @ heap_start  @   stack_setup @ create_objectprototype @ body @ postlude)) in
   sprintf "%s%s\n" prelude as_assembly_string
   
