@@ -56,6 +56,7 @@ and 'a expr =
   | EBool of bool * 'a
   | ENil of 'a typ * 'a
   | EId of string * 'a
+  | EThis of 'a
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
