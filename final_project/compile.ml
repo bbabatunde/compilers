@@ -66,7 +66,7 @@ let fun_prim = ["input";"print"]
 let rec strip_binds arg =
   let result = (List.fold_left (fun env b -> match b with 
   |BBlank(_,_) -> env
-  |BName( str, typ , loc) ->  [(str , loc)]@env) [] arg)
+  |BName( str, typ , loc) ->  [(str ,  EDummy(loc), loc)]@env) [] arg)
   in result
 
 let rec findlst ls str = 
@@ -97,8 +97,13 @@ let rec find ls x =
 let rec find2 ls x =
   match ls with
   | [] -> None
-  | (y,v)::rest ->
+  | (y, _, v)::rest ->
      if y = x then Some(v) else find2 rest x
+
+let rec findEnv env n =
+    match env with
+    | [] -> None
+    | (tn, e, p)::rest -> if n = tn then Some(tn, e, p) else findEnv rest n
 
 let count_vars e =
   let rec helpA e =
@@ -153,11 +158,11 @@ let remove_one_decl (ls : 'a decl list) (n : string)  : 'a decl list =
   |Some(e) -> e
 
 
-let remove_one_arg (ls : (string * sourcespan) list) (elt : string) : (string * sourcespan) list = 
-  let rec find_one2 (l : (string * sourcespan) list) (elt : string) : (string * sourcespan) list option =
+let remove_one_arg (ls : (string * sourcespan expr * sourcespan) list) (elt : string) : (string * sourcespan expr * sourcespan) list = 
+  let rec find_one2 (l : (string * sourcespan expr * sourcespan) list) (elt : string) : (string * sourcespan expr * sourcespan) list option =
   match l with
     | [] -> None
-    | (x,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
+    | (x,_,y)::xs -> if (elt = x)  then Some(xs) else (find_one2 xs elt)
   in 
   match (find_one2  ls elt) with
   |None -> ls
@@ -199,7 +204,7 @@ let rec bindingsToStrings binds =
 ;;
                              
 let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
-  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan) list) (tydecls: 'a tydecl list) (inclass : bool)
+  let rec wf_E (e: sourcespan expr) (ds : 'a decl list) (env : (string * sourcespan expr * sourcespan) list) (tydecls: 'a tydecl list) (inclass : bool)
   : exn list = match e with
     | ENumber(n, pos) -> if n > 1073741823 || n < -1073741824 then
        [Overflow(n,pos)] else []
@@ -240,17 +245,17 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
            (List.fold_left (fun lst e -> wf_E e ds env tydecls inclass) [] args)
    | ESetField(obj, _, e, _, _) -> wf_O obj ds env @ wf_E e ds env tydecls inclass
    | EGetField(obj, _, _, _) -> wf_O obj ds env
-
+   | EDummy _ -> raise (InternalCompilerError("This is impossible :)"))
 and wf_O obj ds env =
     match obj with
     | ENewObject(cn, l) -> if List.mem cn (onlyClassNames ds) then [] else [ClassNotDefined(cn, l)]
     | EId(n, l) -> 
-        (match find2 env n with
+        (match findEnv env n with
         | None -> [UnboundId(n, l)]
-        | Some(d) -> [])
+        | Some(n, e, l) -> wf_O e ds env)
     |ESeq (_, _, l)|ELet (_, _, l)|ELetRec (_, _, l)|EPrim1 (_, _, l)
     |EPrim2 (_, _, _, l)|EIf (_, _, _, l)|ENumber (_, l)|EBool (_, l)|ENil (_, l)
-    |EThis(l)|EApp (_, _, l)|ELambda (_, _, l)|EAnnot (_, _, l)
+    |EThis(l)|EApp (_, _, l)|ELambda (_, _, l)|EAnnot (_, _, l)|EDummy(l)
     |EMethodCall (_, _, _, _, l)|ESetField (_, _, _, _, l)|EGetField (_, _, _, l) -> [ExpectedObject(l)]
 and bindingsToBinds bl =
     match bl with
@@ -286,13 +291,13 @@ and check_shadowid bind expr exploc env ds tydecls inclass: exn list = match fin
   |None -> wf_E expr ds env tydecls inclass
   |Some(loc) -> [ShadowId(bind,loc,exploc)]
 
-and check_binding_list (bindings: 'a binding list) (env : (string * sourcespan) list) (ds : 'a decl list) (tydecls: 'a tydecl list) (inclass : bool): 
-  ((exn list )  * ((string * sourcespan) list))=
+and check_binding_list (bindings: 'a binding list) (env : (string * sourcespan expr * sourcespan) list) (ds : 'a decl list) (tydecls: 'a tydecl list) (inclass : bool): 
+  ((exn list )  * ((string * sourcespan expr * sourcespan) list))=
    (List.fold_left (fun  (exnlist,env) (b: 'a binding) -> match b with 
        |(BBlank(typ, _),    e,   y) ->  (wf_E e ds env tydecls inclass, env)
        |(BName(n,typ,loc),  e,   y)  -> match find2 env n with  
-                                          |None ->(exnlist, [(n,y)]@env)
-                                          |Some(exploc) ->((wf_E e ds ([(n,y)] @ env) tydecls inclass) @[DuplicateId(n,exploc,y)]@exnlist , [(n,y)]@env))
+                                          |None ->(exnlist, [(n, e, y)]@env)
+                                          |Some(exploc) ->((wf_E e ds ([(n, e, y)] @ env) tydecls inclass) @[DuplicateId(n,exploc,y)]@exnlist , [(n,e,y)]@env))
 
    ([],env) bindings)
  
@@ -300,23 +305,27 @@ and add_bindlst_env blst env =
  List.fold_left (fun env e -> 
     match e with
    | BBlank(typ,_) ->  env
-   | BName(str, typ,loc) -> [(str,loc)]@env
+   | BName(str, typ,loc) -> [(str, EDummy(loc), loc)]@env
     )  env blst
 
   and wf_D  (ds : 'a decl list) (tydecls: 'a tydecl list) (inclass : bool): exn list = 
     let result = 
-    (List.fold_left (fun errorlst (DFun(funname,  ars,sch, body, upos)) ->
-      let args = strip_binds ars in 
+    (List.fold_left (fun errorlst ele ->
+        (match ele with
+        | DFun(funname,  ars,sch, body, upos) ->
+      (let args = strip_binds ars in 
       let dupfunlist = match (find_decl (remove_one_decl ds funname) funname)  with
        |None -> errorlst@(wf_E body ds args tydecls inclass) @ (wf_S sch  tydecls)
        |Some(DFun(name, _,_, _body, dpos)) -> errorlst@[DuplicateFun(funname,upos,dpos)]
          @(wf_E body ds args tydecls inclass)
          @ (wf_S sch tydecls)
        | _ -> raise(InternalCompilerError("Strip classes not working :/"))
-      and dupargslist = (List.fold_left (fun exnlist (arg,argloc) -> match (find2 (remove_one_arg args arg) arg) with
+      and dupargslist = (List.fold_left (fun exnlist (arg,_,argloc) -> match (find2 (remove_one_arg args arg) arg) with
             |None -> errorlst
             |Some(loc) -> errorlst@[DuplicateId(arg,loc,argloc)]
-          ) [] args) in (dupfunlist @ dupargslist)) [] ds) in result 
+          ) [] args) in (dupfunlist @ dupargslist))
+        | _ -> raise (InternalCompilerError("Strip classes not working :/")))
+      ) [] ds) in result 
   and wf_G (gds : 'a decl list list ) (tydecls: 'a tydecl list): exn list  =
    let (has_seen, exnlist) = (List.fold_left (fun (has_seen, exnlist) gd -> (gd@has_seen, exnlist@(wf_D (gd@has_seen) tydecls false)))  ([],[]) gds)
      in exnlist
@@ -365,6 +374,7 @@ and add_bindlst_env blst env =
     | first::rest ->
         let (err, cn) =
             (match first with
+            | DFun _ -> raise (InternalCompilerError("onlyClass stripping not working :/"))
             | DClass(cname, fields, methods, l) ->
                 if List.mem cname classenv then 
                     ([DuplicateClass(cname, l)] @ wf_F fields [] @ wf_M methods [], cname) 

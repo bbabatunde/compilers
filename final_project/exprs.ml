@@ -64,6 +64,7 @@ and 'a expr =
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
   | EGetField of 'a expr * string * string * 'a
+  | EDummy of 'a
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
