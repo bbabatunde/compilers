@@ -236,10 +236,22 @@ let is_well_formed (p : sourcespan program)   : (sourcespan program) fallible =
    | ENewObject(cn, l) -> if List.mem cn (onlyClassNames ds) then []
                             else [ClassNotDefined(cn, l)]
    (* Need to look up obj is obj *)
-   | EMethodCall(obj, _, args, _, _) -> List.fold_left (fun lst e -> wf_E e ds env tydecls inclass) [] args
-   | ESetField(obj, _, e, _, _) -> wf_E e ds env tydecls inclass
-   | EGetField(obj, _, _, _) -> []
+   | EMethodCall(obj, _, args, _, _) -> wf_O obj ds env @
+           (List.fold_left (fun lst e -> wf_E e ds env tydecls inclass) [] args)
+   | ESetField(obj, _, e, _, _) -> wf_O obj ds env @ wf_E e ds env tydecls inclass
+   | EGetField(obj, _, _, _) -> wf_O obj ds env
 
+and wf_O obj ds env =
+    match obj with
+    | ENewObject(cn, l) -> if List.mem cn (onlyClassNames ds) then [] else [ClassNotDefined(cn, l)]
+    | EId(n, l) -> 
+        (match find2 env n with
+        | None -> [UnboundId(n, l)]
+        | Some(d) -> [])
+    |ESeq (_, _, l)|ELet (_, _, l)|ELetRec (_, _, l)|EPrim1 (_, _, l)
+    |EPrim2 (_, _, _, l)|EIf (_, _, _, l)|ENumber (_, l)|EBool (_, l)|ENil (_, l)
+    |EThis(l)|EApp (_, _, l)|ELambda (_, _, l)|EAnnot (_, _, l)
+    |EMethodCall (_, _, _, _, l)|ESetField (_, _, _, _, l)|EGetField (_, _, _, l) -> [ExpectedObject(l)]
 and bindingsToBinds bl =
     match bl with
     | (b, _, _)::rest ->
