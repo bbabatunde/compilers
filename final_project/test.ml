@@ -670,25 +670,40 @@ let failing_tests = [
 ]
 
  let class_tests = [
-     t "class1" "class test:
-                 fields x = 1, y = 2
-                 methods
-                 def f1():
-                     1
-                 def f2():
-                     2
-                 end
+     (*
+     t "classDuplicate" "class test:
+                         fields x = 1, y = 2
+                         methods
+                         def f1():
+                             1
+                         def f2():
+                             2 end
+                         class test:
+                            fields a = 1
+                         methods
+                         def b():
+                         1 end
+                         1" "" "";
 
-           class test1 extends test:
-              fields z = 3
-             methods
-             def f3():
-                 3
-            end
-                 let x = new test
-                 in x.f1();
-                 x[x]" "" "";
+    t "classFieldDup"  "class test:
+                        fields x = 1, x = 2
+                        methods end
+                        1" "" "";
+
+    t "classMethodDup" "class test:
+                        fields x = 1
+                        methods
+                        def a():
+                            1
+                        def a():
+                            2
+                        end
+                        1" "" "";
+*)
+    t "thisOutsideClass" "let x = 1 in this[x]" "" "";
  ]
+
+
 
 let suite =
 "suite">:::

@@ -25,6 +25,13 @@ exception CyclicTy of string * sourcespan
 exception DuplicateType of string * sourcespan
 exception DuplicateArgument of string * sourcespan
 exception DuplicateLetRecDecl of string * sourcespan
+(* Class exceptions *)
+exception DuplicateClass of string * sourcespan (* name, where*)
+exception ClassNotDefined of string * sourcespan
+exception FieldRedefinition of string * sourcespan
+exception InvalidFieldDefinition of string * sourcespan
+exception MethodRedefined of string * sourcespan
+exception ThisOutsideClass of sourcespan
 
 type reason =
   | InferExp of sourcespan expr
