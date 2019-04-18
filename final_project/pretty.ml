@@ -134,7 +134,7 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
         (string_of_expr e2)
         s2
         (print_a a)
-  | EGetField(e1, s1, a) -> sprintf "(getField(%s[%s]))%s"
+  | EGetField(e1, s1, s2, a) -> sprintf "(getField(%s[%s]))%s"
         (string_of_expr e1)
         s1
         (print_a a)
@@ -247,7 +247,7 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
         (string_of_immexpr imm2)
         s2
         (print_a a)
-  | CGetField(imm1, s1, a) -> sprintf "(cgetField(%s[%s])%s)"
+  | CGetField(imm1, s1, s2, a) -> sprintf "(cgetField(%s[%s])%s)"
         (string_of_immexpr imm1)
         s1
         (print_a a)

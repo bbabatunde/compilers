@@ -420,8 +420,8 @@ let rename_and_tag (p : tag program) : tag program =
        EMethodCall((helpE env name),  meth, List.map (helpE env) args, n2, tag)
     | ESetField(obj, field, new_val, obj_name, tag) ->
        ESetField((helpE env obj), field, (helpE env new_val), obj_name, tag)
-    | EGetField(obj, field, tag) ->
-       EGetField((helpE env obj), field, tag)
+    | EGetField(obj, field, objclass, tag) ->
+       EGetField((helpE env obj), field, objclass, tag)
   in (rename [] p)
 ;;
 
@@ -614,12 +614,12 @@ let anf (p : tag program) : unit aprogram =
             e1_setup @
             e2_setup @
             [BLet(tmp, CSetField(e1_new, s1, e2_new, s2, ()))])
-    | EGetField(e1, s1, tag) ->
+    | EGetField(e1, s1, s2, tag) ->
         let tmp = sprintf "egf_%d" tag in
         let (e1_new, e1_setup) = helpI e1 in
         (ImmId(tmp, ()),
             e1_setup @
-            [BLet(tmp, CGetField(e1_new, s1, ()))])
+            [BLet(tmp, CGetField(e1_new, s1, s2, ()))])
   and getClass immNewObj =
       match immNewObj with
       | ImmObj(name, _) -> name

@@ -171,8 +171,8 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
      EMethodCall(map_tag_E f name, meth, List.map (map_tag_E f) args,  n2, (f a))
   | ESetField(e1, s1, e2, s2, a) ->
      ESetField(map_tag_E f e1, s1, map_tag_E f e2, s2, f a)
-  | EGetField(e1, s1, a) ->
-     EGetField(map_tag_E f e1, s1, f a)
+  | EGetField(e1, s1, s2, a) ->
+     EGetField(map_tag_E f e1, s1, s2, f a)
   
 and map_tag_B (f : 'a -> 'b) b =
   match b with
@@ -295,7 +295,7 @@ and untagE e =
   | ENewObject(name, _) -> ENewObject(name, ())
   | EMethodCall(e1, s1, el1, s2, _) -> EMethodCall(untagE e1, s1, List.map untagE el1, s2, ())
   | ESetField(e1, s1, e2, s2, _) -> ESetField(untagE e1, s1, untagE e2, s2, ())
-  | EGetField(e1, s1, _) -> EGetField(untagE e1, s1, ())
+  | EGetField(e1, s1, s2, _) -> EGetField(untagE e1, s1, s2, ())
 and untagB b =
   match b with
   | BBlank(typ, _) -> BBlank(untagT typ, ())
@@ -365,7 +365,7 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CNewObject(name, _) ->
        CNewObject(name, tag())
     | CSetField(imm1, s1, imm2, s2, _) -> CSetField(helpI imm1, s1, helpI imm2, s2, tag())
-    | CGetField(imm1, s1, _) -> CGetField(helpI imm1, s1, tag())
+    | CGetField(imm1, s1, s2, _) -> CGetField(helpI imm1, s1, s2, tag())
   and helpI (i : 'a immexpr) : tag immexpr =
     match i with
     | ImmNil(_) -> ImmNil(tag())
