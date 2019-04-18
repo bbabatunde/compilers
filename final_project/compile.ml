@@ -387,6 +387,7 @@ let rename_and_tag (p : tag program) : tag program =
        ((b', e', a)::bindings', env'')
   and helpE env e =
     match e with
+    | EThis _ -> e
     | EAnnot(e, t, tag) -> helpE env e
     | ESeq(e1, e2, tag) -> ESeq(helpE env e1, helpE env e2, tag)
     | EPrim1(op, arg, tag) -> EPrim1(op, helpE env arg, tag)
@@ -1395,7 +1396,7 @@ let compile_prog (anfed : tag aprogram) : string = match anfed with
   
 let compile_to_string (prog : sourcespan program pipeline) : string pipeline =
   prog
-  (* |> (add_err_phase well_formed is_well_formed)*)
+  |> (add_err_phase well_formed is_well_formed)
   |> (add_phase desugared_preTC desugarPre)
   |> (add_phase desugared_postTC desugarPost)
   |> (add_phase tagged tag)

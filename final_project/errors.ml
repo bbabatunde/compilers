@@ -124,6 +124,7 @@ let print_errors (exns : exn list) : string list =
            | EMethodCall(_, _, _, _, t) -> t
            | ESetField(_, _, _, _, t) -> t
            | EGetField(_, _, _, t) -> t
+           | EThis(t) -> t
          in
          let print_reason r =
            match r with

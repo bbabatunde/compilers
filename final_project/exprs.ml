@@ -123,6 +123,7 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | EBool(b, a) -> EBool(b, f a)
   | ENil(t, a) -> ENil(map_tag_T f t, f a)
   | EAnnot(e, t, a) -> EAnnot(map_tag_E f e, map_tag_T f t, f a)
+  | EThis(a) -> EThis(f a)
   | EPrim1(op, e, a) ->
      let tag_prim = f a in
      EPrim1(op, map_tag_E f e, tag_prim)
@@ -268,6 +269,7 @@ let rec untagP (p : 'a program) : unit program =
      Program(List.map untagTD tydecls, List.map (fun group -> List.map untagD group) decls, untagE body, ())
 and untagE e =
   match e with
+  | EThis(_) -> EThis(())
   | ESeq(e1, e2, _) -> ESeq(untagE e1, untagE e2, ())
   | EId(x, _) -> EId(x, ())
   | ENumber(n, _) -> ENumber(n, ())

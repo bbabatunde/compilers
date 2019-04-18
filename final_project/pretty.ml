@@ -90,6 +90,7 @@ and string_of_binding (b : 'a binding) : string =
 and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
   let string_of_expr = string_of_expr_with print_a in
   match e with
+  | EThis(a) -> "this" ^ (print_a a)
   | ESeq(e1, e2, a) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
   | ENumber(n, a) -> (string_of_int n) ^ (print_a a)
   | EBool(b, a) -> (string_of_bool b) ^ (print_a a)
@@ -431,7 +432,7 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
      pp_print_string fmt ":"; pp_print_space fmt ();
      help body;
      close_paren fmt
-  | ENewObject _ | EMethodCall _ | ESetField _ | EGetField _ -> 
+  | ENewObject _ | EMethodCall _ | ESetField _ | EGetField _ | EThis _ -> 
           failwith "Formatwith doesn't implement these yet!"
 ;;
 let format_scheme (fmt : Format.formatter) (print_a : 'a -> string) (s : 'a scheme) : unit =
