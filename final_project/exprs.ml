@@ -56,14 +56,19 @@ and 'a expr =
   | EBool of bool * 'a
   | ENil of 'a typ * 'a
   | EId of string * 'a
+  | EThis of 'a
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of 'a bind list * 'a expr * 'a
   | EAnnot of 'a expr * 'a typ * 'a
-  | EObject of string * 'a
   | ENewObject of string * 'a
   | EMethodCall of 'a expr * string * 'a expr list  * string * 'a
   | ESetField of 'a expr * string * 'a expr * string * 'a
+<<<<<<< HEAD
   | EGetField of 'a expr * string  * 'a
+=======
+  | EGetField of 'a expr * string * string * 'a
+  | EDummy of 'a
+>>>>>>> 3a6098536146ead9cba9a1aafe5a496f569cc901
 
 type 'a decl =
   | DFun of string * 'a bind list * 'a scheme * 'a expr * 'a
@@ -80,7 +85,6 @@ type 'a immexpr = (* immediate expressions *)
   | ImmNum of int * 'a
   | ImmBool of bool * 'a
   | ImmId of string * 'a
-  | ImmObj of string * 'a
   | ImmNil of 'a
 and 'a cexpr = (* compound expressions *)
   | CIf of 'a immexpr * 'a aexpr * 'a aexpr * 'a
@@ -100,7 +104,7 @@ and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a
   | ALetRec of (string * 'a cexpr) list * 'a aexpr * 'a
   | ACExpr of 'a cexpr
-  | ANewObject of string * 'a immexpr * string * 'a aexpr * 'a
+  | ANewObject of string * 'a cexpr * string * 'a aexpr * 'a
 and 'a adecl =
   | ADFun of string * string list * 'a aexpr * 'a
   | AClass of string *  (string * 'a immexpr) list  *'a adecl list * 'a
@@ -124,6 +128,7 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | EBool(b, a) -> EBool(b, f a)
   | ENil(t, a) -> ENil(map_tag_T f t, f a)
   | EAnnot(e, t, a) -> EAnnot(map_tag_E f e, map_tag_T f t, f a)
+  | EThis(a) -> EThis(f a)
   | EPrim1(op, e, a) ->
      let tag_prim = f a in
      EPrim1(op, map_tag_E f e, tag_prim)
@@ -164,15 +169,13 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | ELambda(binds, body, a) ->
      let tag_lam = f a in
      ELambda(List.map (map_tag_B f) binds, map_tag_E f body, tag_lam)
-  | EObject(name, a) ->
-     EObject(name, (f a))
   | ENewObject(name, a) -> ENewObject(name, (f a))
   | EMethodCall(name, meth, args, n2, a) ->
      EMethodCall(map_tag_E f name, meth, List.map (map_tag_E f) args,  n2, (f a))
   | ESetField(e1, s1, e2, s2, a) ->
      ESetField(map_tag_E f e1, s1, map_tag_E f e2, s2, f a)
-  | EGetField(e1, s1, a) ->
-     EGetField(map_tag_E f e1, s1, f a)
+  | EGetField(e1, s1, s2, a) ->
+     EGetField(map_tag_E f e1, s1, s2, f a)
   
 and map_tag_B (f : 'a -> 'b) b =
   match b with
@@ -271,6 +274,7 @@ let rec untagP (p : 'a program) : unit program =
      Program(List.map untagTD tydecls, List.map (fun group -> List.map untagD group) decls, untagE body, ())
 and untagE e =
   match e with
+  | EThis(_) -> EThis(())
   | ESeq(e1, e2, _) -> ESeq(untagE e1, untagE e2, ())
   | EId(x, _) -> EId(x, ())
   | ENumber(n, _) -> ENumber(n, ())
@@ -291,11 +295,10 @@ and untagE e =
      EApp(untagE name, List.map untagE args, ())
   | ELambda(binds, body, _) ->
      ELambda(List.map untagB binds, untagE body, ())
-  | EObject(name, _) -> EObject(name, ())
   | ENewObject(name, _) -> ENewObject(name, ())
   | EMethodCall(e1, s1, el1, s2, _) -> EMethodCall(untagE e1, s1, List.map untagE el1, s2, ())
   | ESetField(e1, s1, e2, s2, _) -> ESetField(untagE e1, s1, untagE e2, s2, ())
-  | EGetField(e1, s1, _) -> EGetField(untagE e1, s1, ())
+  | EGetField(e1, s1, s2, _) -> EGetField(untagE e1, s1, s2, ())
 and untagB b =
   match b with
   | BBlank(typ, _) -> BBlank(untagT typ, ())
@@ -341,7 +344,7 @@ let atag (p : 'a aprogram) : tag aprogram =
        ALetRec(List.map (fun (x, c) -> (x, helpC c)) binds, helpA body, letrec_tag)
     | ACExpr c -> ACExpr (helpC c)
     | ANewObject(vn, cn, cn2, b, _) ->
-       ANewObject(vn, helpI cn, cn2, helpA b, tag())
+       ANewObject(vn, helpC cn, cn2, helpA b, tag())
   and helpC (c : 'a cexpr) : tag cexpr =
     match c with
     | CPrim1(op, e, _) ->
@@ -365,14 +368,13 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CNewObject(name, _) ->
        CNewObject(name, tag())
     | CSetField(imm1, s1, imm2, s2, _) -> CSetField(helpI imm1, s1, helpI imm2, s2, tag())
-    | CGetField(imm1, s1, _) -> CGetField(helpI imm1, s1, tag())
+    | CGetField(imm1, s1, s2, _) -> CGetField(helpI imm1, s1, s2, tag())
   and helpI (i : 'a immexpr) : tag immexpr =
     match i with
     | ImmNil(_) -> ImmNil(tag())
     | ImmId(x, _) -> ImmId(x, tag())
     | ImmNum(n, _) -> ImmNum(n, tag())
     | ImmBool(b, _) -> ImmBool(b, tag())
-    | ImmObj(n, _) -> ImmObj(n, tag())
   and helpD d =
     match d with
     | ADFun(name, args, body, _) ->

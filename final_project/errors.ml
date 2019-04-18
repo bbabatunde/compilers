@@ -25,6 +25,14 @@ exception CyclicTy of string * sourcespan
 exception DuplicateType of string * sourcespan
 exception DuplicateArgument of string * sourcespan
 exception DuplicateLetRecDecl of string * sourcespan
+(* Class exceptions *)
+exception DuplicateClass of string * sourcespan (* name, where*)
+exception ClassNotDefined of string * sourcespan
+exception FieldRedefinition of string * sourcespan
+exception InvalidFieldDefinition of string * sourcespan
+exception MethodRedefined of string * sourcespan
+exception ThisOutsideClass of sourcespan
+exception ExpectedObject of sourcespan
 
 type reason =
   | InferExp of sourcespan expr
@@ -44,6 +52,13 @@ exception DeclArity of string * int * int * sourcespan (* name, num args, num ty
 let print_errors (exns : exn list) : string list =
   List.map (fun e ->
       match e with
+      | DuplicateClass(s, l) -> sprintf "Duplicate class: %s at <%s>" s (string_of_sourcespan l)
+      | ClassNotDefined(s, l) -> sprintf "Class not defined: %s at <%s>" s (string_of_sourcespan l)
+      | FieldRedefinition(s, l) -> sprintf "Field redefined: %s at <%s>" s (string_of_sourcespan l)
+      | InvalidFieldDefinition(s, l) -> sprintf "Invalid field definition: %s at <%s>" s (string_of_sourcespan l)
+      | MethodRedefined(s, l) -> sprintf "Method redefined: %s at <%s>" s (string_of_sourcespan l)
+      | ThisOutsideClass(l) -> sprintf "This outside class at <%s>" (string_of_sourcespan l)
+      | ExpectedObject(l) -> sprintf "Expected Object at <%s>" (string_of_sourcespan l)
       | ParseError msg -> msg
        | DuplicateType (msg, loc) ->
          sprintf "Duplicate type: %s at <%s>" msg (string_of_sourcespan loc)
@@ -121,10 +136,10 @@ let print_errors (exns : exn list) : string list =
            | ESeq(_, _, t) -> t
            | ELambda(_, _, t) -> t
            | ENewObject(_, t) -> t
-           | EObject(_, t) -> t
            | EMethodCall(_, _, _, _, t) -> t
            | ESetField(_, _, _, _, t) -> t
-           | EGetField(_, _, t) -> t
+           | EGetField(_, _, _, t) -> t
+           | EThis(t) -> t
          in
          let print_reason r =
            match r with

@@ -90,6 +90,7 @@ and string_of_binding (b : 'a binding) : string =
 and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
   let string_of_expr = string_of_expr_with print_a in
   match e with
+  | EThis(a) -> "Ethis" ^ (print_a a)
   | ESeq(e1, e2, a) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
   | ENumber(n, a) -> (string_of_int n) ^ (print_a a)
   | EBool(b, a) -> (string_of_bool b) ^ (print_a a)
@@ -121,7 +122,6 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(lam(%s) %s)%s" binds_str (string_of_expr body) (print_a a)
   | ENewObject(n, a) -> sprintf "(newObj(%s))%s" n (print_a a)
-  | EObject(n, a) -> sprintf "(obj(%s))%s" n (print_a a)
   | EMethodCall(e, f, args, n, a) -> sprintf "(methodCall(%s.%s) (%s) %s)%s"
         (string_of_expr e)
         f
@@ -134,7 +134,7 @@ and string_of_expr_with (print_a : 'a -> string) (e : 'a expr) : string =
         (string_of_expr e2)
         s2
         (print_a a)
-  | EGetField(e1, s1, a) -> sprintf "(getField(%s[%s]))%s"
+  | EGetField(e1, s1, s2, a) -> sprintf "(getField(%s[%s]))%s"
         (string_of_expr e1)
         s1
         (print_a a)
@@ -208,7 +208,7 @@ let rec string_of_aexpr_with (depth : int) (print_a : 'a -> string) (e : 'a aexp
   | ANewObject(vn, cn, cn2, b, a) ->
      sprintf "(anewobj (%s) %s %s %s)%s"
         vn
-        (string_of_immexpr_with print_a cn)
+        (string_of_cexpr cn)
         cn2
         (string_of_aexpr b)
         (print_a a)
@@ -247,7 +247,7 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
         (string_of_immexpr imm2)
         s2
         (print_a a)
-  | CGetField(imm1, s1, a) -> sprintf "(cgetField(%s[%s])%s)"
+  | CGetField(imm1, s1, s2, a) -> sprintf "(cgetField(%s[%s])%s)"
         (string_of_immexpr imm1)
         s1
         (print_a a)
@@ -257,7 +257,6 @@ and string_of_immexpr_with (print_a : 'a -> string) (i : 'a immexpr) : string =
   | ImmNum(n, a) -> (string_of_int n) ^ (print_a a)
   | ImmBool(b, a) -> (string_of_bool b) ^ (print_a a)
   | ImmId(x, a) -> x ^ (print_a a)
-  | ImmObj(n, a) -> "obj " ^ n ^ (print_a a)
 and string_of_aprogram_with (print_a : 'a -> string) (p : 'a aprogram) : string =
   match p with
   | AProgram(decls, body, a) ->
@@ -433,7 +432,7 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
      pp_print_string fmt ":"; pp_print_space fmt ();
      help body;
      close_paren fmt
-  | EObject _ | ENewObject _ | EMethodCall _ | ESetField _ | EGetField _ -> 
+  | ENewObject _ | EMethodCall _ | ESetField _ | EGetField _ | EThis _ -> 
           failwith "Formatwith doesn't implement these yet!"
 ;;
 let format_scheme (fmt : Format.formatter) (print_a : 'a -> string) (s : 'a scheme) : unit =
