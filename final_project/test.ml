@@ -670,8 +670,7 @@ let failing_tests = [
 ]
 
  let class_tests = [
-     (*
-     t "classDuplicate" "class test:
+     te "classDuplicate" "class test:
                          fields x = 1, y = 2
                          methods
                          def f1():
@@ -683,14 +682,14 @@ let failing_tests = [
                          methods
                          def b():
                          1 end
-                         1" "" "";
+                         1" "" "Duplicate class: test at <classDuplicate, 8:25-12:30>";
 
-    t "classFieldDup"  "class test:
+    te "classFieldDup"  "class test:
                         fields x = 1, x = 2
                         methods end
-                        1" "" "";
+                        1" "" "Field redefined: x at <classFieldDup, 2:38-2:43>";
 
-    t "classMethodDup" "class test:
+    te "classMethodDup" "class test:
                         fields x = 1
                         methods
                         def a():
@@ -698,9 +697,54 @@ let failing_tests = [
                         def a():
                             2
                         end
-                        1" "" "";
-*)
-    t "thisOutsideClass" "let x = 1 in this[x]" "" "";
+                        1" "" "The function name a, redefined at <classMethodDup, 4:24-5:29>, duplicates one at <classMethodDup, 6:24-7:29>
+The function name a, redefined at <classMethodDup, 6:24-7:29>, duplicates one at <classMethodDup, 6:24-7:29>";
+
+    te "thisOutsideClass" "let x = 1 in this[x]" "" "Expected Object at <thisOutsideClass, 1:13-1:17>";
+
+    te "nonObj1" "let x = 1 in x[y]" "" "Expected Object at <nonObj1, 1:8-1:9>";
+    
+    te "nonObj2" "let x = 1 in x.y()" "" "Expected Object at <nonObj2, 1:8-1:9>";
+    
+    te "nonObj3" "let x = 1 in 
+                 let y = x in
+                 let z = y in
+                 z[a]" "" "Expected Object at <nonObj3, 1:8-1:9>";
+    
+    te "nonObj4" "let x = 1 in
+                 x[y := 1]" "" "Expected Object at <nonObj4, 1:8-1:9>";
+
+    
+    te "classNotDefined" "let a = new test in 1" "" "Class not defined: test at <classNotDefined, 1:8-1:16>";
+    
+    te "extendsNotDefined" "class test extends superclass:
+                        fields x = 1
+                        methods
+                        def a():
+                            1
+                        end
+                        1" "" "Class not defined: superclass at <extendsNotDefined, 1:0-6:27>";
+    
+    te "cascadeFail" "class test:
+                         fields x = 1, y = 2
+                         methods
+                         def f1():
+                             1
+                         def f2():
+                             2 end
+                         class test extends nothing:
+                            fields a = 1, a = 2
+                         methods
+                         def b():
+                         1 
+                         def b():
+                         2 end
+                         let x = 1, y = new teehee in this[x]" "" "Duplicate class: test at <cascadeFail, 8:25-14:30>
+Field redefined: a at <cascadeFail, 9:42-9:47>
+The function name b, redefined at <cascadeFail, 11:25-12:26>, duplicates one at <cascadeFail, 13:25-14:26>
+The function name b, redefined at <cascadeFail, 13:25-14:26>, duplicates one at <cascadeFail, 13:25-14:26>
+Expected Object at <cascadeFail, 15:54-15:58>";
+
  ]
 
 
