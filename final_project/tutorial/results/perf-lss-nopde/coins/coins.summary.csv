@@ -1,0 +1,2 @@
+Test,Code,block size,Max CPU Time,Min CPU Time,Avg CPU Time
+coins,omp-original,16,259.421384,184.911162,226.643

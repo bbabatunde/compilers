@@ -1,0 +1,2 @@
+Test,Code,block size,Max Kernel,Min Kernel,Avg Kernel,Max GPU Time,Min GPU Time,Avg GPU Time
+tree,cuda-basic,16,384.439,299.142,348.493,396.424,311.31,360.528

@@ -1,0 +1,2 @@
+Test,Code,block size,Max CPU Time,Min CPU Time,Avg CPU Time
+tree,omp-basic,16,351.360429,261.522687,321.928

@@ -1,0 +1,131 @@
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Runner: processes
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Chooser: simple
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration suite_name = "suite"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration cache_filename = "/Users/egbantanbabatunde/compilers/final_project/_build/oUnit-$(suite_name).cache"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration osx = "false"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration display = "true"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration results_style_1_X = "false"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration verbose = "false"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration health_check_interval = "1."
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration testdata_dir = "none"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration chooser = "simple"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_html_dir = "none"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration processes_kill_period = "5."
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration runner = "processes"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration shards = "2"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration processes_grace_period = "5."
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration log_encoding = "utf-8"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_junit_file = "none"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Configuration output_file = "/Users/egbantanbabatunde/compilers/final_project/_build/oUnit-$(suite_name)-$(shard_id).log"
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Using 2 workers maximum.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Starting worker number Egbantans-MacBook-Pro.local#01.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#01 started.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Starting worker number Egbantans-MacBook-Pro.local#02.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#02 started.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:classFieldDup, suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:classFieldDup, suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:1:classFieldDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:classFieldDup, suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:0:classDuplicate is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:classFieldDup, suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:1:classFieldDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:1:classFieldDup, suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:1:classFieldDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:2:classMethodDup, suite:1:classFieldDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:thisOutsideClass, suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:3:thisOutsideClass.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:thisOutsideClass, suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:2:classMethodDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:thisOutsideClass, suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:3:thisOutsideClass is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:3:thisOutsideClass, suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:3:thisOutsideClass.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:4:nonObj1, suite:3:thisOutsideClass.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:nonObj2, suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:nonObj2, suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:5:nonObj2.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:nonObj2, suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:4:nonObj1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:5:nonObj2 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:nonObj2, suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:5:nonObj2.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:5:nonObj2, suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:nonObj4, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:7:nonObj4.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:nonObj4, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:7:nonObj4 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:nonObj4, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:7:nonObj4.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:7:nonObj4, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:classNotDefined, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:6:nonObj3 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:classNotDefined, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:8:classNotDefined, suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:extendsNotDefined, suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:9:extendsNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:extendsNotDefined, suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:8:classNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:extendsNotDefined, suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:9:extendsNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:9:extendsNotDefined, suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:9:extendsNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:10:cascadeFail, suite:9:extendsNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:10:cascadeFail is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 2 tests running : suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 2 tests running: suite:11:class1, suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:11:class1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Still 1 tests running : suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 1 tests running: suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 0 tests running: .
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#02 has ended.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: 0 tests running: .
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Worker Egbantans-MacBook-Pro.local#01 has ended.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Used 2 worker during test execution.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Run 6 tests with shard Egbantans-MacBook-Pro.local#02.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Run 6 tests with shard Egbantans-MacBook-Pro.local#01.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: ==============
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Summary:
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:11:class1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:10:cascadeFail is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:9:extendsNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:8:classNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:6:nonObj3 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:7:nonObj4 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:5:nonObj2 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:4:nonObj1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:3:thisOutsideClass is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:2:classMethodDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:1:classFieldDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Test suite:0:classDuplicate is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Ran: 12 tests in: 0.57 seconds.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Cases: 12.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Tried: 12.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Errors: 0.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Failures: 0.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Skip: 0.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Todo: 0.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#00 I: Timeout: 0.

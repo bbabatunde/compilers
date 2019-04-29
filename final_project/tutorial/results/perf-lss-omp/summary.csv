@@ -1,0 +1,5 @@
+Test,Code,block size,Max CPU Time,Min CPU Time,Avg CPU Time
+circle,omp-basic,16,2270.574141,1875.545131,2031.21
+fractal,omp-basic,16,1100.866180,908.806589,1041.05
+synthetic,omp-basic,16,750.295848,605.863117,691.271
+tree,omp-basic,16,351.360429,261.522687,321.928

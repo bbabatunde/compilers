@@ -1,0 +1,2 @@
+Test,Code,block size,Max CPU Time,Min CPU Time,Avg CPU Time
+fractal,omp-basic,16,1100.866180,908.806589,1041.05

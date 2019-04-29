@@ -1,0 +1,18 @@
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:0:classDuplicate is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:0:classDuplicate.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:2:classMethodDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:2:classMethodDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:4:nonObj1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:4:nonObj1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:7:nonObj4.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:7:nonObj4 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:7:nonObj4.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:8:classNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:8:classNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Start test suite:10:cascadeFail.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: Test suite:10:cascadeFail is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#01 I: End test suite:10:cascadeFail.

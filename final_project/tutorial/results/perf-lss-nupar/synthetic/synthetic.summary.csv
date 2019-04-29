@@ -1,0 +1,2 @@
+Test,Code,block size,Max Kernel,Min Kernel,Avg Kernel,Max GPU Time,Min GPU Time,Avg GPU Time
+synthetic,cuda-basic,16,2786.44,2118.86,2309.31,2822.19,2145.92,2344.88

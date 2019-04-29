@@ -1,0 +1,2 @@
+Test,Code,block size,Max CPU Time,Min CPU Time,Avg CPU Time
+synthetic,omp-original,16,774.237974,390.685478,677.811

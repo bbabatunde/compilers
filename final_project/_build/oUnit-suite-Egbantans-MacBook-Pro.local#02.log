@@ -1,0 +1,18 @@
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:1:classFieldDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:1:classFieldDup is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:1:classFieldDup.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:3:thisOutsideClass.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:3:thisOutsideClass is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:3:thisOutsideClass.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:5:nonObj2.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:5:nonObj2 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:5:nonObj2.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:6:nonObj3 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:6:nonObj3.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:9:extendsNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:9:extendsNotDefined is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:9:extendsNotDefined.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Start test suite:11:class1.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: Test suite:11:class1 is successful.
+2019-04-18T19:30:08+00:00 Egbantans-MacBook-Pro.local#02 I: End test suite:11:class1.

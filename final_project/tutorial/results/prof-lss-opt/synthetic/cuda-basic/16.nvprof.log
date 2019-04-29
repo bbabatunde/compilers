@@ -1,0 +1,4 @@
+Unable to open 'inputs/synthetic/circle-synthetic.intensities.pgm'.
+Unable to open 'inputs/synthetic/circle-synthetic.label-.pgm'.
+Could not open 'inputs/synthetic/circle.params'.
+======== Warning: No CUDA application was profiled, exiting

@@ -1,0 +1,2 @@
+Test,Code,block size,Max Kernel,Min Kernel,Avg Kernel,Max GPU Time,Min GPU Time,Avg GPU Time
+circle-out-1024,cuda-basic,16,4481.1,4475.67,4478.36,4637.87,4533.43,4557.02

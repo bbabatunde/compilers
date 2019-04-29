@@ -1,0 +1,2 @@
+Test,Code,block size,Max Kernel,Min Kernel,Avg Kernel,Max GPU Time,Min GPU Time,Avg GPU Time
+fractal,cuda-basic,16,1189.58,1182.47,1184.88,1213.58,1195.15,1201.51
